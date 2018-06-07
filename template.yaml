@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Website CloudFormation stack
+
+Parameters:
+  Domain:
+    Type: String
+    Description: The DNS name of an existing Amazon Route53 hosted zone, e.g. moduscreate.com
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: must be a valid DNS zone name.
+  Subdomain:
+    Type: String
+    Description: The DNS subdomain name, e.g. www
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: must be a valid DNS subdomain name.
+  AcmCertificateArn:
+    Type: String
+    Description: The Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate, e.g. arn:aws:acm:<region>:<account>:certificate/<id>
+    AllowedPattern: "arn:aws:acm:[a-z0-9-]+:[\\d]+:certificate/[a-z0-9]{8}-(?:[a-z0-9]{4}-){3}[a-z0-9]{12}"
+    ConstraintDescription: must be a valid ARN.
+  OriginPath:
+    Type: String
+    Description: The S3 bucket origin path, e.g. /1.0.0
+    AllowedPattern: "(?:^(?:/[a-zA-Z0-9_.;:*!@$&()=+-]+)+$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  Project:
+    Type: String
+    Description: The project tag value, e.g. www
+    AllowedPattern: "(?!aws:)[\\w .=:/@+-]{1,255}"
+    ConstraintDescription: must be a valid tag value.
+  Environment:
+    Type: String
+    Description: The environment tag value, e.g. production
+    AllowedPattern: "(?!aws:)[\\w .=:/@+-]{1,255}"
+    ConstraintDescription: must be a valid tag value.
+  Version:
+    Type: String
+    Description: The version tag value, e.g. 1.0.0
+    AllowedPattern: "(?!aws:)[\\w .=:/@+-]{1,255}"
+    ConstraintDescription: must be a valid tag value.
+
+Resources:
+  # S3
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ["", [!Ref "Subdomain", ., !Ref "Domain"]]
+      Tags:
+        -
+          Key: environment
+          Value: !Ref "Environment"
+        -
+          Key: project
+          Value: !Ref "Project"
+        -
+          Key: version
+          Value: !Ref "Version"
+    DeletionPolicy: Delete
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    DependsOn:
+      - CloudFrontOriginAccessIdentity
+      - S3Bucket
+    Properties:
+      Bucket: !Ref "S3Bucket"
+      PolicyDocument:
+        Statement:
+          -
+            Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+            Action: s3:GetObject
+            Resource: !Join ["", [!GetAtt S3Bucket.Arn, "/*"]]
+  # CloudFront
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+      - CloudFrontOriginAccessIdentity
+      - S3Bucket
+      - S3BucketPolicy
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Join ["", [!Ref "Subdomain", ., !Ref "Domain"]]
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        IPV6Enabled: false
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AcmCertificateArn
+          MinimumProtocolVersion: TLSv1.2_2018
+          SslSupportMethod: sni-only
+        Origins:
+          -
+            Id: !Join ["", ["S3-", !Ref "Subdomain", ., !Ref "Domain"]]
+            DomainName: !GetAtt S3Bucket.DomainName
+            OriginPath: !Ref "OriginPath"
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+        DefaultCacheBehavior:
+          TargetOriginId: !Join ["", ["S3-", !Ref "Subdomain", ., !Ref "Domain"]]
+          Compress: true
+          MinTTL: 0
+          MaxTTL: 31536000
+          DefaultTTL: 31536000
+          ForwardedValues:
+            QueryString: false
+          ViewerProtocolPolicy: redirect-to-https
+      Tags:
+        -
+          Key: environment
+          Value: !Ref "Environment"
+        -
+          Key: project
+          Value: !Ref "Project"
+        -
+          Key: version
+          Value: !Ref "Version"
+  CloudFrontOriginAccessIdentity:
+    Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Join ["", ["CloudFront serving S3 ", !Ref "Subdomain", ., !Ref "Domain"]] # Name (required)
+  # Route 53
+  Route53RecordSet:
+    Type: AWS::Route53::RecordSet
+    DependsOn:
+      - CloudFrontDistribution
+    Properties:
+      HostedZoneName: !Join ["", [!Ref "Domain", .]]
+      Name: !Join ["", [!Ref "Subdomain", ., !Ref "Domain", .]]
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2 # AWS constant
+        DNSName: !GetAtt [CloudFrontDistribution, DomainName]
+
+Outputs:
+  url:
+    Value: !Join ["", ["https://", !Ref "Subdomain", ., !Ref "Domain"]]
+    Description: The website url
