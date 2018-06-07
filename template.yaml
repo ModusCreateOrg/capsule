@@ -20,7 +20,7 @@ Parameters:
   OriginPath:
     Type: String
     Description: The S3 bucket origin path, e.g. /1.0.0
-    AllowedPattern: "(?:^(?:/[a-zA-Z0-9_.;:*!@$&()=+-]+)+$|^$)"
+    AllowedPattern: "(?:^(?:/[a-zA-Z0-9_.*!()-]+)+$|^$)"
     Default: ""
     ConstraintDescription: must be a valid path.
   Project:
