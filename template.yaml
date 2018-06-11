@@ -6,23 +6,23 @@ Parameters:
     Type: String
     Description: The DNS name of an existing Amazon Route53 hosted zone, e.g. moduscreate.com
     AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
-    ConstraintDescription: must be a valid DNS zone name.
+    ConstraintDescription: "Domain must be a valid DNS zone name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
   Subdomain:
     Type: String
     Description: The DNS subdomain name, e.g. www
     AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
-    ConstraintDescription: must be a valid DNS subdomain name.
+    ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
   AcmCertificateArn:
     Type: String
     Description: The Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate, e.g. arn:aws:acm:<region>:<account>:certificate/<id>
     AllowedPattern: "arn:aws:acm:[a-z0-9-]+:[\\d]+:certificate/[a-z0-9]{8}-(?:[a-z0-9]{4}-){3}[a-z0-9]{12}"
-    ConstraintDescription: must be a valid ARN.
+    ConstraintDescription: "AcmCertificateArn must be a valid ARN. Allowed pattern: arn:aws:acm:[a-z0-9-]+:[\\d]+:certificate/[a-z0-9]{8}-(?:[a-z0-9]{4}-){3}[a-z0-9]{12}"
   OriginPath:
     Type: String
     Description: The S3 bucket origin path, e.g. /1.0.0
     AllowedPattern: "(?:^(?:/[a-zA-Z0-9_.*!()-]+)+$|^$)"
+    ConstraintDescription: "OriginPath must be a valid path. Allowed pattern: (?:^(?:/[a-zA-Z0-9_.*!()-]+)+$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   PriceClass:
     Type: String
     Description: The CloudFront price class
@@ -30,14 +30,14 @@ Parameters:
       - PriceClass_100
       - PriceClass_200
       - PriceClass_All
+    ConstraintDescription: "PriceClass must be a valid price class. Allowed values: [PriceClass_100, PriceClass_200, PriceClass_All]"
     Default: PriceClass_All
-    ConstraintDescription: must be a valid price class.
   DefaultRootObject:
     Type: String
     Description: The object that you want CloudFront to request from S3 when a viewer requests the root URL for your distribution, e.g. index.html
     AllowedPattern: "(?!/)[a-zA-Z0-9_.*$&/~-]*"
-    Default: "index.html"
-    ConstraintDescription: must be a valid object name.
+    ConstraintDescription: "DefaultRootObject must be a valid object name. Allowed pattern: (?!/)[a-zA-Z0-9_.*$&/~-]*"
+    Default: index.html
   MinimumProtocolVersion:
     Type: String
     Description: The minimum version of the SSL protocol that you want CloudFront to use for HTTPS connections
@@ -46,53 +46,53 @@ Parameters:
       - TLSv1_2016
       - TLSv1.1_2016
       - TLSv1.2_2018
+    ConstraintDescription: "MinimumProtocolVersion must be a valid protocol version. Allowed values: [TLSv1, TLSv1_2016, TLSv1.1_2016, TLSv1.2_2018]"
     Default: TLSv1.2_2018
-    ConstraintDescription: must be a valid protocol version.
   SslSupportMethod:
     Type: String
     Description: The method by which CloudFront serves HHTPS requests
     AllowedValues:
       - sni-only
       - vip
+    ConstraintDescription: "SslSupportMethod must be a valid ssl support method. Allowed values: [sni-only, vip]"
     Default: sni-only
-    ConstraintDescription: must be a valid ssl support method.
   HttpVersion:
     Type: String
     Description: The maximum HTTP version that you want viewers to use to communicate with CloudFront
     AllowedValues:
       - http1.1
       - http2
+    ConstraintDescription: "HttpVersion must be a valid http version. Allowed values: [http1.1, http2]"
     Default: http2
-    ConstraintDescription: must be a valid http version.
   IPV6Enabled:
     Type: String
     Description: If you want CloudFront to respond to IPv6 DNS requests with an IPv6 address for your distribution
     AllowedValues:
       - true
       - false
+    ConstraintDescription: "IPV6Enabled must be true or false. Allowed values: [true, false]"
     Default: false
-    ConstraintDescription: must be true or false.
   MinTTL:
     Type: Number
     Description: The minimum amount of time that you want objects to stay in the cache before CloudFront queries your origin to see whether the object has been updated
     MaxValue: 31536000
     MinValue: 0
+    ConstraintDescription: "MinTTL must be a valid number. Allowed range: 0 - 31536000"
     Default: 0
-    ConstraintDescription: must be a valid number.
   MaxTTL:
     Type: Number
     Description: The maximum time in seconds that objects stay in CloudFront caches before CloudFront forwards another request to your custom origin to determine whether the object has been updated
     MaxValue: 31536000
     MinValue: 0
+    ConstraintDescription: "MaxTTL must be a valid number. Allowed range: 0 - 31536000"
     Default: 31536000
-    ConstraintDescription: must be a valid number.
   DefaultTTL:
     Type: Number
     Description: The default time in seconds that objects stay in CloudFront caches before CloudFront forwards another request to your custom origin to determine whether the object has been updated
     MaxValue: 31536000
     MinValue: 0
+    ConstraintDescription: "DefaultTTL must be a valid number. Allowed range: 0 - 31536000"
     Default: 31536000
-    ConstraintDescription: must be a valid number.
   400ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 400 errors
@@ -108,14 +108,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "400ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 400
-    ConstraintDescription: must be a valid HTTP status code.
   400ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 400 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "400ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   403ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 403 errors
@@ -131,14 +131,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "403ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 403
-    ConstraintDescription: must be a valid HTTP status code.
   403ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 403 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "403ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   404ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 404 errors
@@ -154,14 +154,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "404ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 200
-    ConstraintDescription: must be a valid HTTP status code.
   404ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 404 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "404ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: "/index.html"
-    ConstraintDescription: must be a valid path.
   405ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 405 errors
@@ -177,14 +177,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "405ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 405
-    ConstraintDescription: must be a valid HTTP status code.
   405ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 405 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "405ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   414ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 414 errors
@@ -200,14 +200,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "414ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 414
-    ConstraintDescription: must be a valid HTTP status code.
   414ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 414 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "414ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   500ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 500 errors
@@ -223,14 +223,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "500ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 500
-    ConstraintDescription: must be a valid HTTP status code.
   500ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 500 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "500ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   501ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 501 errors
@@ -246,14 +246,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "501ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 501
-    ConstraintDescription: must be a valid HTTP status code.
   501ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 501 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "501ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   502ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 502 errors
@@ -269,14 +269,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "502ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 502
-    ConstraintDescription: must be a valid HTTP status code.
   502ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 502 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "502ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   503ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 503 errors
@@ -292,14 +292,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "503ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 503
-    ConstraintDescription: must be a valid HTTP status code.
   503ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 503 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "503ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   504ResponseCode:
     Type: Number
     Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 504 errors
@@ -315,14 +315,14 @@ Parameters:
       - 502
       - 503
       - 504
+    ConstraintDescription: "504ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
     Default: 504
-    ConstraintDescription: must be a valid HTTP status code.
   504ResponsePagePath:
     Type: String
     Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 504 errors
     AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "504ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
     Default: ""
-    ConstraintDescription: must be a valid path.
   Project:
     Type: String
     Description: The project tag value, e.g. www
