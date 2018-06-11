@@ -56,6 +56,27 @@ Parameters:
       - vip
     Default: sni-only
     ConstraintDescription: must be a valid ssl support method.
+  MinTTL:
+    Type: Number
+    Description: The minimum amount of time that you want objects to stay in the cache before CloudFront queries your origin to see whether the object has been updated
+    MaxValue: 31536000
+    MinValue: 0
+    Default: 0
+    ConstraintDescription: must be a valid number.
+  MaxTTL:
+    Type: Number
+    Description: The maximum time in seconds that objects stay in CloudFront caches before CloudFront forwards another request to your custom origin to determine whether the object has been updated
+    MaxValue: 31536000
+    MinValue: 0
+    Default: 31536000
+    ConstraintDescription: must be a valid number.
+  DefaultTTL:
+    Type: Number
+    Description: The default time in seconds that objects stay in CloudFront caches before CloudFront forwards another request to your custom origin to determine whether the object has been updated
+    MaxValue: 31536000
+    MinValue: 0
+    Default: 31536000
+    ConstraintDescription: must be a valid number.
   Project:
     Type: String
     Description: The project tag value, e.g. www
@@ -136,9 +157,9 @@ Resources:
         DefaultCacheBehavior:
           TargetOriginId: !Sub "${Subdomain}.${Domain}"
           Compress: true
-          MinTTL: 0
-          MaxTTL: 31536000
-          DefaultTTL: 31536000
+          MinTTL: !Ref MinTTL
+          MaxTTL: !Ref MaxTTL
+          DefaultTTL: !Ref DefaultTTL
           ForwardedValues:
             QueryString: false
           ViewerProtocolPolicy: redirect-to-https
