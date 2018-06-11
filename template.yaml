@@ -23,6 +23,15 @@ Parameters:
     AllowedPattern: "(?:^(?:/[a-zA-Z0-9_.*!()-]+)+$|^$)"
     Default: ""
     ConstraintDescription: must be a valid path.
+  PriceClass:
+    Type: String
+    Description: The CloudFront price class
+    AllowedValues:
+      - PriceClass_100
+      - PriceClass_200
+      - PriceClass_All
+    Default: PriceClass_All
+    ConstraintDescription: must be a valid price class.
   Project:
     Type: String
     Description: The project tag value, e.g. www
@@ -88,7 +97,7 @@ Resources:
         Enabled: true
         HttpVersion: http2
         IPV6Enabled: false
-        PriceClass: PriceClass_All
+        PriceClass: !Ref "PriceClass"
         ViewerCertificate:
           AcmCertificateArn: !Ref AcmCertificateArn
           MinimumProtocolVersion: TLSv1.2_2018
