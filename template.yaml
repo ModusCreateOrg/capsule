@@ -56,6 +56,14 @@ Parameters:
       - vip
     Default: sni-only
     ConstraintDescription: must be a valid ssl support method.
+  IPV6Enabled:
+    Type: String
+    Description: If you want CloudFront to respond to IPv6 DNS requests with an IPv6 address for your distribution
+    AllowedValues:
+      - true
+      - false
+    Default: false
+    ConstraintDescription: must be true or false.
   MinTTL:
     Type: Number
     Description: The minimum amount of time that you want objects to stay in the cache before CloudFront queries your origin to see whether the object has been updated
@@ -141,7 +149,7 @@ Resources:
         DefaultRootObject: !Ref DefaultRootObject
         Enabled: true
         HttpVersion: http2
-        IPV6Enabled: false
+        IPV6Enabled: !Ref IPV6Enabled
         PriceClass: !Ref PriceClass
         ViewerCertificate:
           AcmCertificateArn: !Ref AcmCertificateArn
