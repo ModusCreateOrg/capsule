@@ -35,9 +35,19 @@ Parameters:
   DefaultRootObject:
     Type: String
     Description: The object that you want CloudFront to request from S3 when a viewer requests the root URL for your distribution, e.g. index.html
-    AllowedPattern: "(?!/)[a-zA-Z0-9_.*$&~-]*"
+    AllowedPattern: "(?!/)[a-zA-Z0-9_.*$&/~-]*"
     Default: "index.html"
     ConstraintDescription: must be a valid object name.
+  MinimumProtocolVersion:
+    Type: String
+    Description: The minimum version of the SSL protocol that you want CloudFront to use for HTTPS connections
+    AllowedValues:
+      - TLSv1
+      - TLSv1_2016
+      - TLSv1.1_2016
+      - TLSv1.2_2018
+    Default: TLSv1.2_2018
+    ConstraintDescription: must be a valid protocol version.
   Project:
     Type: String
     Description: The project tag value, e.g. www
@@ -63,13 +73,13 @@ Resources:
       Tags:
         -
           Key: environment
-          Value: !Ref "Environment"
+          Value: !Ref Environment
         -
           Key: project
-          Value: !Ref "Project"
+          Value: !Ref Project
         -
           Key: version
-          Value: !Ref "Version"
+          Value: !Ref Version
     DeletionPolicy: Delete
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -77,7 +87,7 @@ Resources:
       - CloudFrontOriginAccessIdentity
       - S3Bucket
     Properties:
-      Bucket: !Ref "S3Bucket"
+      Bucket: !Ref S3Bucket
       PolicyDocument:
         Statement:
           -
@@ -103,16 +113,16 @@ Resources:
         Enabled: true
         HttpVersion: http2
         IPV6Enabled: false
-        PriceClass: !Ref "PriceClass"
+        PriceClass: !Ref PriceClass
         ViewerCertificate:
           AcmCertificateArn: !Ref AcmCertificateArn
-          MinimumProtocolVersion: TLSv1.2_2018
+          MinimumProtocolVersion: !Ref MinimumProtocolVersion
           SslSupportMethod: sni-only
         Origins:
           -
             Id: !Sub "${Subdomain}.${Domain}"
             DomainName: !GetAtt S3Bucket.DomainName
-            OriginPath: !Ref "OriginPath"
+            OriginPath: !Ref OriginPath
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
         DefaultCacheBehavior:
@@ -127,13 +137,13 @@ Resources:
       Tags:
         -
           Key: environment
-          Value: !Ref "Environment"
+          Value: !Ref Environment
         -
           Key: project
-          Value: !Ref "Project"
+          Value: !Ref Project
         -
           Key: version
-          Value: !Ref "Version"
+          Value: !Ref Version
   CloudFrontOriginAccessIdentity:
     Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
     Properties:
