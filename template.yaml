@@ -44,7 +44,7 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Join ["", [!Ref "Subdomain", ., !Ref "Domain"]]
+      BucketName: !Sub "${Subdomain}.${Domain}"
       Tags:
         -
           Key: environment
@@ -72,7 +72,7 @@ Resources:
               AWS:
                 - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
             Action: s3:GetObject
-            Resource: !Join ["", [!GetAtt S3Bucket.Arn, "/*"]]
+            Resource: !Sub "${S3Bucket.Arn}/*"
   # CloudFront
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
@@ -83,7 +83,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-          - !Join ["", [!Ref "Subdomain", ., !Ref "Domain"]]
+          - !Sub "${Subdomain}.${Domain}"
         DefaultRootObject: index.html
         Enabled: true
         HttpVersion: http2
@@ -95,13 +95,13 @@ Resources:
           SslSupportMethod: sni-only
         Origins:
           -
-            Id: !Join ["", ["S3-", !Ref "Subdomain", ., !Ref "Domain"]]
+            Id: !Sub "${Subdomain}.${Domain}"
             DomainName: !GetAtt S3Bucket.DomainName
             OriginPath: !Ref "OriginPath"
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
         DefaultCacheBehavior:
-          TargetOriginId: !Join ["", ["S3-", !Ref "Subdomain", ., !Ref "Domain"]]
+          TargetOriginId: !Sub "${Subdomain}.${Domain}"
           Compress: true
           MinTTL: 0
           MaxTTL: 31536000
@@ -123,15 +123,15 @@ Resources:
     Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: !Join ["", ["CloudFront serving S3 ", !Ref "Subdomain", ., !Ref "Domain"]] # Name (required)
+        Comment: !Sub "CloudFront serving S3 ${Subdomain}.${Domain}" # Name (required)
   # Route 53
   Route53RecordSet:
     Type: AWS::Route53::RecordSet
     DependsOn:
       - CloudFrontDistribution
     Properties:
-      HostedZoneName: !Join ["", [!Ref "Domain", .]]
-      Name: !Join ["", [!Ref "Subdomain", ., !Ref "Domain", .]]
+      HostedZoneName: !Sub "${Domain}."
+      Name: !Sub "${Subdomain}.${Domain}"
       Type: A
       AliasTarget:
         HostedZoneId: Z2FDTNDATAQYW2 # AWS constant
@@ -139,5 +139,5 @@ Resources:
 
 Outputs:
   url:
-    Value: !Join ["", ["https://", !Ref "Subdomain", ., !Ref "Domain"]]
+    Value: !Sub "https://${Subdomain}.${Domain}"
     Description: The website url
