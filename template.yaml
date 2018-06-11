@@ -32,6 +32,12 @@ Parameters:
       - PriceClass_All
     Default: PriceClass_All
     ConstraintDescription: must be a valid price class.
+  DefaultRootObject:
+    Type: String
+    Description: The object that you want CloudFront to request from S3 when a viewer requests the root URL for your distribution, e.g. index.html
+    AllowedPattern: "(?!/)[a-zA-Z0-9_.*$&~-]*"
+    Default: "index.html"
+    ConstraintDescription: must be a valid object name.
   Project:
     Type: String
     Description: The project tag value, e.g. www
@@ -93,7 +99,7 @@ Resources:
       DistributionConfig:
         Aliases:
           - !Sub "${Subdomain}.${Domain}"
-        DefaultRootObject: index.html
+        DefaultRootObject: !Ref DefaultRootObject
         Enabled: true
         HttpVersion: http2
         IPV6Enabled: false
