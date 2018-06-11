@@ -48,6 +48,14 @@ Parameters:
       - TLSv1.2_2018
     Default: TLSv1.2_2018
     ConstraintDescription: must be a valid protocol version.
+  SslSupportMethod:
+    Type: String
+    Description: The method by which CloudFront serves HHTPS requests
+    AllowedValues:
+      - sni-only
+      - vip
+    Default: sni-only
+    ConstraintDescription: must be a valid ssl support method.
   Project:
     Type: String
     Description: The project tag value, e.g. www
@@ -117,7 +125,7 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !Ref AcmCertificateArn
           MinimumProtocolVersion: !Ref MinimumProtocolVersion
-          SslSupportMethod: sni-only
+          SslSupportMethod: !Ref SslSupportMethod
         Origins:
           -
             Id: !Sub "${Subdomain}.${Domain}"
