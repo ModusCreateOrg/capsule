@@ -93,6 +93,236 @@ Parameters:
     MinValue: 0
     Default: 31536000
     ConstraintDescription: must be a valid number.
+  400ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 400 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 400
+    ConstraintDescription: must be a valid HTTP status code.
+  400ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 400 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  403ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 403 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 403
+    ConstraintDescription: must be a valid HTTP status code.
+  403ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 403 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  404ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 404 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 200
+    ConstraintDescription: must be a valid HTTP status code.
+  404ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 404 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: "/index.html"
+    ConstraintDescription: must be a valid path.
+  405ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 405 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 405
+    ConstraintDescription: must be a valid HTTP status code.
+  405ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 405 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  414ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 414 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 414
+    ConstraintDescription: must be a valid HTTP status code.
+  414ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 414 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  500ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 500 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 500
+    ConstraintDescription: must be a valid HTTP status code.
+  500ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 500 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  501ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 501 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 501
+    ConstraintDescription: must be a valid HTTP status code.
+  501ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 501 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  502ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 502 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 502
+    ConstraintDescription: must be a valid HTTP status code.
+  502ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 502 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  503ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 503 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 503
+    ConstraintDescription: must be a valid HTTP status code.
+  503ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 503 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
+  504ResponseCode:
+    Type: Number
+    Description: The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 504 errors
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    Default: 504
+    ConstraintDescription: must be a valid HTTP status code.
+  504ResponsePagePath:
+    Type: String
+    Description: The path to the custom error page that CloudFront returns to a viewer for HTTP 504 errors
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+    ConstraintDescription: must be a valid path.
   Project:
     Type: String
     Description: The project tag value, e.g. www
@@ -108,6 +338,18 @@ Parameters:
     Description: The version tag value, e.g. 1.0.0
     AllowedPattern: "(?!aws:)[\\w .=:/@+-]{1,255}"
     ConstraintDescription: must be a valid tag value.
+
+Conditions:
+  NotHandling400: !Equals [ !Ref 400ResponsePagePath, "" ]
+  NotHandling403: !Equals [ !Ref 403ResponsePagePath, "" ]
+  NotHandling404: !Equals [ !Ref 404ResponsePagePath, "" ]
+  NotHandling405: !Equals [ !Ref 405ResponsePagePath, "" ]
+  NotHandling414: !Equals [ !Ref 414ResponsePagePath, "" ]
+  NotHandling500: !Equals [ !Ref 500ResponsePagePath, "" ]
+  NotHandling501: !Equals [ !Ref 501ResponsePagePath, "" ]
+  NotHandling502: !Equals [ !Ref 502ResponsePagePath, "" ]
+  NotHandling503: !Equals [ !Ref 503ResponsePagePath, "" ]
+  NotHandling504: !Equals [ !Ref 504ResponsePagePath, "" ]
 
 Resources:
   # S3
@@ -154,6 +396,77 @@ Resources:
       DistributionConfig:
         Aliases:
           - !Sub "${Subdomain}.${Domain}"
+        CustomErrorResponses:
+          - Fn::If:
+            - NotHandling400
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 400
+              ResponseCode: !Ref 400ResponseCode
+              ResponsePagePath: !Ref 400ResponsePagePath
+          - Fn::If:
+            - NotHandling403
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 403
+              ResponseCode: !Ref 403ResponseCode
+              ResponsePagePath: !Ref 403ResponsePagePath
+          - Fn::If:
+            - NotHandling404
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 404
+              ResponseCode: !Ref 404ResponseCode
+              ResponsePagePath: !Ref 404ResponsePagePath
+          - Fn::If:
+            - NotHandling405
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 405
+              ResponseCode: !Ref 405ResponseCode
+              ResponsePagePath: !Ref 405ResponsePagePath
+          - Fn::If:
+            - NotHandling414
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 414
+              ResponseCode: !Ref 414ResponseCode
+              ResponsePagePath: !Ref 414ResponsePagePath
+          - Fn::If:
+            - NotHandling500
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 500
+              ResponseCode: !Ref 500ResponseCode
+              ResponsePagePath: !Ref 500ResponsePagePath
+          - Fn::If:
+            - NotHandling501
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 501
+              ResponseCode: !Ref 501ResponseCode
+              ResponsePagePath: !Ref 501ResponsePagePath
+          - Fn::If:
+            - NotHandling502
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 502
+              ResponseCode: !Ref 502ResponseCode
+              ResponsePagePath: !Ref 502ResponsePagePath
+          - Fn::If:
+            - NotHandling503
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 503
+              ResponseCode: !Ref 503ResponseCode
+              ResponsePagePath: !Ref 503ResponsePagePath
+          - Fn::If:
+            - NotHandling504
+            - !Ref AWS::NoValue
+            -
+              ErrorCode: 504
+              ResponseCode: !Ref 504ResponseCode
+              ResponsePagePath: !Ref 504ResponsePagePath
         DefaultRootObject: !Ref DefaultRootObject
         Enabled: true
         HttpVersion: !Ref HttpVersion
@@ -210,4 +523,4 @@ Resources:
 Outputs:
   url:
     Value: !Sub "https://${Subdomain}.${Domain}"
-    Description: The website url
+    Description: The website URL
