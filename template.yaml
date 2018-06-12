@@ -25,7 +25,7 @@ Parameters:
     Default: ""
   PriceClass:
     Type: String
-    Description: "The CloudFront price class"
+    Description: "The CloudFront price class: PriceClass_100 (US/EU/CA), PriceClass_100 (US/EU/CA/Asia), PriceClass_All (US/EU/CA/Asia/LatinAmerica)"
     AllowedValues:
       - "PriceClass_100"
       - "PriceClass_200"
@@ -597,7 +597,7 @@ Resources:
       Name: !Sub "${Subdomain}.${Domain}"
       Type: "A"
       AliasTarget:
-        HostedZoneId: "Z2FDTNDATAQYW2" # AWS constant
+        HostedZoneId: "Z2FDTNDATAQYW2" # AWS constant: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html
         DNSName: !GetAtt ["CloudFrontDistribution", "DomainName"]
 
 Outputs:
