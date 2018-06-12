@@ -73,6 +73,14 @@ Resources:
                 - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
             Action: s3:GetObject
             Resource: !Join ["", [!GetAtt S3Bucket.Arn, "/*"]]
+  # Certificate Manager
+  CertManager:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref "Domain"
+      DomainValidationOptions:
+      - DomainName: !Ref "Domain"
+        ValidationDomain: !Ref "Domain"
   # CloudFront
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
