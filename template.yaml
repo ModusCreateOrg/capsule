@@ -12,6 +12,12 @@ Parameters:
     Description: "The DNS subdomain name, e.g. www"
     AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
     ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+  useWildcardCertificate:
+    Type: Boolean
+    Description: "Flag to denote whether to use the wild card(*) or not as the subdomain for certificates"
+  SANS:
+    Type: CommaDelimitedList
+    Description: "A list of Subject Alternative Names"  
   AcmCertificateArn:
     Type: String
     Description: "The Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate, e.g. arn:aws:acm:<region>:<account>:certificate/<id>"
@@ -459,10 +465,11 @@ Resources:
   CertManager:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Ref "Domain"
+      DomainName: !If [useWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
       DomainValidationOptions:
-      - DomainName: !Ref "Domain"
-        ValidationDomain: !Ref "Domain"
+      - DomainName: !If [useWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+        ValidationDomain: !If [useWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+      SubjectAlternativeNames: !Ref "SANS"
   # CloudFront
   CloudFrontDistribution:
     Type: "AWS::CloudFront::Distribution"
