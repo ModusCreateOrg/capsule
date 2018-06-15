@@ -465,10 +465,10 @@ Resources:
   CertManager:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Ref "Domain"
+      DomainName: !If [useWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
       DomainValidationOptions:
-      - DomainName: !Ref "Domain"
-        ValidationDomain: !Ref "Domain"
+      - DomainName: !If [useWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+        ValidationDomain: !If [useWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
       SubjectAlternativeNames: !Ref "SANS"
   # CloudFront
   CloudFrontDistribution:
