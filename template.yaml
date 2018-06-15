@@ -7,16 +7,14 @@ Parameters:
     Description: "The DNS name of an existing Amazon Route53 hosted zone, e.g. moduscreate.com"
     AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
     ConstraintDescription: "Domain must be a valid DNS zone name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
-  WildCardSubdomain:
-    Type: String
-    Description: "The wildcard DNS subdomain name of an existing Amazon Route53 hosted zone, e.g. *.moduscreate.com"
-    AllowedPattern: "(?!-)\\*(?<!-)"
-    ConstraintDescription: "Domain must be a valid DNS zone name. Allowed pattern: (?!-)\\*(?<!-)"
   Subdomain:
     Type: String
     Description: "The DNS subdomain name, e.g. www"
     AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
     ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+  useWildcardCertificate:
+    Type: Boolean
+    Description: "Flag to denote whether to use the wild card(*) or not as the subdomain"
   SANS:
     Type: CommaDelimitedList
     Description: "A list of Subject Alternative Names"  
