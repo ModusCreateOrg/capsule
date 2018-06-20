@@ -16,21 +16,24 @@ Parameters:
     Type: String
     Description: "Flag to denote whether to use the wild card(*) or not as the subdomain for certificates"
     AllowedValues: [true, false]
-    Default: false
+    Default: true
   SubjectAlternativeNames:
     Type: CommaDelimitedList
     Description: "A list of Subject Alternative Names"
     Default: ""
 
+Conditions:
+  UsingWildcardCertificate: !Equals [ !Ref "UseWildcardCertificate", true ]
+
 Resources:
   CertificateManagerCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !If [UseWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+      DomainName: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
       DomainValidationOptions:
         - 
-          DomainName: !If [UseWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
-          ValidationDomain: !If [UseWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+          DomainName: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+          ValidationDomain: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
       SubjectAlternativeNames: !Ref "SubjectAlternativeNames"
 
 Outputs:

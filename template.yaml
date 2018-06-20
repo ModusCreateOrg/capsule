@@ -44,7 +44,7 @@ Resources:
       Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
-        CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "CloudFrontOriginAccessIdentityId"]
+        CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.s3.yaml"
       
   # CloudFront
@@ -57,8 +57,8 @@ Resources:
       Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
-        AcmCertificateArn: !GetAtt ["CmcCloudFormationStack", "CertificateArn"]
-        CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "CloudFrontOriginAccessIdentityId"]
+        AcmCertificateArn: !GetAtt ["CmcCloudFormationStack", "Outputs.CertificateArn"]
+        CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.cloudfront.yaml"
 
   # Route 53
@@ -70,7 +70,7 @@ Resources:
       Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
-        CloudFrontDistributionDomainName: !GetAtt ["CfCloudFormationStack", "CloudFrontDistributionDomainName"]
+        CloudFrontDistributionDomainName: !GetAtt ["CfCloudFormationStack", "Outputs.CloudFrontDistributionDomainName"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.route53.yaml"
 
 Outputs:

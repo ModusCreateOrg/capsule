@@ -418,7 +418,7 @@ Resources:
         Aliases:
           - !Sub "${Subdomain}.${Domain}"
         CustomErrorResponses:
-          - Fn::If:
+          - !If
             - "NotHandling400"
             - !Ref "AWS::NoValue"
             -
@@ -426,7 +426,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "400ErrorCachingMinTTL"
               ResponseCode: !Ref "400ResponseCode"
               ResponsePagePath: !Ref "400ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling403"
             - !Ref "AWS::NoValue"
             -
@@ -434,7 +434,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "403ErrorCachingMinTTL"
               ResponseCode: !Ref "403ResponseCode"
               ResponsePagePath: !Ref "403ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling404"
             - !Ref "AWS::NoValue"
             -
@@ -442,7 +442,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "404ErrorCachingMinTTL"
               ResponseCode: !Ref "404ResponseCode"
               ResponsePagePath: !Ref "404ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling405"
             - !Ref "AWS::NoValue"
             -
@@ -450,7 +450,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "405ErrorCachingMinTTL"
               ResponseCode: !Ref "405ResponseCode"
               ResponsePagePath: !Ref "405ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling414"
             - !Ref "AWS::NoValue"
             -
@@ -458,7 +458,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "414ErrorCachingMinTTL"
               ResponseCode: !Ref "414ResponseCode"
               ResponsePagePath: !Ref "414ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling500"
             - !Ref "AWS::NoValue"
             -
@@ -466,7 +466,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "500ErrorCachingMinTTL"
               ResponseCode: !Ref "500ResponseCode"
               ResponsePagePath: !Ref "500ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling501"
             - !Ref "AWS::NoValue"
             -
@@ -474,7 +474,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "501ErrorCachingMinTTL"
               ResponseCode: !Ref "501ResponseCode"
               ResponsePagePath: !Ref "501ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling502"
             - !Ref "AWS::NoValue"
             -
@@ -482,7 +482,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "502ErrorCachingMinTTL"
               ResponseCode: !Ref "502ResponseCode"
               ResponsePagePath: !Ref "502ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling503"
             - !Ref "AWS::NoValue"
             -
@@ -490,7 +490,7 @@ Resources:
               ErrorCachingMinTTL: !Ref "503ErrorCachingMinTTL"
               ResponseCode: !Ref "503ResponseCode"
               ResponsePagePath: !Ref "503ResponsePagePath"
-          - Fn::If:
+          - !If
             - "NotHandling504"
             - !Ref "AWS::NoValue"
             -
