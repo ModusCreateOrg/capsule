@@ -20,7 +20,7 @@ Resources:
   S3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Ref "BucketName"
+      BucketName: !Sub "${Subdomain}.${Domain}"
     DeletionPolicy: "Delete"
   S3BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
@@ -38,8 +38,3 @@ Resources:
                 - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentityId}"
             Action: "s3:GetObject"
             Resource: !Sub "${S3Bucket.Arn}/*"
-
-Outputs:
-  S3BucketId:
-    Value: !Ref "S3BucketId"
-    Description: "S3Bucket Id"

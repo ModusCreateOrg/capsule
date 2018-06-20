@@ -25,4 +25,4 @@ Resources:
       Type: "A"
       AliasTarget:
         HostedZoneId: "Z2FDTNDATAQYW2" # AWS constant: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html
-        DNSName: !GetAtt ["CloudFrontDistribution", "DomainName"]
+        DNSName: !Ref "CloudFrontDistributionDomainName"

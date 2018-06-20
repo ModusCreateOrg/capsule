@@ -93,6 +93,9 @@ Parameters:
     Description: "The Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate, e.g. arn:aws:acm:<region>:<account>:certificate/<id>"
     AllowedPattern: "arn:aws:acm:[a-z0-9-]+:[\\d]+:certificate/[a-z0-9]{8}-(?:[a-z0-9]{4}-){3}[a-z0-9]{12}"
     ConstraintDescription: "AcmCertificateArn must be a valid ARN. Allowed pattern: arn:aws:acm:[a-z0-9-]+:[\\d]+:certificate/[a-z0-9]{8}-(?:[a-z0-9]{4}-){3}[a-z0-9]{12}"
+  CloudFrontOriginAccessIdentityId:
+    Type: String
+    Description: "CloudFront origin access identity id"
   400ResponseCode:
     Type: Number
     Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 400 errors"
@@ -510,7 +513,7 @@ Resources:
             DomainName: !Sub "${Subdomain}.${Domain}.s3.amazonaws.com"
             OriginPath: !Ref "OriginPath"
             S3OriginConfig:
-              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentityId}"
         DefaultCacheBehavior:
           TargetOriginId: !Sub "${Subdomain}.${Domain}"
           Compress: true
