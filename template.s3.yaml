@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Website CloudFormation stack - S3 bucket"
+
+Parameters:
+  Domain:
+    Type: String
+    Description: "The DNS name of an existing Amazon Route53 hosted zone, e.g. moduscreate.com"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Domain must be a valid DNS zone name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+  Subdomain:
+    Type: String
+    Description: "The DNS subdomain name, e.g. www"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+  CloudFrontOriginAccessIdentityId:
+    Type: String
+    Description: "CloudFront origin access identity id"
+
+Resources:
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref "BucketName"
+    DeletionPolicy: "Delete"
+  S3BucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    DependsOn:
+      - "S3Bucket"
+    Properties:
+      Bucket: !Ref "S3Bucket"
+      PolicyDocument:
+        Statement:
+          -
+            Sid: "PublicReadForGetBucketObjects"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentityId}"
+            Action: "s3:GetObject"
+            Resource: !Sub "${S3Bucket.Arn}/*"
+
+Outputs:
+  S3BucketId:
+    Value: !Ref "S3BucketId"
+    Description: "S3Bucket Id"

@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Website CloudFormation stack - Certificate Manager Certificate"
+
+Parameters:
+  Domain:
+    Type: String
+    Description: "The DNS name of an existing Amazon Route53 hosted zone, e.g. moduscreate.com"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Domain must be a valid DNS zone name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+  Subdomain:
+    Type: String
+    Description: "The DNS subdomain name, e.g. www"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+  UseWildcardCertificate:
+    Type: String
+    Description: "Flag to denote whether to use the wild card(*) or not as the subdomain for certificates"
+    AllowedValues: [true, false]
+    Default: false
+  SubjectAlternativeNames:
+    Type: CommaDelimitedList
+    Description: "A list of Subject Alternative Names"
+    Default: ""
+
+Resources:
+  CertificateManagerCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If [UseWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+      DomainValidationOptions:
+        - 
+          DomainName: !If [UseWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+          ValidationDomain: !If [UseWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+      SubjectAlternativeNames: !Ref "SubjectAlternativeNames"
+
+Outputs:
+  CertificateArn:
+    Value: !Ref "CertificateManagerCertificate"
+    Description: "Certificate ARN"

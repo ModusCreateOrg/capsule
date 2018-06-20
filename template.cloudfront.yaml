@@ -1,0 +1,527 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Website CloudFormation stack - CloudFront"
+
+Parameters:
+  Domain:
+    Type: String
+    Description: "The DNS name of an existing Amazon Route53 hosted zone, e.g. moduscreate.com"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Domain must be a valid DNS zone name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+  Subdomain:
+    Type: String
+    Description: "The DNS subdomain name, e.g. www"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+  OriginPath:
+    Type: String
+    Description: "The S3 bucket origin path, e.g. /1.0.0"
+    AllowedPattern: "(?:^(?:/[a-zA-Z0-9_.*!()-]+)+$|^$)"
+    ConstraintDescription: "OriginPath must be a valid path. Allowed pattern: (?:^(?:/[a-zA-Z0-9_.*!()-]+)+$|^$)"
+    Default: ""
+  PriceClass:
+    Type: String
+    Description: "The CloudFront price class: PriceClass_100 (US/EU/CA), PriceClass_100 (US/EU/CA/Asia), PriceClass_All (US/EU/CA/Asia/LatinAmerica)"
+    AllowedValues:
+      - "PriceClass_100"
+      - "PriceClass_200"
+      - "PriceClass_All"
+    ConstraintDescription: "PriceClass must be a valid price class. Allowed values: [PriceClass_100, PriceClass_200, PriceClass_All]"
+    Default: "PriceClass_All"
+  DefaultRootObject:
+    Type: String
+    Description: "The object that you want CloudFront to request from S3 when a viewer requests the root URL for your distribution, e.g. index.html"
+    AllowedPattern: "(?!/)[a-zA-Z0-9_.*$&/~-]*"
+    ConstraintDescription: "DefaultRootObject must be a valid object name. Allowed pattern: (?!/)[a-zA-Z0-9_.*$&/~-]*"
+    Default: "index.html"
+  MinimumProtocolVersion:
+    Type: String
+    Description: "The minimum version of the SSL protocol that you want CloudFront to use for HTTPS connections"
+    AllowedValues:
+      - "TLSv1"
+      - "TLSv1_2016"
+      - "TLSv1.1_2016"
+      - "TLSv1.2_2018"
+    ConstraintDescription: "MinimumProtocolVersion must be a valid protocol version. Allowed values: [TLSv1, TLSv1_2016, TLSv1.1_2016, TLSv1.2_2018]"
+    Default: "TLSv1.2_2018"
+  SslSupportMethod:
+    Type: String
+    Description: "The method by which CloudFront serves HHTPS requests"
+    AllowedValues:
+      - "sni-only"
+      - "vip"
+    ConstraintDescription: "SslSupportMethod must be a valid ssl support method. Allowed values: [sni-only, vip]"
+    Default: "sni-only"
+  HttpVersion:
+    Type: String
+    Description: "The maximum HTTP version that you want viewers to use to communicate with CloudFront"
+    AllowedValues:
+      - "http1.1"
+      - "http2"
+    ConstraintDescription: "HttpVersion must be a valid http version. Allowed values: [http1.1, http2]"
+    Default: "http2"
+  IPV6Enabled:
+    Type: String
+    Description: "If you want CloudFront to respond to IPv6 DNS requests with an IPv6 address for your distribution"
+    AllowedValues:
+      - "true"
+      - "false"
+    ConstraintDescription: "IPV6Enabled must be true or false. Allowed values: [true, false]"
+    Default: "false"
+  MinTTL:
+    Type: Number
+    Description: "The minimum amount of time that you want objects to stay in the cache before CloudFront queries your origin to see whether the object has been updated"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "MinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 0
+  MaxTTL:
+    Type: Number
+    Description: "The maximum time in seconds that objects stay in CloudFront caches before CloudFront forwards another request to your custom origin to determine whether the object has been updated"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "MaxTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 31536000
+  DefaultTTL:
+    Type: Number
+    Description: "The default time in seconds that objects stay in CloudFront caches before CloudFront forwards another request to your custom origin to determine whether the object has been updated"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "DefaultTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 31536000
+  AcmCertificateArn:
+    Type: String
+    Description: "The Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate, e.g. arn:aws:acm:<region>:<account>:certificate/<id>"
+    AllowedPattern: "arn:aws:acm:[a-z0-9-]+:[\\d]+:certificate/[a-z0-9]{8}-(?:[a-z0-9]{4}-){3}[a-z0-9]{12}"
+    ConstraintDescription: "AcmCertificateArn must be a valid ARN. Allowed pattern: arn:aws:acm:[a-z0-9-]+:[\\d]+:certificate/[a-z0-9]{8}-(?:[a-z0-9]{4}-){3}[a-z0-9]{12}"
+  400ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 400 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "400ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 400
+  400ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 400 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "400ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  400ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 400 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "400ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  403ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 403 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "403ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 403
+  403ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 403 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "403ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  403ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 403 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "403ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  404ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 404 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "404ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 200
+  404ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 404 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "404ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: "/index.html"
+  404ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 404 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "404ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  405ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 405 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "405ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 405
+  405ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 405 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "405ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  405ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 405 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "405ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  414ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 414 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "414ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 414
+  414ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 414 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "414ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  414ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 414 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "414ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  500ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 500 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "500ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 500
+  500ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 500 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "500ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  500ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 500 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "500ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  501ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 501 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "501ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 501
+  501ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 501 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "501ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  501ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 501 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "501ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  502ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 502 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "502ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 502
+  502ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 502 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "502ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  502ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 502 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "502ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  503ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 503 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "503ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 503
+  503ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 503 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "503ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  503ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 503 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "503ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+  504ResponseCode:
+    Type: Number
+    Description: "The HTTP status code that CloudFront returns to a viewer along with the custom error page for HTTP 504 errors"
+    AllowedValues:
+      - 200
+      - 400
+      - 403
+      - 404
+      - 405
+      - 414
+      - 500
+      - 501
+      - 502
+      - 503
+      - 504
+    ConstraintDescription: "504ResponseCode must be a valid HTTP status code. Allowed values: [200, 400, 403, 404, 405, 414, 500, 501, 502, 503, 504]"
+    Default: 504
+  504ResponsePagePath:
+    Type: String
+    Description: "The path to the custom error page that CloudFront returns to a viewer for HTTP 504 errors"
+    AllowedPattern: "(?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    ConstraintDescription: "504ResponsePagePath must be a valid path. Allowed pattern: (?:^/[a-zA-Z0-9_.*$&/~-]*$|^$)"
+    Default: ""
+  504ErrorCachingMinTTL:
+    Type: Number
+    Description: "The minimum amount of time, in seconds, that Amazon CloudFront caches the HTTP status code HTTP 504 errors"
+    MaxValue: 31536000
+    MinValue: 0
+    ConstraintDescription: "504ErrorCachingMinTTL must be a valid number. Allowed range: 0 - 31536000"
+    Default: 300
+
+
+Conditions:
+  NotHandling400: !Equals [ !Ref "400ResponsePagePath", "" ]
+  NotHandling403: !Equals [ !Ref "403ResponsePagePath", "" ]
+  NotHandling404: !Equals [ !Ref "404ResponsePagePath", "" ]
+  NotHandling405: !Equals [ !Ref "405ResponsePagePath", "" ]
+  NotHandling414: !Equals [ !Ref "414ResponsePagePath", "" ]
+  NotHandling500: !Equals [ !Ref "500ResponsePagePath", "" ]
+  NotHandling501: !Equals [ !Ref "501ResponsePagePath", "" ]
+  NotHandling502: !Equals [ !Ref "502ResponsePagePath", "" ]
+  NotHandling503: !Equals [ !Ref "503ResponsePagePath", "" ]
+  NotHandling504: !Equals [ !Ref "504ResponsePagePath", "" ]
+
+Resources:
+  CloudFrontDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Sub "${Subdomain}.${Domain}"
+        CustomErrorResponses:
+          - Fn::If:
+            - "NotHandling400"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 400
+              ErrorCachingMinTTL: !Ref "400ErrorCachingMinTTL"
+              ResponseCode: !Ref "400ResponseCode"
+              ResponsePagePath: !Ref "400ResponsePagePath"
+          - Fn::If:
+            - "NotHandling403"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 403
+              ErrorCachingMinTTL: !Ref "403ErrorCachingMinTTL"
+              ResponseCode: !Ref "403ResponseCode"
+              ResponsePagePath: !Ref "403ResponsePagePath"
+          - Fn::If:
+            - "NotHandling404"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 404
+              ErrorCachingMinTTL: !Ref "404ErrorCachingMinTTL"
+              ResponseCode: !Ref "404ResponseCode"
+              ResponsePagePath: !Ref "404ResponsePagePath"
+          - Fn::If:
+            - "NotHandling405"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 405
+              ErrorCachingMinTTL: !Ref "405ErrorCachingMinTTL"
+              ResponseCode: !Ref "405ResponseCode"
+              ResponsePagePath: !Ref "405ResponsePagePath"
+          - Fn::If:
+            - "NotHandling414"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 414
+              ErrorCachingMinTTL: !Ref "414ErrorCachingMinTTL"
+              ResponseCode: !Ref "414ResponseCode"
+              ResponsePagePath: !Ref "414ResponsePagePath"
+          - Fn::If:
+            - "NotHandling500"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 500
+              ErrorCachingMinTTL: !Ref "500ErrorCachingMinTTL"
+              ResponseCode: !Ref "500ResponseCode"
+              ResponsePagePath: !Ref "500ResponsePagePath"
+          - Fn::If:
+            - "NotHandling501"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 501
+              ErrorCachingMinTTL: !Ref "501ErrorCachingMinTTL"
+              ResponseCode: !Ref "501ResponseCode"
+              ResponsePagePath: !Ref "501ResponsePagePath"
+          - Fn::If:
+            - "NotHandling502"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 502
+              ErrorCachingMinTTL: !Ref "502ErrorCachingMinTTL"
+              ResponseCode: !Ref "502ResponseCode"
+              ResponsePagePath: !Ref "502ResponsePagePath"
+          - Fn::If:
+            - "NotHandling503"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 503
+              ErrorCachingMinTTL: !Ref "503ErrorCachingMinTTL"
+              ResponseCode: !Ref "503ResponseCode"
+              ResponsePagePath: !Ref "503ResponsePagePath"
+          - Fn::If:
+            - "NotHandling504"
+            - !Ref "AWS::NoValue"
+            -
+              ErrorCode: 504
+              ErrorCachingMinTTL: !Ref "504ErrorCachingMinTTL"
+              ResponseCode: !Ref "504ResponseCode"
+              ResponsePagePath: !Ref "504ResponsePagePath"
+        DefaultRootObject: !Ref "DefaultRootObject"
+        Enabled: true
+        HttpVersion: !Ref "HttpVersion"
+        IPV6Enabled: !Ref "IPV6Enabled"
+        PriceClass: !Ref "PriceClass"
+        ViewerCertificate:
+          AcmCertificateArn: !Ref "AcmCertificateArn"
+          MinimumProtocolVersion: !Ref "MinimumProtocolVersion"
+          SslSupportMethod: !Ref "SslSupportMethod"
+        Origins:
+          -
+            Id: !Sub "${Subdomain}.${Domain}"
+            DomainName: !Sub "${Subdomain}.${Domain}.s3.amazonaws.com"
+            OriginPath: !Ref "OriginPath"
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub "${Subdomain}.${Domain}"
+          Compress: true
+          MinTTL: !Ref "MinTTL"
+          MaxTTL: !Ref "MaxTTL"
+          DefaultTTL: !Ref "DefaultTTL"
+          ForwardedValues:
+            QueryString: false
+          ViewerProtocolPolicy: "redirect-to-https"
+
+Outputs:
+  CloudFrontDistributionDomainName:
+    Value: !GetAtt ["CloudFrontDistribution", "DomainName"]
+    Description: "CloudFront distribution domain name"
