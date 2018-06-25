@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Website CloudFormation stack - CloudFront origin access identity"
+
+Parameters:
+  Domain:
+    Type: String
+    Description: "The DNS name of an existing Amazon Route53 hosted zone, e.g. moduscreate.com"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Domain must be a valid DNS zone name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)\\.(?!-)[a-z0-9-]{1,63}(?<!-)"
+  Subdomain:
+    Type: String
+    Description: "The DNS subdomain name, e.g. www"
+    AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
+    ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+
+Resources:
+  CloudFrontOriginAccessIdentity:
+    Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub "access-identity-${Subdomain}.${Domain}.s3.amazonaws.com" # Name (required)
+
+Outputs:
+  CloudFrontOriginAccessIdentityId:
+    Value: !Ref "CloudFrontOriginAccessIdentity"
+    Description: "CloudFront origin access identity id"
