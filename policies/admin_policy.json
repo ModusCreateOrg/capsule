@@ -105,7 +105,6 @@
         {
             "Sid": "OASAdminS3ReadBuckets",
             "Effect": "Allow",
-            "Effect": "Allow",
             "Action": [
                 "s3:ListBucketByTags",
                 "s3:ListBucketMultipartUploads",
