@@ -129,7 +129,7 @@
                 "s3:GetIpConfiguration"
             ],
             "Resource": [
-                "arn:aws:s3:::*"
+                "*"
             ]
         },
         {
@@ -238,7 +238,9 @@
                 "cloudfront:GetDistributionConfig",
                 "cloudfront:ListTagsForResource"
             ],
-            "Resource": "*"
+            "Resource": [
+                "*"
+            ]
         }
     ]
 }
