@@ -2,15 +2,15 @@
 Description: CodeBuild Resource
 
 Parameters:
-  projectCodeName:
+  ProjectCodeName:
     Type: String
     Description: Project codename
-  repositoryURL:
+  RepositoryURL:
     Type: String
     Description: HTTPS URL for the Git repository
     AllowedPattern: "^https:\\/\\/(.*)\\/(.*)\\/(.)*"
     ConstraintDescription: This should be a valid repository HTTPS URL
-  repositoryType:
+  RepositoryType:
     Type: String
     Description: CODECOMMIT|CODEPIPELINE|GITHUB|GITHUB_ENTERPRISE|BITBUCKET|S3
     AllowedValues:
@@ -23,7 +23,7 @@ Parameters:
   PersonalAccessToken:
     Type: String
     Description: GIT personal access token.
-  dockerImage:
+  DockerImage:
     Type: String
     Description: Docker image to use for building
     AllowedPattern: "^(.*)\\/(.*)\\/(.)*:(.)*"
@@ -34,20 +34,20 @@ Resources:
     Type: AWS::CodeBuild::Project
     DependsOn: CodeBuildRole
     Properties:
-      Name: !Sub ${AWS::StackName}-${projectCodeName}
+      Name: !Sub ${AWS::StackName}-${ProjectCodeName}
       Artifacts:
         Type: no_artifacts
       Environment:
-        Image: dockerImage
+        Image: !Ref DockerImage
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
       ServiceRole: !Ref CodeBuildRole
       Source:
-        Type: GITHUB_ENTERPRISE
-        Location: repositoryURL
+        Type: !Ref RepositoryType
+        Location: !Ref RepositoryURL
         Auth:
           Type: OAUTH
-          Resource: PersonalAccessToken
+          Resource: !Ref PersonalAccessToken
         BuildSpec: ci/validate_cf_spec.yml
   CodeBuildRole:
     Type: AWS::IAM::Role
