@@ -1,18 +1,19 @@
 ---
-Description: CodeBuild Resource
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Website CloudFormation stack - CodeBuild Project"
 
 Parameters:
   ProjectCodeName:
     Type: String
-    Description: Project codename
+    Description: "Project codename"
   RepositoryURL:
     Type: String
-    Description: HTTPS URL for the Git repository
+    Description: "HTTPS URL for the Git repository"
     AllowedPattern: "^https:\\/\\/(.*)\\/(.*)\\/(.)*"
-    ConstraintDescription: This should be a valid repository HTTPS URL
+    ConstraintDescription: "This should be a valid repository HTTPS URL"
   RepositoryType:
     Type: String
-    Description: CODECOMMIT|CODEPIPELINE|GITHUB|GITHUB_ENTERPRISE|BITBUCKET|S3
+    Description: "CODECOMMIT|CODEPIPELINE|GITHUB|GITHUB_ENTERPRISE|BITBUCKET|S3"
     AllowedValues:
       - CODECOMMIT
       - CODEPIPELINE
@@ -22,12 +23,12 @@ Parameters:
       - S3
   PersonalAccessToken:
     Type: String
-    Description: GIT personal access token.
+    Description: "GIT personal access token"
   EnvironmentImage:
     Type: String
-    Description: image to use for running a container where the build will execute
+    Description: "Image to use for running a container where the build will execute"
     AllowedPattern: "^(.*)\\/(.*)\\/(.)*:(.)*"
-    ConstraintDescription: Image reference (<repository>/<image>:<tag>)
+    ConstraintDescription: "Image reference (<repository>/<image>:<tag>)"
     Default: aws/codebuild/ubuntu-base:14.04
   ComputeType:
     Description: "Small (3 GB memory, 2 vCPU) | Medium (7 GB memory, 4 vCPU) | large (15 GB memory, 8 vCPU)"
@@ -37,7 +38,7 @@ Parameters:
       - BUILD_GENERAL1_LARGE
     Default: BUILD_GENERAL1_SMALL
   BuildSpecLocation:
-    Description: Location of the build spec to use (Defaults to the repository root)
+    Description: "Location of the build spec to use (Defaults to the repository root)"
 Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
