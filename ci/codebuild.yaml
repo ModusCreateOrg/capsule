@@ -69,7 +69,7 @@ Resources:
             Service: codebuild.amazonaws.com
           Action: sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess
+        - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
 
 Outputs:
   CodeBuildURL:
