@@ -31,6 +31,7 @@ Parameters:
     ConstraintDescription: "Image reference (<repository>/<image>:<tag>)"
     Default: aws/codebuild/ubuntu-base:14.04
   ComputeType:
+    Type: String
     Description: "Small (3 GB memory, 2 vCPU) | Medium (7 GB memory, 4 vCPU) | large (15 GB memory, 8 vCPU)"
     AllowedValues:
       - BUILD_GENERAL1_SMALL
@@ -38,6 +39,7 @@ Parameters:
       - BUILD_GENERAL1_LARGE
     Default: BUILD_GENERAL1_SMALL
   BuildSpecLocation:
+    Type: String
     Description: "Location of the build spec to use (Defaults to the repository root)"
 Resources:
   CodeBuildProject:
