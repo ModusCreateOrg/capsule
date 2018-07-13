@@ -8,7 +8,7 @@ Parameters:
   repositoryURL:
     Type: String
     Description: HTTPS URL for the Git repository
-    AllowedPattern: "^https:\/\/(.*)\/(.*)\/(.)*"
+    AllowedPattern: "^https:\\/\\/(.*)\\/(.*)\\/(.)*"
     ConstraintDescription: This should be a valid repository HTTPS URL
   repositoryType:
     Type: String
@@ -26,7 +26,7 @@ Parameters:
   dockerImage:
     Type: String
     Description: Docker image to use for building
-    AllowedPattern: "^(.*)\/(.*)\/(.)*:(.)*"
+    AllowedPattern: "^(.*)\\/(.*)\\/(.)*:(.)*"
     ConstraintDescription: Docker image reference (<repository>/<image>:<tag>)
     Default: aws/codebuild/ubuntu-base:14.04
 Resources:
