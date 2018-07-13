@@ -1,0 +1,68 @@
+---
+Description: CodeBuild Resource
+
+Parameters:
+  projectCodeName:
+    Type: String
+    Description: Project codename
+  repositoryURL:
+    Type: String
+    Description: HTTPS URL for the Git repository
+    AllowedPattern: "^https:\/\/(.*)\/(.*)\/(.)*"
+    ConstraintDescription: This should be a valid repository HTTPS URL
+  repositoryType:
+    Type: String
+    Description: CODECOMMIT|CODEPIPELINE|GITHUB|GITHUB_ENTERPRISE|BITBUCKET|S3
+    AllowedValues:
+      - CODECOMMIT
+      - CODEPIPELINE
+      - GITHUB
+      - GITHUB_ENTERPRISE
+      - BITBUCKET
+      - S3
+  PersonalAccessToken:
+    Type: String
+    Description: GIT personal access token.
+  dockerImage:
+    Type: String
+    Description: Docker image to use for building
+    AllowedPattern: "^(.*)\/(.*)\/(.)*:(.)*"
+    ConstraintDescription: Docker image reference (<repository>/<image>:<tag>)
+    Default: aws/codebuild/ubuntu-base:14.04
+Resources:
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    DependsOn: CodeBuildRole
+    Properties:
+      Name: !Sub ${AWS::StackName}-${projectCodeName}
+      Artifacts:
+        Type: no_artifacts
+      Environment:
+        Image: dockerImage
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+      ServiceRole: !Ref CodeBuildRole
+      Source:
+        Type: GITHUB_ENTERPRISE
+        Location: repositoryURL
+        Auth:
+          Type: OAUTH
+          Resource: PersonalAccessToken
+        BuildSpec: ci/validate_cf_spec.yml
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  CodeBuildURL:
+    Description: CodeBuild URL
+    Value: !Sub https://console.aws.amazon.com/codebuild/home?region=${AWS::Region}#/projects/${CodeBuildProject}/view
