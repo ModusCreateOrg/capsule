@@ -1,0 +1,5 @@
+# Ignore tmp files
+
+# VIM #
+*.swp
+*.swo

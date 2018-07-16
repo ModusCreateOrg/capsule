@@ -9,10 +9,10 @@ IFS=$'\n\t'
 # http://stackoverflow.com/a/246128/424301
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Search for all CF/YML/YAML/JSON files within the repo
-CF_TEMPLATES=$(find ${DIR}/* -type f \( -iname '*.cf' -o -iname '*.yml' -o -iname '*.yaml' -o -iname '*.json' \))
+# Search for all CF files within the repo
+CF_TEMPLATES=$(find ${DIR}/* -type f  -name '*.cf' )
 
 for i in $CF_TEMPLATES ; do
     echo "Testing: $i"; \
-    aws cloudformation validate-template --template-body file://$(realpath $i) > /dev/null ;
+        aws cloudformation validate-template --template-body "file://$i" > /dev/null ;
 done
