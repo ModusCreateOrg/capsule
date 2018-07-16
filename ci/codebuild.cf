@@ -78,10 +78,6 @@ Resources:
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
             Resource: "*"
-          - Effect: Allow
-            Action:
-              - "logs:CreateLogStream"
-            Resource: "arn:aws:logs:*:*:log-group:/aws/codebuild/*"
 
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
