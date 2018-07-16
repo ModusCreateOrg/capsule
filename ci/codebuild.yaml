@@ -77,7 +77,7 @@ Resources:
               - "logs:CreateLogGroup"
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
-            Resource: "arn:aws:logs:us-east-1:976851222302:log-group:/aws/codebuild/*"
+            Resource: "arn:aws:logs:*:*:log-group:/aws/codebuild/*"
 
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
