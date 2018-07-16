@@ -75,7 +75,7 @@ Resources:
           - Effect: Allow
             Action:
               - "logs:CreateLogGroup"
-              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
               - "logs:PutLogEvents"
             Resource: "*"
           - Effect: Allow
