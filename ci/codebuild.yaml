@@ -24,6 +24,7 @@ Parameters:
   PersonalAccessToken:
     Type: String
     Description: "GIT personal access token"
+    NoEcho: true
   EnvironmentImage:
     Type: String
     Description: "Image to use for running a container where the build will execute"
