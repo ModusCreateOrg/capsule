@@ -3,9 +3,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "Website CloudFormation stack - CodeBuild Project"
 
 Parameters:
-  ProjectCodeName:
+  CodeBuildProjectCodeName:
     Type: String
-    Description: "Project codename"
+    Description: "CodeBuild Project codename"
   RepositoryURL:
     Type: String
     Description: "HTTPS URL for the Git repository"
@@ -46,7 +46,7 @@ Resources:
     Type: AWS::CodeBuild::Project
     DependsOn: CodeBuildRole
     Properties:
-      Name: !Sub ${AWS::StackName}-${ProjectCodeName}
+      Name: !Sub ${AWS::StackName}-${CodeBuildProjectCodeName}
       Artifacts:
         Type: no_artifacts
       Environment:
