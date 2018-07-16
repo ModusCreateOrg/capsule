@@ -75,8 +75,12 @@ Resources:
           - Effect: Allow
             Action:
               - "logs:CreateLogGroup"
-              - "logs:CreateLogStream"
+              - "logs:CreateLogGroup"
               - "logs:PutLogEvents"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogStream"
             Resource: "arn:aws:logs:*:*:log-group:/aws/codebuild/*"
 
       ManagedPolicyArns:
