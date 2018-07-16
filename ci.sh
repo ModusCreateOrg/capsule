@@ -14,5 +14,5 @@ CF_TEMPLATES=$(find ${DIR}/* -type f  -name '*.cf' )
 
 for i in $CF_TEMPLATES ; do
     echo "Testing: $i"; \
-    aws cloudformation validate-template --template-body file://$(realpath $i) > /dev/null ;
+        aws cloudformation validate-template --template-body "file://$i" > /dev/null ;
 done
