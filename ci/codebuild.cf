@@ -55,6 +55,8 @@ Resources:
         Type: LINUX_CONTAINER
         ComputeType: !Ref ComputeType
       ServiceRole: !Ref CodeBuildRole
+      Triggers:
+        Webhook: yes
       Source:
         Type: !Ref RepositoryType
         Location: !Ref RepositoryURL
@@ -87,7 +89,6 @@ Resources:
             Resource: "*"
       Roles: 
           - Ref: "CodeBuildRole"
-
 
 Outputs:
   CodeBuildURL:
