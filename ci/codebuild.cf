@@ -21,10 +21,6 @@ Parameters:
       - GITHUB_ENTERPRISE
       - BITBUCKET
       - S3
-  PersonalAccessToken:
-    Type: String
-    Description: "GIT personal access token"
-    NoEcho: true
   EnvironmentImage:
     Type: String
     Description: "Image to use for running a container where the build will execute"
@@ -62,7 +58,6 @@ Resources:
         Location: !Ref RepositoryURL
         Auth:
           Type: OAUTH
-          Resource: !Ref PersonalAccessToken
         BuildSpec: !Ref BuildSpecLocation
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -86,6 +81,7 @@ Resources:
               - "logs:CreateLogGroup"
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
+              - "cloudformation:ValidateTemplate"
             Resource: "*"
       Roles: 
           - Ref: "CodeBuildRole"
