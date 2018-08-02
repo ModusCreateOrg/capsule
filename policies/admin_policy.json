@@ -2,21 +2,91 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "OASAdminPolicy1",
+            "Sid": "OASAdminRoute53ReadHealthCheck",
             "Effect": "Allow",
             "Action": [
-                "route53:GetHealthCheck",
-                "route53:GetTrafficPolicyInstance",
-                "route53:GetReusableDelegationSetLimit",
-                "route53:GetTrafficPolicy",
-                "route53:GetQueryLoggingConfig",
-                "route53:GetHostedZoneLimit",
-                "route53:ListTrafficPolicyInstancesByHostedZone",
-                "route53:ListVPCAssociationAuthorizations",
                 "route53:ListTagsForResources",
                 "route53:ListTagsForResource",
+                "route53:GetHealthCheck"
+            ],
+            "Resource": [
+                "arn:aws:route53:::healthcheck/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminRoute53ReadHostedZone",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetHostedZoneLimit",
+                "route53:ListTagsForResources",
+                "route53:ListTagsForResource",
+                "route53:ListVPCAssociationAuthorizations",
+                "route53:ListTrafficPolicyInstancesByHostedZone"
+            ],
+            "Resource": [
+                "arn:aws:route53:::hostedzone/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminRoute53ReadTrafficPolicy",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetTrafficPolicy",
                 "route53:ListTrafficPolicyInstancesByPolicy",
-                "route53:ListTrafficPolicyVersions",
+                "route53:ListTrafficPolicyVersions"
+            ],
+            "Resource": [
+                "arn:aws:route53:::trafficpolicy/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminRoute53ReadTrafficPolicyInstance",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetTrafficPolicyInstance"
+            ],
+            "Resource": [
+                "arn:aws:route53:::trafficpolicyinstance/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminRoute53ReadDeletagionSet",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetReusableDelegationSetLimit"
+            ],
+            "Resource": [
+                "arn:aws:route53:::delegationset/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminRoute53ReadQueryLoggingConfig",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetQueryLoggingConfig"
+            ],
+            "Resource": [
+                "arn:aws:route53:::queryloggingconfig/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminRoute53Read",
+            "Effect": "Allow",
+            "Action": [
+                "route53:ListTrafficPolicyInstances",
+                "route53:GetTrafficPolicyInstanceCount",
+                "route53:TestDNSAnswer",
+                "route53:GetAccountLimit",
+                "route53:ListTrafficPolicies"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "OASAdminS3ReadObjects",
+            "Effect": "Allow",
+            "Action": [
                 "s3:GetObjectVersionTagging",
                 "s3:GetObjectVersionTorrent",
                 "s3:GetObjectAcl",
@@ -26,45 +96,23 @@
                 "s3:GetObjectTorrent",
                 "s3:GetObjectVersionForReplication",
                 "s3:GetObjectVersion",
-                "s3:ListMultipartUploadParts",
-                "cloudformation:DescribeStackResource",
-                "cloudformation:DescribeStackEvents",
-                "cloudformation:DescribeStackSetOperation",
-                "cloudformation:DescribeChangeSet",
-                "cloudformation:DescribeStackInstance",
-                "cloudformation:DescribeStackResources",
-                "cloudformation:DescribeStackSet",
-                "cloudformation:GetStackPolicy",
-                "cloudformation:GetTemplate",
-                "acm:DescribeCertificate",
-                "acm:GetCertificate",
-                "codepipeline:ListActionTypes"
+                "s3:ListMultipartUploadParts"
             ],
             "Resource": [
-                "arn:aws:route53:::hostedzone/*",
-                "arn:aws:route53:::trafficpolicyinstance/*",
-                "arn:aws:route53:::healthcheck/*",
-                "arn:aws:route53:::trafficpolicy/*",
-                "arn:aws:route53:::queryloggingconfig/*",
-                "arn:aws:route53:::delegationset/*",
-                "arn:aws:codepipeline:*:*:actiontype:*/*/*/*",
-                "arn:aws:cloudformation:*:*:stack/*/*",
-                "arn:aws:cloudformation:*:*:stackset/*:*",
-                "arn:aws:s3:::*/*",
-                "arn:aws:acm:*:*:certificate/*"
+                "arn:aws:s3:::*/*"
             ]
         },
         {
-            "Sid": "OASAdminPolicy2",
+            "Sid": "OASAdminS3ReadBuckets",
             "Effect": "Allow",
             "Action": [
                 "s3:ListBucketByTags",
-                "s3:GetLifecycleConfiguration",
                 "s3:ListBucketMultipartUploads",
+                "s3:ListBucketVersions",
+                "s3:GetLifecycleConfiguration",
                 "s3:GetBucketTagging",
                 "s3:GetInventoryConfiguration",
                 "s3:GetBucketWebsite",
-                "s3:ListBucketVersions",
                 "s3:GetBucketLogging",
                 "s3:GetAccelerateConfiguration",
                 "s3:GetBucketVersioning",
@@ -78,41 +126,121 @@
                 "s3:GetAnalyticsConfiguration",
                 "s3:GetMetricsConfiguration",
                 "s3:GetBucketLocation",
-                "s3:GetIpConfiguration",
+                "s3:GetIpConfiguration"
+            ],
+            "Resource": [
+                "arn:aws:s3:::*"
+            ]
+        },
+        {
+            "Sid": "OASAdminCloudFormationReadStack",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:DescribeStackResource",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeChangeSet",
+                "cloudformation:GetStackPolicy",
+                "cloudformation:GetTemplate"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:*:*:stack/*/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminCloudFormationReadStackSet",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:DescribeStackSetOperation",
+                "cloudformation:DescribeStackInstance",
+                "cloudformation:DescribeStackSet"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:*:*:stackset/*:*"
+            ]
+        },
+        {
+            "Sid": "OASAdminCloudFormationRead",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:GetTemplateSummary",
+                "cloudformation:EstimateTemplateCost",
+                "cloudformation:DescribeAccountLimits"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "OASAdminCodePipelineReadActionType",
+            "Effect": "Allow",
+            "Action": [
+                "codepipeline:ListActionTypes"
+            ],
+            "Resource": [
+                "arn:aws:codepipeline:*:*:actiontype:*/*/*/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminCodePipelineReadPipeline",
+            "Effect": "Allow",
+            "Action": [
                 "codepipeline:GetPipelineState",
                 "codepipeline:GetPipeline",
                 "codepipeline:GetPipelineExecution"
             ],
             "Resource": [
-                "arn:aws:s3:::*",
                 "arn:aws:codepipeline:*:*:*"
             ]
         },
         {
-            "Sid": "OASAdminPolicy3",
+            "Sid": "OASAdminCodePipelineRead",
             "Effect": "Allow",
             "Action": [
-                "acm:ListTagsForCertificate",
+                "codepipeline:GetThirdPartyJobDetails",
+                "codepipeline:GetJobDetails"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "OASAdminAWSCertificateManagerReadCertificate",
+            "Effect": "Allow",
+            "Action": [
+                "acm:DescribeCertificate",
+                "acm:GetCertificate"
+            ],
+            "Resource": [
+                "arn:aws:acm:*:*:certificate/*"
+            ]
+        },
+        {
+            "Sid": "OASAdminAWSCertificateManagerRead",
+            "Effect": "Allow",
+            "Action": [
+                "acm:ListTagsForCertificate"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "OASAdminCloudFrontRead",
+            "Effect": "Allow",
+            "Action": [
                 "cloudfront:GetCloudFrontOriginAccessIdentityConfig",
                 "cloudfront:GetInvalidation",
                 "cloudfront:GetStreamingDistributionConfig",
-                "cloudformation:GetTemplateSummary",
-                "cloudformation:EstimateTemplateCost",
                 "cloudfront:GetDistribution",
                 "cloudfront:GetStreamingDistribution",
-                "cloudfront:ListTagsForResource",
-                "cloudformation:DescribeAccountLimits",
                 "cloudfront:GetCloudFrontOriginAccessIdentity",
-                "cloudfront:GetDistributionConfig"
-                "codepipeline:GetThirdPartyJobDetails",
-                "codepipeline:GetJobDetails",
-                "route53:ListTrafficPolicyInstances",
-                "route53:GetTrafficPolicyInstanceCount",
-                "route53:TestDNSAnswer",
-                "route53:GetAccountLimit",
-                "route53:ListTrafficPolicies",
+                "cloudfront:GetDistributionConfig",
+                "cloudfront:ListTagsForResource"
             ],
-            "Resource": "*"
+            "Resource": [
+                "*"
+            ]
         }
     ]
 }
