@@ -21,7 +21,7 @@ Resources:
   GroupPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
-      PolicyName: !Sub "cf-${ProjectName}-${$AdminGroupName}-read-policy"
+      PolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-read-policy"
       Groups:
         - Ref: "AdminGroup"
       PolicyDocument:
