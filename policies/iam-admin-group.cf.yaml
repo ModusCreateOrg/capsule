@@ -204,6 +204,23 @@ Resources:
               - cloudfront:ListInvalidations
               - cloudfront:ListStreamingDistributions
             Resource: "*"
+          - Sid: OASAdminCodeBuildReadProject
+            Effect: Allow
+            Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:BatchGetProjects
+              - codebuild:ListBuildsForProject
+            Resource: "arn:aws:codebuild:*:*:project/*"
+          - Sid: OASAdminCodeBuildRead
+            Effect: Allow
+            Action:
+              - codebuild:ListBuilds
+              - codebuild:ListConnectedOAuthAccounts
+              - codebuild:ListCuratedEnvironmentImages
+              - codebuild:ListProjects
+              - codebuild:ListRepositories
+              - codebuild:PersistOAuthToken
+            Resource: "*"
   GroupPolicyWrite:
     Type: "AWS::IAM::Policy"
     Properties:
@@ -408,4 +425,19 @@ Resources:
               - cloudfront:CreateStreamingDistributionWithTags
               - cloudfront:TagResource
               - cloudfront:UntagResource
+            Resource: "*"
+          - Sid: OASAdminCodeBuildWriteProject
+            Effect: Allow
+            Action:
+              - codebuild:BatchDeleteBuilds
+              - codebuild:DeleteProject
+              - codebuild:StartBuild
+              - codebuild:StopBuild
+              - codebuild:UpdateProject
+            Resource: "arn:aws:codebuild:*:*:project/*"
+          - Sid: OASAdminCodeBuildWrite
+            Effect: Allow
+            Action:
+              - codebuild:CreateProject
+              - codebuild:PersistOAuthToken
             Resource: "*"
