@@ -11,10 +11,10 @@ Parameters:
   AdminGroupPath:
     Type: String
     Description: "Admin Group Path"
-    Default: '/Admin/'
+    Default: '/admin/'
 Resources:
   AdminGroup:
-    Type: AWS::IAM::Group
+    Type: "AWS::IAM::Group"
     Properties:
       GroupName: !Ref AdminGroupName
       Path: !Ref AdminGroupPath
@@ -22,7 +22,8 @@ Resources:
     Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-read-policy"
-      Groups: !Ref AdminGroup
+      Groups:
+        - !Ref AdminGroup
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -225,7 +226,8 @@ Resources:
     Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-write-policy"
-      Groups: !Ref AdminGroup
+      Groups:
+        - !Ref AdminGroup
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
