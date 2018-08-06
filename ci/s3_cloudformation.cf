@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation Template Store - S3 bucket for storing the CF templates"
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: "Name of the project. TODO: Add validation regex"
+Resources:
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub "cf-${ProjectName}-ci"
