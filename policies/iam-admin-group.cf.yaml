@@ -18,10 +18,10 @@ Resources:
     Properties:
       GroupName: !Ref AdminGroupName
       Path: !Ref AdminGroupPath
-  GroupPolicyRead:
-    Type: "AWS::IAM::Policy"
+  Route53Policy:
+    Type: "AWS::IAM::ManagedPolicy"
     Properties:
-      PolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-read-policy"
+      ManagedPolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-route53-policy"
       Groups:
         - !Ref AdminGroup
       PolicyDocument:
@@ -79,6 +79,61 @@ Resources:
               - route53:GetAccountLimit
               - route53:ListTrafficPolicies
             Resource: "*"
+          - Sid: OASAdminRoute53WriteHealthCheck
+            Effect: Allow
+            Action:
+              - route53:ChangeTagsForResource
+              - route53:DeleteHealthCheck
+              - route53:UpdateHealthCheck
+            Resource: "arn:aws:route53:::healthcheck/*"
+          - Sid: OASAdminRoute53WriteHostedZone
+            Effect: Allow
+            Action:
+              - route53:CreateHostedZone
+              - route53:ChangeResourceRecordSets
+              - route53:ChangeTagsForResource
+              - route53:DeleteHostedZone
+              - route53:AssociateVPCWithHostedZone
+              - route53:DisassociateVPCFromHostedZone
+              - route53:UpdateHostedZoneComment
+              - route53:ListVPCAssociationAuthorizations
+            Resource: "*"
+          - Sid: OASAdminRoute53WriteTrafficPolicy
+            Effect: Allow
+            Action:
+              - route53:DeleteTrafficPolicy
+              - route53:UpdateTrafficPolicyComment
+            Resource: "arn:aws:route53:::trafficpolicy/*"
+          - Sid: OASAdminRoute53WriteTrafficPolicyInstance
+            Effect: Allow
+            Action:
+              - route53:DeleteTrafficPolicyInstance
+              - route53:UpdateTrafficPolicyInstance
+            Resource: "arn:aws:route53:::trafficpolicyinstance/*"
+          - Sid: OASAdminRoute53WriteDeletagionSet
+            Effect: Allow
+            Action:
+              - route53:DeleteReusableDelegationSet
+            Resource: "arn:aws:route53:::delegationset/*"
+          - Sid: OASAdminRoute53Write
+            Effect: Allow
+            Action:
+              - route53:CreateTrafficPolicyInstance
+              - route53:CreateTrafficPolicy
+              - route53:CreateTrafficPolicyVersion
+              - route53:CreateReusableDelegationSet
+              - route53:CreateHealthCheck
+              - route53:CreateQueryLoggingConfig
+            Resource: "*"
+  S3Policy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-s3-policy"
+      Groups:
+        - !Ref AdminGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
           - Sid: OASAdminS3ReadObjects
             Effect: Allow
             Action:
@@ -118,165 +173,6 @@ Resources:
               - s3:GetBucketLocation
               - s3:GetIpConfiguration
             Resource: "arn:aws:s3:::*"
-          - Sid: OASAdminCloudFormationReadStack
-            Effect: Allow
-            Action:
-              - cloudformation:DescribeStackResource
-              - cloudformation:DescribeStackResources
-              - cloudformation:DescribeStackEvents
-              - cloudformation:DescribeChangeSet
-              - cloudformation:GetStackPolicy
-              - cloudformation:GetTemplate
-              - cloudformation:ListStackResources
-              - cloudformation:ListChangeSets
-              - cloudformation:GetTemplate
-            Resource: "arn:aws:cloudformation:*:*:stack/*/*"
-          - Sid: OASAdminCloudFormationReadStackSet
-            Effect: Allow
-            Action:
-              - cloudformation:DescribeStackSetOperation
-              - cloudformation:DescribeStackInstance
-              - cloudformation:DescribeStackSet
-              - cloudformation:ListStackSets
-              - cloudformation:ListStackSetOperations
-              - cloudformation:ListStackSetOperationResults
-            Resource: "arn:aws:cloudformation:*:*:stackset/*:*"
-          - Sid: OASAdminCloudFormationRead
-            Effect: Allow
-            Action:
-              - cloudformation:GetTemplateSummary
-              - cloudformation:EstimateTemplateCost
-              - cloudformation:DescribeAccountLimits
-              - cloudformation:ListStacks
-              - cloudformation:ListImports
-              - cloudformation:ListExports
-            Resource: "*"
-          - Sid: OASAdminCodePipelineReadActionType
-            Effect: Allow
-            Action:
-              - codepipeline:ListActionTypes
-            Resource: "arn:aws:codepipeline:*:*:actiontype:*/*/*/*"
-          - Sid: OASAdminCodePipelineReadWebhook
-            Effect: Allow
-            Action:
-              - codepipeline:ListWebhooks
-            Resource: "arn:aws:codepipeline:*:*:webhook:*/*/*/*"
-          - Sid: OASAdminCodePipelineReadPipeline
-            Effect: Allow
-            Action:
-              - codepipeline:GetPipelineState
-              - codepipeline:GetPipeline
-              - codepipeline:GetPipelineExecution
-              - codepipeline:ListPipelineExecutions
-              - codepipeline:ListPipelines
-            Resource: "arn:aws:codepipeline:*:*:*"
-          - Sid: OASAdminCodePipelineRead
-            Effect: Allow
-            Action:
-              - codepipeline:GetThirdPartyJobDetails
-              - codepipeline:GetJobDetails
-            Resource: "*"
-          - Sid: OASAdminAWSCertificateManagerReadCertificate
-            Effect: Allow
-            Action:
-              - acm:DescribeCertificate
-              - acm:GetCertificate
-            Resource: "arn:aws:acm:*:*:certificate/*"
-          - Sid: OASAdminAWSCertificateManagerRead
-            Effect: Allow
-            Action:
-              - acm:ListTagsForCertificate
-              - acm:ListCertificates
-            Resource: "*"
-          - Sid: OASAdminCloudFrontRead
-            Effect: Allow
-            Action:
-              - cloudfront:GetCloudFrontOriginAccessIdentityConfig
-              - cloudfront:GetInvalidation
-              - cloudfront:GetStreamingDistributionConfig
-              - cloudfront:GetDistribution
-              - cloudfront:GetStreamingDistribution
-              - cloudfront:GetCloudFrontOriginAccessIdentity
-              - cloudfront:GetDistributionConfig
-              - cloudfront:ListTagsForResource
-              - cloudfront:ListCloudFrontOriginAccessIdentities
-              - cloudfront:ListDistributionsByWebACLId
-              - cloudfront:ListDistributions
-              - cloudfront:ListInvalidations
-              - cloudfront:ListStreamingDistributions
-            Resource: "*"
-          - Sid: OASAdminCodeBuildReadProject
-            Effect: Allow
-            Action:
-              - codebuild:BatchGetBuilds
-              - codebuild:BatchGetProjects
-              - codebuild:ListBuildsForProject
-            Resource: "arn:aws:codebuild:*:*:project/*"
-          - Sid: OASAdminCodeBuildRead
-            Effect: Allow
-            Action:
-              - codebuild:ListBuilds
-              - codebuild:ListConnectedOAuthAccounts
-              - codebuild:ListCuratedEnvironmentImages
-              - codebuild:ListProjects
-              - codebuild:ListRepositories
-              - codebuild:PersistOAuthToken
-            Resource: "*"
-  GroupPolicyWrite:
-    Type: "AWS::IAM::Policy"
-    Properties:
-      PolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-write-policy"
-      Groups:
-        - !Ref AdminGroup
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: OASAdminRoute53WriteHealthCheck
-            Effect: Allow
-            Action:
-              - route53:ChangeTagsForResource
-              - route53:DeleteHealthCheck
-              - route53:UpdateHealthCheck
-            Resource: "arn:aws:route53:::healthcheck/*"
-          - Sid: OASAdminRoute53WriteHostedZone
-            Effect: Allow
-            Action:
-              - route53:CreateHostedZone
-              - route53:ChangeResourceRecordSets
-              - route53:ChangeTagsForResource
-              - route53:DeleteHostedZone
-              - route53:AssociateVPCWithHostedZone
-              - route53:DisassociateVPCFromHostedZone
-              - route53:UpdateHostedZoneComment
-              - route53:ListVPCAssociationAuthorizations
-            Resource: "*"
-          - Sid: OASAdminRoute53WriteTrafficPolicy
-            Effect: Allow
-            Action:
-              - route53:DeleteTrafficPolicy
-              - route53:UpdateTrafficPolicyComment
-            Resource: "arn:aws:route53:::trafficpolicy/*"
-          - Sid: OASAdminRoute53WriteTrafficPolicyInstance
-            Effect: Allow
-            Action:
-              - route53:DeleteTrafficPolicyInstance
-              - route53:UpdateTrafficPolicyInstance
-            Resource: "arn:aws:route53:::trafficpolicyinstance/*"
-          - Sid: OASAdminRoute53WriteDeletagionSet
-            Effect: Allow
-            Action:
-              - route53:DeleteReusableDelegationSet
-            Resource: "arn:aws:route53:::delegationset/*"
-          - Sid: OASAdminRoute53Write
-            Effect: Allow
-            uuAction:
-              - route53:CreateTrafficPolicyInstance
-              - route53:CreateTrafficPolicy
-              - route53:CreateTrafficPolicyVersion
-              - route53:CreateReusableDelegationSet
-              - route53:CreateHealthCheck
-              - route53:CreateQueryLoggingConfig
-            Resource: "*"
           - Sid: OASAdminS3WriteObjects
             Effect: Allow
             Action:
@@ -319,10 +215,52 @@ Resources:
               - s3:PutMetricsConfiguration
               - s3:PutReplicationConfiguration
             Resource: "arn:aws:s3:::*"
-          - Sid: OASAdminS3WriteBuckets
+          - Sid: OASAdminS3Write
             Effect: Allow
             Action:
-              - CreateBucket
+              - s3:CreateBucket
+            Resource: "*"
+  CloudFormationPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-cloudformation-policy"
+      Groups:
+        - !Ref AdminGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: OASAdminCloudFormationReadStack
+            Effect: Allow
+            Action:
+              - cloudformation:DescribeStackResource
+              - cloudformation:DescribeStackResources
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeChangeSet
+              - cloudformation:GetStackPolicy
+              - cloudformation:GetTemplate
+              - cloudformation:ListStackResources
+              - cloudformation:ListChangeSets
+              - cloudformation:GetTemplate
+            Resource: "arn:aws:cloudformation:*:*:stack/*/*"
+          - Sid: OASAdminCloudFormationReadStackSet
+            Effect: Allow
+            Action:
+              - cloudformation:DescribeStackSetOperation
+              - cloudformation:DescribeStackInstance
+              - cloudformation:DescribeStackSet
+              - cloudformation:ListStackSets
+              - cloudformation:ListStackSetOperations
+              - cloudformation:ListStackSetOperationResults
+            Resource: "arn:aws:cloudformation:*:*:stackset/*:*"
+          - Sid: OASAdminCloudFormationRead
+            Effect: Allow
+            Action:
+              - cloudformation:GetTemplateSummary
+              - cloudformation:EstimateTemplateCost
+              - cloudformation:DescribeAccountLimits
+              - cloudformation:ListStacks
+              - cloudformation:ListImports
+              - cloudformation:ListExports
             Resource: "*"
           - Sid: OASAdminCloudFormationWriteStack
             Effect: Allow
@@ -355,6 +293,40 @@ Resources:
               - cloudformation:CreateStackInstances
               - cloudformation:ValidateTemplate
               - cloudformation:CreateUploadBucket
+            Resource: "*"
+  CodePipelinePolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-codepipeline-policy"
+      Groups:
+        - !Ref AdminGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: OASAdminCodePipelineReadActionType
+            Effect: Allow
+            Action:
+              - codepipeline:ListActionTypes
+            Resource: "arn:aws:codepipeline:*:*:actiontype:*/*/*/*"
+          - Sid: OASAdminCodePipelineReadWebhook
+            Effect: Allow
+            Action:
+              - codepipeline:ListWebhooks
+            Resource: "arn:aws:codepipeline:*:*:webhook:*/*/*/*"
+          - Sid: OASAdminCodePipelineReadPipeline
+            Effect: Allow
+            Action:
+              - codepipeline:GetPipelineState
+              - codepipeline:GetPipeline
+              - codepipeline:GetPipelineExecution
+              - codepipeline:ListPipelineExecutions
+              - codepipeline:ListPipelines
+            Resource: "arn:aws:codepipeline:*:*:*"
+          - Sid: OASAdminCodePipelineRead
+            Effect: Allow
+            Action:
+              - codepipeline:GetThirdPartyJobDetails
+              - codepipeline:GetJobDetails
             Resource: "*"
           - Sid: OASAdminCodePipelineWriteActionType
             Effect: Allow
@@ -396,6 +368,27 @@ Resources:
               - codepipeline:EnableStageTransition
               - codepipeline:RetryStageExecution
             Resource: "*"
+  CertManagerPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-acm-policy"
+      Groups:
+        - !Ref AdminGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: OASAdminAWSCertificateManagerReadCertificate
+            Effect: Allow
+            Action:
+              - acm:DescribeCertificate
+              - acm:GetCertificate
+            Resource: "arn:aws:acm:*:*:certificate/*"
+          - Sid: OASAdminAWSCertificateManagerRead
+            Effect: Allow
+            Action:
+              - acm:ListTagsForCertificate
+              - acm:ListCertificates
+            Resource: "*"
           - Sid: OASAdminAWSCertificateManagerWriteCertificate
             Effect: Allow
             Action:
@@ -409,6 +402,32 @@ Resources:
             Effect: Allow
             Action:
               - acm:RequestCertificate
+            Resource: "*"
+  CloudFrontPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-cloudfront-policy"
+      Groups:
+        - !Ref AdminGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: OASAdminCloudFrontRead
+            Effect: Allow
+            Action:
+              - cloudfront:GetCloudFrontOriginAccessIdentityConfig
+              - cloudfront:GetInvalidation
+              - cloudfront:GetStreamingDistributionConfig
+              - cloudfront:GetDistribution
+              - cloudfront:GetStreamingDistribution
+              - cloudfront:GetCloudFrontOriginAccessIdentity
+              - cloudfront:GetDistributionConfig
+              - cloudfront:ListTagsForResource
+              - cloudfront:ListCloudFrontOriginAccessIdentities
+              - cloudfront:ListDistributionsByWebACLId
+              - cloudfront:ListDistributions
+              - cloudfront:ListInvalidations
+              - cloudfront:ListStreamingDistributions
             Resource: "*"
           - Sid: OASAdminCloudFrontWrite
             Effect: Allow
@@ -427,6 +446,32 @@ Resources:
               - cloudfront:CreateStreamingDistributionWithTags
               - cloudfront:TagResource
               - cloudfront:UntagResource
+            Resource: "*"
+  CodeBuildPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "cf-${ProjectName}-${AdminGroupName}-codebuild-policy"
+      Groups:
+        - !Ref AdminGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: OASAdminCodeBuildReadProject
+            Effect: Allow
+            Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:BatchGetProjects
+              - codebuild:ListBuildsForProject
+            Resource: "arn:aws:codebuild:*:*:project/*"
+          - Sid: OASAdminCodeBuildRead
+            Effect: Allow
+            Action:
+              - codebuild:ListBuilds
+              - codebuild:ListConnectedOAuthAccounts
+              - codebuild:ListCuratedEnvironmentImages
+              - codebuild:ListProjects
+              - codebuild:ListRepositories
+              - codebuild:PersistOAuthToken
             Resource: "*"
           - Sid: OASAdminCodeBuildWriteProject
             Effect: Allow
