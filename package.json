@@ -25,7 +25,7 @@
     "cdn",
     "cloudformation"
   ],
-  "author": "Facundo Victor <facundovt@gmail.com>",
+  "contributors": ["Facundo Victor <facundovt@gmail.com>"],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ModusCreateOrg/capsule/issues"
