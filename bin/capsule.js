@@ -17,6 +17,17 @@ commander
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .parse(process.argv);
 
+// Globals ####################################################################
+
+const {
+  // AWS Access Key
+  AWS_ACCESS_KEY_ID,
+  // AWS secret key
+  AWS_SECRET_ACCESS_KEY,
+  // AWS profile name
+  AWS_PROFILE,
+} = process.env;
+
 // Helpers ####################################################################
 
 const logIfVerbose = (str, error) => {
@@ -36,7 +47,7 @@ const printError = (str) => {
 const loadAWSConfiguration = async (config_path, aws_profile) => {
   // Environment variables should have higher precedence
   // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-environment.html
-  if ((process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) || process.env.AWS_PROFILE) {
+  if ((AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY) || AWS_PROFILE) {
     // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html
     aws.config.credentials = new aws.SharedIniFileCredentials();
   } if (aws_profile) {
