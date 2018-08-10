@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 //#############################################################################
-// @licence: ?
+// @licence: MIT
 // @description: Automated CLI for Static web application hosting on AWS
 //#############################################################################
 
