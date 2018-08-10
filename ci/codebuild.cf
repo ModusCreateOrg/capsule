@@ -21,6 +21,7 @@ Parameters:
       - GITHUB_ENTERPRISE
       - BITBUCKET
       - S3
+    Default: GITHUB
   EnvironmentImage:
     Type: String
     Description: "Image to use for running a container where the build will execute"
@@ -38,6 +39,7 @@ Parameters:
   BuildSpecLocation:
     Type: String
     Description: "Location of the build spec to use (Defaults to the repository root)"
+    Default: buildspec.yml
 Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
