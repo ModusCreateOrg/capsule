@@ -15,6 +15,7 @@ commander
   .option('-i, --init <bucket-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-v, --verbose', 'verbose output')
   .parse(process.argv);
 
 // Globals ####################################################################
@@ -33,9 +34,9 @@ const {
 const logIfVerbose = (str, error) => {
   if (commander.verbose){
     if (error){
-      console.error(str);
+      console.error(`ERROR: ${str}`);
     }else{
-      console.log(chalk.bgGreen(str));
+      console.log(chalk.bgGreen(`INFO: ${str}`));
     }
   }
 }
