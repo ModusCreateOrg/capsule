@@ -1,3 +1,13 @@
+###############################################################################
+# Template for creating a Certificate
+#
+# Requirements:
+# - Registered domain and the zone hosted somewhere
+# - subdomain
+# - Mail for valiation domain should exist:
+#   https://docs.aws.amazon.com/acm/latest/APIReference/API_DomainValidationOption.html
+###############################################################################
+---
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Website CloudFormation stack - Certificate Manager Certificate"
 
@@ -19,7 +29,7 @@ Parameters:
     Default: true
 
 Conditions:
-  UsingWildcardCertificate: !Equals [ !Ref "UseWildcardCertificate", true ]
+  UsingWildcardCertificate: !Equals [!Ref "UseWildcardCertificate", true]
 
 Resources:
   CertificateManagerCertificate:
