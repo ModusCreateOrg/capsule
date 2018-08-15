@@ -53,6 +53,7 @@ Resources:
     DependsOn:
       - "CfoaiCloudFormationStack"
       - "CmcCloudFormationStack"
+      - "S3CloudFormationStack"
     Properties:
       Parameters:
         Domain: !Ref "Domain"
