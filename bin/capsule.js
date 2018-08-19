@@ -9,13 +9,14 @@ const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
 let cf;
-let last_time = new Date(new Date - 1000);
 
 //#############################################################################
 
 commander
   .version('0.0.1')
-  .option('-i, --init <bucket-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('init', 'Initializes the s3 bucket required to store nested stack templates')
+  .option('apply', 'Updates the templates into the s3 bucket and runs the nested stack')
+  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-v, --verbose', 'verbose output')
@@ -33,6 +34,8 @@ const {
   // AWS region
   AWS_REGION
 } = process.env;
+
+let last_time = new Date(new Date - 1000);
 
 // Helpers ####################################################################
 
