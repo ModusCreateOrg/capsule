@@ -35,6 +35,22 @@ const {
   AWS_REGION
 } = process.env;
 
+// References
+// - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
+const stack_states = [
+  'CREATE_COMPLETE',
+  'CREATE_FAILED',
+  'DELETE_COMPLETE',
+  'DELETE_FAILED',
+  'UPDATE_COMPLETE',
+  'UPDATE_FAILED',
+  'ROLLBACK_COMPLETE',
+  'ROLLBACK_FAILED',
+  'UPDATE_ROLLBACK_COMPLETE',
+  'UPDATE_ROLLBACK_FAILED',
+  'REVIEW_IN_PROGRESS'
+];
+
 const paths = {
   base: `${__dirname}/../`,
   ci_s3: 'ci/s3_cloudformation.cf'
@@ -132,12 +148,77 @@ const createStack = async (name, template_body, parameters) => {
   });
 }
 
+const getNextStackEvent = async (id, next) => {
+  // References:
+  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
+  // - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-listing-event-history.html
+  return new Promise((resolve, reject) => {
+    cf.describeStackEvents({
+      StackName: id,
+      NextToken: next
+    }, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+}
+
+const getStackEvents = async (id) => {
+  let response = await getNextStackEvent(id);
+  let events = response.StackEvents;
+  while (typeof response.NextToken !== 'undefined') {
+    response = await getNextStackEvent(id);
+    events.concat(response.StackEvents);
+  }
+
+  let nestedStackIds = events.reduce((list, e) => {
+    if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
+        e.PhysicalResourceId != '' && e.StackId != e.PhysicalResourceId) {
+      list.push(e.StackId);
+    }
+    return list;
+  }, []);
+
+  for (id of nestedStackIds) events.concat(await getStackEvents(id));
+  return events.sort((e1, e2) => e1.Timestamp - e2.Timestamp);
+};
+
+const monitorStackProgress = async (name, id) => {
+  let in_progress = true;
+  let events_seen = []
+  logIfVerbose(`Start monitoring stack ${id}`);
+  while (in_progress) {
+    let events = await getStackEvents(id);
+    for (e of events) {
+      if (e.Timestamp < last_time || events_seen.includes(e)) {
+        logIfVerbose(`Event ignored: ${e}`);
+        console.log(e.Timestamp, last_time);
+      } else {
+        console.log('NEW Event: ',e);
+        events_seen.push(e);
+        last_time = e.Timestamp;
+      }
+      if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
+          e.StackId === id && e.PhysicalResourceId === id &&
+          stack_states.includes(e.ResourceStatus))
+      {
+        in_progress = false;
+      }
+    }
+    if (in_progress) {
+      await delay(2000);
+    }
+  }
+  logIfVerbose(`End monitoring stack ${id}`);
+}
+
 const createCIS3Bucket = async (name) => {
   let { StackId } = await createStack(
     name,
     await getCiS3Template(),
     { ProjectName : name }
   );
+  await monitorStackProgress(name, StackId);
 }
 
 // MAIN #######################################################################
