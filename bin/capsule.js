@@ -4,9 +4,12 @@
 // @description: Automated CLI for Static web application hosting on AWS
 //#############################################################################
 
+const fs = require('fs');
 const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
+let cf;
+let last_time = new Date(new Date - 1000);
 
 //#############################################################################
 
