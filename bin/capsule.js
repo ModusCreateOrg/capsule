@@ -35,6 +35,11 @@ const {
   AWS_REGION
 } = process.env;
 
+const paths = {
+  base: `${__dirname}/../`,
+  ci_s3: 'ci/s3_cloudformation.cf'
+}
+
 let last_time = new Date(new Date - 1000);
 
 // Helpers ####################################################################
@@ -57,6 +62,24 @@ const printErrorAndDie = (str, showHelp) => {
   process.exit(1);
 }
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// File Helpers ##############################################################
+
+// TODO: This may require to get it from github directly to avoid packing it
+const getTemplateBody = (path) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf8', (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    })
+  });
+}
+
+const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
+
+// AWS Helpers ################################################################
+
 const loadAWSConfiguration = async (config_path, aws_profile) => {
   // Environment variables should have higher precedence
   // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-environment.html
@@ -75,6 +98,46 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
     process.env.AWS_SDK_LOAD_CONFIG = '1';
     aws.config.credentials = new aws.SharedIniFileCredentials();
   }
+
+  // Load the cloudformation library with authentication already set
+  cf = new aws.CloudFormation();
+}
+
+const createStack = async (name, template_body, parameters) => {
+  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
+  return new Promise((resolve, reject) => {
+    let formated_parameters = [];
+
+    for (let p in parameters) {
+      formated_parameters.push({
+        ParameterKey: p,
+        ParameterValue: parameters[p]
+      });
+    }
+
+    cf.createStack({
+      StackName: name,
+      ClientRequestToken: name,
+      Parameters: formated_parameters,
+      Tags: [
+        { Key: 'name', Value: name },
+        { Key: 'provisioner', Value: 'capsule' }
+      ],
+      Capabilities: [ 'CAPABILITY_IAM' ],
+      TemplateBody: template_body
+    }, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+}
+
+const createCIS3Bucket = async (name) => {
+  let { StackId } = await createStack(
+    name,
+    await getCiS3Template(),
+    { ProjectName : name }
+  );
 }
 
 // MAIN #######################################################################
@@ -82,9 +145,12 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
 (async () => {
   global.cwd = process.cwd();
   await loadAWSConfiguration(commander.config, commander.awsProfile);
-  if (commander.init){
-    console.log("TODO: Initialize bucket and push files");
-  } else {
-    commander.help();
+
+  if (!commander.projectName) {
+    printErrorAndDie('Project name is required!', true);
+  }
+
+  if (commander.init) {
+    await createCIS3Bucket(commander.projectName);
   }
 })();
