@@ -27,6 +27,8 @@ const {
   AWS_SECRET_ACCESS_KEY,
   // AWS profile name
   AWS_PROFILE,
+  // AWS region
+  AWS_REGION
 } = process.env;
 
 // Helpers ####################################################################
@@ -35,14 +37,18 @@ const logIfVerbose = (str, error) => {
   if (commander.verbose){
     if (error){
       console.error(`ERROR: ${str}`);
-    }else{
+    } else {
       console.log(chalk.bgGreen(`INFO: ${str}`));
     }
   }
 }
 
-const printError = (str) => {
-  console.error(chalk.red(str));
+const printError = (str) => console.error(chalk.red(`ERROR: ${str}`));
+
+const printErrorAndDie = (str, showHelp) => {
+  printError(str);
+  if (showHelp) commander.help();
+  process.exit(1);
 }
 
 const loadAWSConfiguration = async (config_path, aws_profile) => {
@@ -50,13 +56,17 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
   // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-environment.html
   if ((AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY) || AWS_PROFILE) {
     // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html
+    // Reference: https://github.com/aws/aws-sdk-js/pull/1391
+    process.env.AWS_SDK_LOAD_CONFIG = '1';
     aws.config.credentials = new aws.SharedIniFileCredentials();
   } if (aws_profile) {
+    process.env.AWS_SDK_LOAD_CONFIG = '1';
     aws.config.credentials = new aws.SharedIniFileCredentials({profile: aws_profile});
   } else if (config_path) {
     // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-json-file.html
     aws.config.loadFromPath(config_path);
   } else {
+    process.env.AWS_SDK_LOAD_CONFIG = '1';
     aws.config.credentials = new aws.SharedIniFileCredentials();
   }
 }
