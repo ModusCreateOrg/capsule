@@ -209,19 +209,24 @@ const getStackEvents = async (id) => {
   return events.sort((e1, e2) => e1.Timestamp - e2.Timestamp);
 };
 
-const monitorStackProgress = async (name, id) => {
+const monitorStackProgress = async (id) => {
   let in_progress = true;
   let events_seen = []
   logIfVerbose(`Start monitoring stack ${id}`);
   while (in_progress) {
-    let events = await getStackEvents(id);
+    let events;
+    try {
+      events = await getStackEvents(id);
+    } catch (e) {
+      logIfVerbose(`Can't get stack events: ${e}`);
+    }
     for (e of events) {
-      if (e.Timestamp < last_time || events_seen.includes(e)) {
-        logIfVerbose(`Event ignored: ${e}`);
-        console.log(e.Timestamp, last_time);
+      if (e.Timestamp < last_time || events_seen.includes(e.EventId)) {
+        logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
+        // TODO: Improve event display
         console.log('NEW Event: ',e);
-        events_seen.push(e);
+        events_seen.push(e.EventId);
         last_time = e.Timestamp;
       }
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
@@ -244,7 +249,7 @@ const createCIS3Bucket = async (name) => {
     await getCiS3Template(),
     { ProjectName : name }
   );
-  await monitorStackProgress(name, StackId);
+  await monitorStackProgress(StackId);
 }
 
 const deleteCIS3Bucket = async (name) => {
