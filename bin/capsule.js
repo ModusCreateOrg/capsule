@@ -227,17 +227,18 @@ const monitorStackProgress = async (id) => {
         // TODO: Improve event display
         console.log('NEW Event: ',e);
         events_seen.push(e.EventId);
-        last_time = e.Timestamp;
       }
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
           e.StackId === id && e.PhysicalResourceId === id &&
-          stack_states.includes(e.ResourceStatus))
+          stack_states.includes(e.ResourceStatus) &&
+          e.Timestamp > last_time)
       {
         in_progress = false;
       }
+      last_time = e.Timestamp;
     }
     if (in_progress) {
-      await delay(2000);
+      await delay(1000);
     }
   }
   logIfVerbose(`End monitoring stack ${id}`);
