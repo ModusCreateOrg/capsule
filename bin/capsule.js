@@ -19,6 +19,7 @@ commander
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-d, --remove-cf-bucket', 'Remove the bucket used for storing the nested templates')
   .option('-v, --verbose', 'verbose output')
   .parse(process.argv);
 
@@ -56,7 +57,7 @@ const paths = {
   ci_s3: 'ci/s3_cloudformation.cf'
 }
 
-let last_time = new Date(new Date - 1000);
+let last_time = new Date(new Date() - 1000);
 
 // Helpers ####################################################################
 
@@ -148,6 +149,31 @@ const createStack = async (name, template_body, parameters) => {
   });
 }
 
+const describeStack = async (StackName) => {
+  // References:
+  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
+  return new Promise((resolve, reject) => {
+    cf.describeStacks({ StackName }, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+}
+
+const deleteStack = async (id, name) => {
+  // References:
+  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#deleteStack-property
+  return new Promise((resolve, reject) => {
+    cf.deleteStack({
+      StackName: id,
+      ClientRequestToken: `delete-${name}`
+    }, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+}
+
 const getNextStackEvent = async (id, next) => {
   // References:
   // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
@@ -221,6 +247,13 @@ const createCIS3Bucket = async (name) => {
   await monitorStackProgress(name, StackId);
 }
 
+const deleteCIS3Bucket = async (name) => {
+  let { Stacks } = await describeStack(name);
+  let { StackId } = Stacks[0];
+  await deleteStack(StackId);
+  await monitorStackProgress(StackId);
+}
+
 // MAIN #######################################################################
 
 (async () => {
@@ -229,6 +262,10 @@ const createCIS3Bucket = async (name) => {
 
   if (!commander.projectName) {
     printErrorAndDie('Project name is required!', true);
+  }
+
+  if (commander.removeCfBucket) {
+    await deleteCIS3Bucket(commander.projectName);
   }
 
   if (commander.init) {
