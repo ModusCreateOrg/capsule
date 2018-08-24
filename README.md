@@ -1,12 +1,12 @@
 # Capsule
 
-[![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)]
+[![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ModusCreateOrg/capsule/blob/OAS-15_documentation/LICENSE)
 
 Automated CLI for Static web application hosting on AWS
 
 <p align="center">
     <img src="https://res.cloudinary.com/modus-labs/image/upload/f_auto,q_70,w_200/labs/logo-capsule.svg"
-    width="400"
+    width="150"
     alt="@modus/capsule">
 </p>
 
