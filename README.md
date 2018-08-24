@@ -16,6 +16,74 @@ This automated script simplifies setting up an AWS site. Add S3 buckets,
 register DNS, and create an SSL certificate in minutes with no DevOps knowledge.
 
 
+## Getting Started
+
+In order to use Capsule you will need the following:
+
+* An AWS account. You can sign up here: https://aws.amazon.com/
+* A registered domain name. This can be obtained through AWS or via a third party such as GoDaddy.
+* For continuous integration, a source code repository such as GitHub where your static website is located
+* A static website (HTMl, JS, CSS) that does not require server side code like PHP, Python or Java.
+
+
+### Continuous Integration (CI)
+
+Capsule allows for Continuous Integration (CI) of your changes from a source code repository.
+As present the CI is currently using codebuild only.
+
+The cloudformation template [codebuild.cf](ci/codebuild.cf) allows you to quickly
+setup a basic CI infrastructure for any repository.
+
+#### Requirements
+
+The following section lists any specific requirements for source control products and services.
+
+##### GitHub
+The AWS codebuild service must be already authenticated with Github using OAuth before creating the stack.
+You can read more on OAuth integration steps on GitHubs website here:
+
+https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
+
+
+### How to use it?
+
+From the CLI it can be used like:
+
+```sh
+aws cloudformation create-stack \
+    --stack-name <your-stack-name> \
+    --template-body file://<path-to-repo>/ci/codebuild.cf \
+    --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=<project-name> \
+                 ParameterKey=RepositoryURL,ParameterValue=<https-clone-url> \
+                 ParameterKey=BuildSpecLocation,ParameterValue=<path-to-buildspec>
+```
+
+Example:
+
+```sh
+aws cloudformation create-stack \
+    --stack-name moduscreate-labs \
+    --template-body file://<path-to-repo>/ci/codebuild.cf \
+    --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=labs \
+                 ParameterKey=RepositoryURL,ParameterValue=https://github.com/ModusCreateOrg/labs.git
+```
+
+#### Supported parameters:
+
+- *CodeBuildProjectCodeName*: CodeBuild Project codename.
+- *RepositoryURL*: HTTPS URL for the Git repository. This should be a valid repository HTTPS URL.
+- *RepositoryType*: `CODECOMMIT`|`CODEPIPELINE`|`GITHUB`|`GITHUB_ENTERPRISE`|`BITBUCKET`|`S3`. Default: `GITHUB`.
+- *EnvironmentImage*: Image to use for running a container where the build will execute. Needs to respect the format `<repository>/<image>:<tag>`. Default: `aws/codebuild/ubuntu-base:14.04`
+- *ComputeType*: `BUILD_GENERAL1_SMALL` (Small 3 GB memory, 2 vCPU) | `BUILD_GENERAL1_MEDIUM` (Medium 7 GB memory, 4 vCPU) | `BUILD_GENERAL1_LARGE` (large 15 GB memory, 8 vCPU). Default: `BUILD_GENERAL1_SMALL`.
+- *BuildSpecLocation*: Path of the file `buildspec.yml` to use (Defaults to `<repo-root>/buildspec.yml`
+
+### Future steps:
+
+- The CI for the hosted project will still be using codebuild
+- The CI infrastructure for Capsule will be evolving soon to use codepipeline to execute several integration tests the cloudformation templates and the cli with different node versions.
+
+
+
 ## Templates
 
 Capsule is made up of multiple YAML based Cloud Formation templates.
@@ -23,6 +91,8 @@ Capsule is made up of multiple YAML based Cloud Formation templates.
 You can read more about AWS CloudFormation on the AWS official page:
 
 https://aws.amazon.com/cloudformation/
+
+A brief description of each is provided as follows.
 
 ### Certificates - template.certificate.yaml
 
@@ -72,50 +142,6 @@ To learn more visit the official webpage here:
 
 https://aws.amazon.com/s3/
 
-## Continuous Integration
-
-The CI is currently using codebuild only. The cloudformation template [codebuild.cf](ci/codebuild.cf) allows to quickly setup a basic CI infrastructure for any repository.
-
-### Requirements
-
-The AWS codebuild service must be already authenticated with Github using oauth before creating the stack.
-
-### How to use it?
-
-From the CLI it can be used like:
-
-```sh
-aws cloudformation create-stack \
-    --stack-name <your-stack-name> \
-    --template-body file://<path-to-repo>/ci/codebuild.cf \
-    --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=<project-name> \
-                 ParameterKey=RepositoryURL,ParameterValue=<https-clone-url> \
-                 ParameterKey=BuildSpecLocation,ParameterValue=<path-to-buildspec>
-```
-
-Example:
-
-```sh
-aws cloudformation create-stack \
-    --stack-name moduscreate-labs \
-    --template-body file://<path-to-repo>/ci/codebuild.cf \
-    --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=labs \
-                 ParameterKey=RepositoryURL,ParameterValue=https://github.com/ModusCreateOrg/labs.git
-```
-
-#### Supported parameters:
-
-- *CodeBuildProjectCodeName*: CodeBuild Project codename.
-- *RepositoryURL*: HTTPS URL for the Git repository. This should be a valid repository HTTPS URL.
-- *RepositoryType*: `CODECOMMIT`|`CODEPIPELINE`|`GITHUB`|`GITHUB_ENTERPRISE`|`BITBUCKET`|`S3`. Default: `GITHUB`.
-- *EnvironmentImage*: Image to use for running a container where the build will execute. Needs to respect the format `<repository>/<image>:<tag>`. Default: `aws/codebuild/ubuntu-base:14.04`
-- *ComputeType*: `BUILD_GENERAL1_SMALL` (Small 3 GB memory, 2 vCPU) | `BUILD_GENERAL1_MEDIUM` (Medium 7 GB memory, 4 vCPU) | `BUILD_GENERAL1_LARGE` (large 15 GB memory, 8 vCPU). Default: `BUILD_GENERAL1_SMALL`.
-- *BuildSpecLocation*: Path of the file `buildspec.yml` to use (Defaults to `<repo-root>/buildspec.yml`
-
-#### Future steps:
-
-- The CI for the hosted project project will still be using codebuild
-- The CI infrastructure for capsule will be evolving soon to use codepipeline to execute several integration tests the cloudformation templates and the cli with different node versions.
 
 ## Modus Create
 
