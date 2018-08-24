@@ -4,7 +4,7 @@
 
 Automated CLI for Static web application hosting on AWS
 
-<p align="center">
+<p align="left">
     <img src="https://res.cloudinary.com/modus-labs/image/upload/f_auto,q_70,w_200/labs/logo-capsule.svg"
     width="150"
     alt="@modus/capsule">
@@ -12,8 +12,8 @@ Automated CLI for Static web application hosting on AWS
 
 ## Introduction
 
-The following README describes the CloudFormation templates based
-project, for generating a static website hosted on Amazon S3.
+This automated script simplifies setting up an AWS site. Add S3 buckets,
+register DNS, and create an SSL certificate in minutes with no DevOps knowledge.
 
 
 ## Templates
@@ -97,3 +97,17 @@ aws cloudformation create-stack \
 
 - The CI for the hosted project project will still be using codebuild
 - The CI infrastructure for capsule will be evolving soon to use codepipeline to execute several integration tests the cloudformation templates and the cli with different node versions.
+
+## Modus Create
+
+[Modus Create](https://moduscreate.com) is a digital product consultancy. We use a distributed team of the best talent in the world to offer a full suite of digital product design-build services; ranging from consumer facing apps, to digital migration, to agile development training, and business transformation.
+
+[![Modus Create](https://res.cloudinary.com/modus-labs/image/upload/h_80/v1533109874/modus/logo-long-black.png)](https://moduscreate.com)
+
+This project is part of [Modus Labs](https://labs.moduscreate.com).
+
+[![Modus Labs](https://res.cloudinary.com/modus-labs/image/upload/h_80/v1531492623/labs/logo-black.png)](https://labs.moduscreate.com)
+
+## Licensing
+
+This project is [MIT licensed](./LICENSE).
