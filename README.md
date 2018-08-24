@@ -8,7 +8,6 @@ Automated CLI for Static web application hosting on AWS
     <img src="https://res.cloudinary.com/modus-labs/image/upload/f_auto,q_70,w_200/labs/logo-capsule.svg"
     width="150"
     alt="@modus/capsule">
-    <h2>Capsule</h2>
 </p>
 
 ## Introduction
