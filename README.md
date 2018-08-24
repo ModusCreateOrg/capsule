@@ -1,10 +1,24 @@
-# awstatic
+# Capsule
+
+[![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)]
+
+Automated CLI for Static web application hosting on AWS
+
+<p align="center">
+    <img src="https://res.cloudinary.com/modus-labs/image/upload/f_auto,q_70,w_200/labs/logo-capsule.svg"
+    width="400"
+    alt="@modus/capsule">
+</p>
+
+## Introduction
 
 The following README describes the CloudFormation templates based
 project, for generating a static website hosted on Amazon S3.
 
 
-## template.certificate.yaml
+## Templates
+
+### Certificates - template.certificate.yaml
 
 This file handles the certificate manager portion
 of the CloudFormation configuration.
@@ -13,17 +27,17 @@ You can read more about AWS Certificate Manager here:
 
 https://aws.amazon.com/certificate-manager/
 
-## template.cfoai.yaml
+### CloudFront Origin Access Identity - template.cfoai.yaml
 
-The CFOAI template contains the configuration required 
+The CFOAI template contains the configuration required
 for CloudFront Origin Access Identity
 
-## template.cloudfront.yaml
+### CloudFront - template.cloudfront.yaml
 
 This file contains the list of parameters required by our
 CloudFormation Stack including Error codes, HTTP versions and SSL supported method.
 
-## template.route53.yaml
+### Route 53 -  template.route53.yaml
 
 Here you can find the Route 53 configuration for the static website
 project.
@@ -31,9 +45,9 @@ project.
 https://aws.amazon.com/route53/
 
 
-## template.s3.yaml
+### S3 - template.s3.yaml
 
-Amazon S# bucket configuration can be found here.
+Amazon S3 bucket configuration can be found here.
 The S3 bucket is where the static resources will be uploaded to and hosted
 from.
 
