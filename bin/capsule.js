@@ -149,6 +149,35 @@ const createStack = async (name, template_body, parameters) => {
   });
 }
 
+const updateStack = async (name, template_body, parameters) => {
+  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
+  return new Promise((resolve, reject) => {
+    let formated_parameters = [];
+
+    for (let p in parameters) {
+      formated_parameters.push({
+        ParameterKey: p,
+        ParameterValue: parameters[p]
+      });
+    }
+
+    cf.updateStack({
+      StackName: name,
+      ClientRequestToken: name,
+      Parameters: formated_parameters,
+      Tags: [
+        { Key: 'name', Value: name },
+        { Key: 'provisioner', Value: 'capsule' }
+      ],
+      Capabilities: [ 'CAPABILITY_IAM' ],
+      TemplateBody: template_body
+    }, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+}
+
 const describeStack = async (StackName) => {
   // References:
   // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
