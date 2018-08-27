@@ -1,3 +1,13 @@
+###############################################################################
+# Template for creating a Certificate
+#
+# Requirements:
+# - Registered domain and the zone hosted somewhere
+# - subdomain
+# - Mail for valiation domain should exist:
+#   https://docs.aws.amazon.com/acm/latest/APIReference/API_DomainValidationOption.html
+###############################################################################
+---
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Website CloudFormation stack - Certificate Manager Certificate"
 
@@ -17,24 +27,18 @@ Parameters:
     Description: "Flag to denote whether to use the wild card(*) or not as the subdomain for certificates"
     AllowedValues: [true, false]
     Default: true
-  SubjectAlternativeNames:
-    Type: CommaDelimitedList
-    Description: "A list of Subject Alternative Names"
-    Default: ""
 
 Conditions:
-  UsingWildcardCertificate: !Equals [ !Ref "UseWildcardCertificate", true ]
+  UsingWildcardCertificate: !Equals [!Ref "UseWildcardCertificate", true]
 
 Resources:
   CertificateManagerCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
+      DomainName: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Sub "${Subdomain}.${Domain}"]
       DomainValidationOptions:
-        - 
-          DomainName: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
-          ValidationDomain: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Ref Domain]
-      SubjectAlternativeNames: !Ref "SubjectAlternativeNames"
+        - DomainName: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Sub "${Subdomain}.${Domain}"]
+          ValidationDomain: !If [UsingWildcardCertificate, !Sub "*.${Domain}", !Sub "${Subdomain}.${Domain}"]
 
 Outputs:
   CertificateArn:
