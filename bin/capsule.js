@@ -126,6 +126,13 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
 
 // AWS CF Helpers #############################################################
 
+/*
+ * getFormattedParameters:
+ *
+ * Given an object of key->value, it will return the list of parameters in the
+ * format expected by AWS.
+ * See: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
+ */
 const getFormattedParameters = (parameters) => {
   let formated_parameters = [];
   for (let p in parameters) {
@@ -137,6 +144,12 @@ const getFormattedParameters = (parameters) => {
   return formated_parameters;
 }
 
+/*
+ * createCFStack:
+ * Given the name of the stack, a string with the template body to apply, an
+ * object with the stack parameters, and a token, it starts the CF stack
+ * creation request identifed by the token.
+ */
 const createCFStack = async (name, template_body, parameters, token) => {
   // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
@@ -157,6 +170,12 @@ const createCFStack = async (name, template_body, parameters, token) => {
   });
 }
 
+/*
+ * updateCFStack:
+ * Given the name of the stack, a string with the template body to apply, an
+ * object with the stack parameters, and a token, it starts the CF stack
+ * update request identifed by the token.
+ */
 const updateCFStack = async (name, template_body, parameters, token) => {
   // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
@@ -188,6 +207,11 @@ const describeStack = async (StackName) => {
   });
 }
 
+/*
+ * updateCFStack:
+ * Given the id and name of the stack,and a token, it starts the CF stack
+ * delete request identifed by the token.
+ */
 const deleteCFStack = async (id, name, token) => {
   // References:
   // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#deleteStack-property
