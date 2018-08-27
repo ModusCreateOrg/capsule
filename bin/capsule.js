@@ -81,6 +81,8 @@ const printErrorAndDie = (str, showHelp) => {
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
+
 // File Helpers ##############################################################
 
 // TODO: This may require to get it from github directly to avoid packing it
@@ -116,26 +118,28 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
     aws.config.credentials = new aws.SharedIniFileCredentials();
   }
 
-  // Load the cloudformation library with authentication already set
+  // Load the aws libraries with authentication already set
   cf = new aws.CloudFormation();
 }
 
-const createStack = async (name, template_body, parameters) => {
+const getFormattedParameters = (parameters) => {
+  let formated_parameters = [];
+  for (let p in parameters) {
+    formated_parameters.push({
+      ParameterKey: p,
+      ParameterValue: parameters[p]
+    });
+  }
+  return formated_parameters;
+}
+
+const createCFStack = async (name, template_body, parameters, token) => {
   // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
-    let formated_parameters = [];
-
-    for (let p in parameters) {
-      formated_parameters.push({
-        ParameterKey: p,
-        ParameterValue: parameters[p]
-      });
-    }
-
     cf.createStack({
       StackName: name,
-      ClientRequestToken: name,
-      Parameters: formated_parameters,
+      ClientRequestToken: token,
+      Parameters: getFormattedParameters(parameters),
       Tags: [
         { Key: 'name', Value: name },
         { Key: 'provisioner', Value: 'capsule' }
@@ -149,22 +153,13 @@ const createStack = async (name, template_body, parameters) => {
   });
 }
 
-const updateStack = async (name, template_body, parameters) => {
+const updateCFStack = async (name, template_body, parameters, token) => {
   // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
-    let formated_parameters = [];
-
-    for (let p in parameters) {
-      formated_parameters.push({
-        ParameterKey: p,
-        ParameterValue: parameters[p]
-      });
-    }
-
     cf.updateStack({
       StackName: name,
-      ClientRequestToken: name,
-      Parameters: formated_parameters,
+      ClientRequestToken: token,
+      Parameters: getFormattedParameters(parameters),
       Tags: [
         { Key: 'name', Value: name },
         { Key: 'provisioner', Value: 'capsule' }
@@ -189,18 +184,31 @@ const describeStack = async (StackName) => {
   });
 }
 
-const deleteStack = async (id, name) => {
+const deleteCFStack = async (id, name, token) => {
   // References:
   // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#deleteStack-property
   return new Promise((resolve, reject) => {
     cf.deleteStack({
       StackName: id,
-      ClientRequestToken: `delete-${name}`
+      ClientRequestToken: `${name}-delete-` + getRandomToken(),
     }, (err, data) => {
       if (err) reject(err);
       else resolve(data);
     });
   });
+}
+
+const getStackIfExists = async (name) => {
+  try {
+    let { Stacks } = await describeStack(name);
+    return Stacks[0];
+  } catch (e) {
+    logIfVerbose(e.message, true);
+    if (e.message.match("(.*)" + name + "(.*)does not exist(.*)")) {
+      return false;
+    }
+    throw e;
+  }
 }
 
 const getNextStackEvent = async (id, next) => {
@@ -238,7 +246,7 @@ const getStackEvents = async (id) => {
   return events.sort((e1, e2) => e1.Timestamp - e2.Timestamp);
 };
 
-const monitorStackProgress = async (id) => {
+const monitorStackProgress = async (id, token) => {
   let in_progress = true;
   let events_seen = []
   logIfVerbose(`Start monitoring stack ${id}`);
@@ -250,7 +258,9 @@ const monitorStackProgress = async (id) => {
       logIfVerbose(`Can't get stack events: ${e}`);
     }
     for (e of events) {
-      if (e.Timestamp < last_time || events_seen.includes(e.EventId)) {
+      if (e.Timestamp < last_time ||
+          events_seen.includes(e.EventId) ||
+          e.ClientRequestToken !== token) {
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
         // TODO: Improve event display
@@ -260,6 +270,7 @@ const monitorStackProgress = async (id) => {
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
           e.StackId === id && e.PhysicalResourceId === id &&
           stack_states.includes(e.ResourceStatus) &&
+          e.ClientRequestToken === token &&
           e.Timestamp > last_time)
       {
         in_progress = false;
@@ -270,24 +281,57 @@ const monitorStackProgress = async (id) => {
       await delay(1000);
     }
   }
-  logIfVerbose(`End monitoring stack ${id}`);
+  logIfVerbose(`End monitoring stack ${id} with token ${token}`);
 }
 
-const createCIS3Bucket = async (name) => {
-  let { StackId } = await createStack(
+const createStack = async (name, templateBody, parameters) => {
+  let { StackId } = await createCFStack(name, templateBody, parameters);
+  let token = `${name}-create-` + getRandomToken();
+  await monitorStackProgress(StackId,token);
+}
+
+const updateStack = async (name, templateBody, parameters) => {
+  let stack = await getStackIfExists(name);
+  if (stack.StackId) {
+    let StackId = stack.StackId;
+    let token = `${name}-update-` + getRandomToken();
+    await updateCFStack(name, templateBody, parameters, token);
+    await monitorStackProgress(StackId, token);
+  }
+}
+
+const deleteStack = async (name) => {
+  let stack = await getStackIfExists(name);
+  if (stack.StackId) {
+    let StackId = stack.StackId;
+    let token = `${name}-delete-` + getRandomToken();
+    await deleteCFStack(StackId, token);
+    await monitorStackProgress(StackId, token);
+  }
+}
+
+const deleteS3Bucket = async (name) => {
+  // TODO: Clear Bucket
+  await deleteStack(name);
+}
+
+const createS3Bucket = async (name) => {
+  await createStack(
     name,
     await getCiS3Template(),
     { ProjectName : name }
   );
-  await monitorStackProgress(StackId);
 }
 
-const deleteCIS3Bucket = async (name) => {
-  let { Stacks } = await describeStack(name);
-  let { StackId } = Stacks[0];
-  await deleteStack(StackId);
-  await monitorStackProgress(StackId);
+const updateS3Bucket = async (name) => {
+  // TODO: Clear Bucket
+  await updateStack(
+    name,
+    await getCiS3Template(),
+    { ProjectName : name }
+  );
 }
+
 
 // MAIN #######################################################################
 
@@ -300,10 +344,14 @@ const deleteCIS3Bucket = async (name) => {
   }
 
   if (commander.removeCfBucket) {
-    await deleteCIS3Bucket(commander.projectName);
+    await deleteS3Bucket(commander.projectName);
   }
 
   if (commander.init) {
-    await createCIS3Bucket(commander.projectName);
+    await createS3Bucket(commander.projectName);
+  }
+
+  if (commander.apply) {
+    await updateS3Bucket(commander.projectName);
   }
 })();
