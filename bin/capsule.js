@@ -265,7 +265,6 @@ const monitorStackProgress = async (id, token) => {
       if (e.Timestamp < last_time ||
           events_seen.includes(e.EventId) ||
           (token && e.ClientRequestToken !== token)) {
-        console.log('Ignored ', e);
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
         // TODO: Improve event display
