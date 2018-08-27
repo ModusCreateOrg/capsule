@@ -9,6 +9,7 @@ const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
 let cf;
+let s3;
 
 //#############################################################################
 
@@ -120,7 +121,10 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
 
   // Load the aws libraries with authentication already set
   cf = new aws.CloudFormation();
+  s3 = new aws.S3();
 }
+
+// AWS CF Helpers #############################################################
 
 const getFormattedParameters = (parameters) => {
   let formated_parameters = [];
@@ -260,7 +264,8 @@ const monitorStackProgress = async (id, token) => {
     for (e of events) {
       if (e.Timestamp < last_time ||
           events_seen.includes(e.EventId) ||
-          e.ClientRequestToken !== token) {
+          (token && e.ClientRequestToken !== token)) {
+        console.log('Ignored ', e);
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
         // TODO: Improve event display
@@ -270,7 +275,7 @@ const monitorStackProgress = async (id, token) => {
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
           e.StackId === id && e.PhysicalResourceId === id &&
           stack_states.includes(e.ResourceStatus) &&
-          e.ClientRequestToken === token &&
+          (!token || token && e.ClientRequestToken === token ) &&
           e.Timestamp > last_time)
       {
         in_progress = false;
@@ -285,9 +290,9 @@ const monitorStackProgress = async (id, token) => {
 }
 
 const createStack = async (name, templateBody, parameters) => {
-  let { StackId } = await createCFStack(name, templateBody, parameters);
   let token = `${name}-create-` + getRandomToken();
-  await monitorStackProgress(StackId,token);
+  let { StackId } = await createCFStack(name, templateBody, parameters, token);
+  await monitorStackProgress(StackId, token);
 }
 
 const updateStack = async (name, templateBody, parameters) => {
@@ -306,12 +311,51 @@ const deleteStack = async (name) => {
     let StackId = stack.StackId;
     let token = `${name}-delete-` + getRandomToken();
     await deleteCFStack(StackId, token);
-    await monitorStackProgress(StackId, token);
+    await monitorStackProgress(StackId);
+  }
+}
+
+// AWS S3 Helpers #############################################################
+
+const listS3BucketObjects = async (name) => {
+  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
+  return new Promise((resolve, reject) => {
+    s3.listObjectsV2({
+      Bucket: name
+    }, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+}
+
+const clearS3Bucket = async (name) => {
+  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
+  try {
+    let { Contents } = await listS3BucketObjects(name);
+    if (Contents.length) {
+      let Objects = Contents.map( obj => {
+        return { Key : obj.Key };
+      });
+      return new Promise((resolve, reject) => {
+        s3.deleteObjects({
+          Bucket: name,
+          Delete: { Objects }
+        }, (err, data) => {
+          if (err) reject(err);
+          else resolve(data);
+        });
+      });
+    }
+  } catch (e) {
+    logIfVerbose(e.message, true);
+    if (e.message.match("(.*)does not exist(.*)")) return;
+    throw e;
   }
 }
 
 const deleteS3Bucket = async (name) => {
-  // TODO: Clear Bucket
+  await clearS3Bucket(`cf-${name}-capsule-ci`);
   await deleteStack(name);
 }
 
@@ -324,7 +368,7 @@ const createS3Bucket = async (name) => {
 }
 
 const updateS3Bucket = async (name) => {
-  // TODO: Clear Bucket
+  await clearS3Bucket(`cf-${name}-capsule-ci`);
   await updateStack(
     name,
     await getCiS3Template(),
