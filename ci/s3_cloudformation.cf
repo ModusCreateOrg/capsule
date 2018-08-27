@@ -9,4 +9,4 @@ Resources:
   S3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Sub "cf-${ProjectName}-ci"
+      BucketName: !Sub "cf-${ProjectName}-capsule-ci"

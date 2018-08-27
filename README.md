@@ -77,6 +77,38 @@ aws cloudformation create-stack \
 - *ComputeType*: `BUILD_GENERAL1_SMALL` (Small 3 GB memory, 2 vCPU) | `BUILD_GENERAL1_MEDIUM` (Medium 7 GB memory, 4 vCPU) | `BUILD_GENERAL1_LARGE` (large 15 GB memory, 8 vCPU). Default: `BUILD_GENERAL1_SMALL`.
 - *BuildSpecLocation*: Path of the file `buildspec.yml` to use (Defaults to `<repo-root>/buildspec.yml`
 
+
+### Using the capsule cli:
+
+The capsule cli is a NodeJS cli app with the intention to simplify the generation of the hosting infrastructure and ci infrastructure. For nested stacks, it requires to generate a base s3 bucket. This can be generated in the following way:
+
+```sh
+$ ./capsule init --project-name <project-name>
+```
+
+For getting the complete list of options, just enter `--help`:
+
+```sh
+$ ./bin/capsule.js --help
+
+  Usage: capsule [options]
+
+  Options:
+
+    -V, --version                      output the version number
+    init                               Initializes the s3 bucket required to store nested stack templates
+    apply                              Updates the templates into the s3 bucket and runs the nested stack
+    -n, --project-name <project-name>  Push cf templates to the s3 bucket, and creates it if it does not exist
+    -c, --config <config-path>         Load the configuration from the specified path
+    -p, --aws-profile <profile>        The AWS profile to use
+    -d, --remove-cf-bucket             Remove the bucket used for storing the nested templates
+    -v, --verbose                      verbose output
+    -h, --help                         output usage information
+
+```
+
+Note: the CLI interface will be changed soon with a different set of sub-commands and options to make it more intuitive.
+
 ### Future steps:
 
 - The CI for the hosted project will still be using codebuild
