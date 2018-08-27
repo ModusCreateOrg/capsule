@@ -226,6 +226,11 @@ const deleteCFStack = async (id, name, token) => {
   });
 }
 
+/*
+ * getStackIfExists:
+ * Given the stack name it returns the stack details if exists, if not it
+ * returns false.
+ */
 const getStackIfExists = async (name) => {
   try {
     let { Stacks } = await describeStack(name);
@@ -254,6 +259,11 @@ const getNextStackEvent = async (id, next) => {
   });
 }
 
+/*
+ * getStackEvents:
+ * Given the Stack id, it returns the list of events of the stack and nested
+ * stacks.
+ */
 const getStackEvents = async (id) => {
   let response = await getNextStackEvent(id);
   let events = response.StackEvents;
@@ -274,6 +284,14 @@ const getStackEvents = async (id) => {
   return events.sort((e1, e2) => e1.Timestamp - e2.Timestamp);
 };
 
+/*
+ * Given the stack id and the token that identifies the stack change request,
+ * it prints the events filtered by the id and the token, and it ensures the
+ * events are always new.
+ * The monitoring will finish when an event with status is one of the final
+ * status from AWS.
+ * See: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
+ */
 const monitorStackProgress = async (id, token) => {
   let in_progress = true;
   let events_seen = []
@@ -312,12 +330,24 @@ const monitorStackProgress = async (id, token) => {
   logIfVerbose(`End monitoring stack ${id} with token ${token}`);
 }
 
+/*
+ * createStack:
+ * Given the stack name, the stack template in string format, and its
+ * parameters. It creates the stack and monitors it by polling for the stack 
+ * events and printing it in stdout.
+ */
 const createStack = async (name, templateBody, parameters) => {
   let token = `${name}-create-` + getRandomToken();
   let { StackId } = await createCFStack(name, templateBody, parameters, token);
   await monitorStackProgress(StackId, token);
 }
 
+/*
+ * updateStack:
+ * Given the stack name, the stack template in string format, and its
+ * parameters. It updates the stack and monitors it by polling for the stack 
+ * events and printing it in stdout.
+ */
 const updateStack = async (name, templateBody, parameters) => {
   let stack = await getStackIfExists(name);
   if (stack.StackId) {
@@ -328,6 +358,11 @@ const updateStack = async (name, templateBody, parameters) => {
   }
 }
 
+/*
+ * updateStack:
+ * Given the stack name, it deletes the stack and monitors it by polling for
+ * the stack events and printing it in stdout.
+ */
 const deleteStack = async (name) => {
   let { StackId } = await getStackIfExists(name);
   if (StackId) {
@@ -351,6 +386,11 @@ const listS3BucketObjects = async (name) => {
   });
 }
 
+/*
+ * clearS3Bucket:
+ * Given an s3 bucket, it removes all its content. This is required by CF in
+ * order to remove an s3 bucket.
+ */
 const clearS3Bucket = async (name) => {
   // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
   try {
@@ -376,12 +416,22 @@ const clearS3Bucket = async (name) => {
   }
 }
 
-const deleteS3Bucket = async (name) => {
+/*
+ * deleteS3CIBucket:
+ * Given the name of the project, it removes the CF templates stored in the s3
+ * bucket used for the CI. And finally removes the CI s3 bucket.
+ */
+const deleteS3CIBucket = async (name) => {
   await clearS3Bucket(`cf-${name}-capsule-ci`);
   await deleteStack(name);
 }
 
-const createS3Bucket = async (name) => {
+/*
+ * createS3CIBucket:
+ * Given the name of the project, it creates the s3 bucket used for storing the
+ * CF templates for nested CF Stacks.
+ */
+const createS3CIBucket = async (name) => {
   await createStack(
     name,
     await getCiS3Template(),
@@ -389,7 +439,13 @@ const createS3Bucket = async (name) => {
   );
 }
 
-const updateS3Bucket = async (name) => {
+/*
+ * updateS3CIBucket:
+ * Given the name of the project, it updates the s3 bucket used for storing the
+ * CF templates for nested CF Stacks. Given that the bucket may require to be
+ * re-created, it will clean the bucket.
+ */
+const updateS3CIBucket = async (name) => {
   await clearS3Bucket(`cf-${name}-capsule-ci`);
   await updateStack(
     name,
@@ -410,14 +466,14 @@ const updateS3Bucket = async (name) => {
   }
 
   if (commander.removeCfBucket) {
-    await deleteS3Bucket(commander.projectName);
+    await deleteS3CIBucket(commander.projectName);
   }
 
   if (commander.init) {
-    await createS3Bucket(commander.projectName);
+    await createS3CIBucket(commander.projectName);
   }
 
   if (commander.apply) {
-    await updateS3Bucket(commander.projectName);
+    await updateS3CIBucket(commander.projectName);
   }
 })();
