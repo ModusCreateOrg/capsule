@@ -331,8 +331,9 @@ const updateStack = async (name, templateBody, parameters) => {
 const deleteStack = async (name) => {
   let { StackId } = await getStackIfExists(name);
   if (StackId) {
-    await deleteCFStack(StackId, `${name}-delete-` + getRandomToken());
-    await monitorStackProgress(StackId);
+    let token = `${name}-delete-` + getRandomToken();
+    await deleteCFStack(StackId, name, token);
+    await monitorStackProgress(StackId, token);
   }
 }
 
