@@ -194,7 +194,7 @@ const deleteCFStack = async (id, name, token) => {
   return new Promise((resolve, reject) => {
     cf.deleteStack({
       StackName: id,
-      ClientRequestToken: `${name}-delete-` + getRandomToken(),
+      ClientRequestToken: token,
     }, (err, data) => {
       if (err) reject(err);
       else resolve(data);
@@ -306,11 +306,9 @@ const updateStack = async (name, templateBody, parameters) => {
 }
 
 const deleteStack = async (name) => {
-  let stack = await getStackIfExists(name);
-  if (stack.StackId) {
-    let StackId = stack.StackId;
-    let token = `${name}-delete-` + getRandomToken();
-    await deleteCFStack(StackId, token);
+  let { StackId } = await getStackIfExists(name);
+  if (StackId) {
+    await deleteCFStack(StackId, `${name}-delete-` + getRandomToken());
     await monitorStackProgress(StackId);
   }
 }
