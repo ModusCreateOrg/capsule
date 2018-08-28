@@ -24,8 +24,9 @@ commander
   .option('-v, --verbose', 'verbose output')
   .parse(process.argv);
 
-// Globals ####################################################################
-
+/*
+ * Globals
+ */
 const {
   // AWS Access Key
   AWS_ACCESS_KEY_ID,
@@ -37,8 +38,11 @@ const {
   AWS_REGION
 } = process.env;
 
-// References
-// - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
+/*
+ * References
+ * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
+ *
+ */
 const stack_states = [
   'CREATE_COMPLETE',
   'CREATE_FAILED',
@@ -60,8 +64,10 @@ const paths = {
 
 let last_time = new Date(new Date() - 1000);
 
-// Helpers ####################################################################
-
+/*
+ * Helpers
+ *
+ */
 const logIfVerbose = (str, error) => {
   if (commander.verbose){
     if (error){
@@ -131,7 +137,8 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
  *
  * Given an object of key->value, it will return the list of parameters in the
  * format expected by AWS.
- * See: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const getFormattedParameters = (parameters) => {
   let formated_parameters = [];
@@ -149,9 +156,10 @@ const getFormattedParameters = (parameters) => {
  * Given the name of the stack, a string with the template body to apply, an
  * object with the stack parameters, and a token, it starts the CF stack
  * creation request identifed by the token.
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const createCFStack = async (name, template_body, parameters, token) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
     cf.createStack({
       StackName: name,
@@ -175,9 +183,10 @@ const createCFStack = async (name, template_body, parameters, token) => {
  * Given the name of the stack, a string with the template body to apply, an
  * object with the stack parameters, and a token, it starts the CF stack
  * update request identifed by the token.
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const updateCFStack = async (name, template_body, parameters, token) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
     cf.updateStack({
       StackName: name,
@@ -196,9 +205,12 @@ const updateCFStack = async (name, template_body, parameters, token) => {
   });
 }
 
+/*
+ * describeStack
+ * References:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
+ */
 const describeStack = async (StackName) => {
-  // References:
-  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
   return new Promise((resolve, reject) => {
     cf.describeStacks({ StackName }, (err, data) => {
       if (err) reject(err);
@@ -211,10 +223,10 @@ const describeStack = async (StackName) => {
  * updateCFStack:
  * Given the id and name of the stack,and a token, it starts the CF stack
  * delete request identifed by the token.
+ * References:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#deleteStack-property
  */
 const deleteCFStack = async (id, name, token) => {
-  // References:
-  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#deleteStack-property
   return new Promise((resolve, reject) => {
     cf.deleteStack({
       StackName: id,
@@ -244,10 +256,13 @@ const getStackIfExists = async (name) => {
   }
 }
 
+/*
+ * getNextStackEvent
+ * References:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
+ * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-listing-event-history.html
+ */
 const getNextStackEvent = async (id, next) => {
-  // References:
-  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
-  // - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-listing-event-history.html
   return new Promise((resolve, reject) => {
     cf.describeStackEvents({
       StackName: id,
@@ -333,7 +348,7 @@ const monitorStackProgress = async (id, token) => {
 /*
  * createStack:
  * Given the stack name, the stack template in string format, and its
- * parameters. It creates the stack and monitors it by polling for the stack 
+ * parameters. It creates the stack and monitors it by polling for the stack
  * events and printing it in stdout.
  */
 const createStack = async (name, templateBody, parameters) => {
@@ -345,7 +360,7 @@ const createStack = async (name, templateBody, parameters) => {
 /*
  * updateStack:
  * Given the stack name, the stack template in string format, and its
- * parameters. It updates the stack and monitors it by polling for the stack 
+ * parameters. It updates the stack and monitors it by polling for the stack
  * events and printing it in stdout.
  */
 const updateStack = async (name, templateBody, parameters) => {
