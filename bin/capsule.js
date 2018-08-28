@@ -17,6 +17,7 @@ commander
   .version('0.0.1')
   .option('create', 'Initializes the s3 bucket required to store nested stack templates')
   .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
+  .option('delete', 'Deletes the s3 bucket contents')
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
@@ -405,9 +406,9 @@ const listS3BucketObjects = async (name) => {
  * clearS3Bucket:
  * Given an s3 bucket, it removes all its content. This is required by CF in
  * order to remove an s3 bucket.
+ * Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
  */
 const clearS3Bucket = async (name) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
   try {
     let { Contents } = await listS3BucketObjects(name);
     if (Contents.length) {

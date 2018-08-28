@@ -96,8 +96,9 @@ $ ./bin/capsule.js --help
   Options:
 
     -V, --version                      output the version number
-    init                               Initializes the s3 bucket required to store nested stack templates
-    apply                              Updates the templates into the s3 bucket and runs the nested stack
+    create                             Initializes the s3 bucket required to store nested stack templates
+    update                             Updates the templates into the s3 bucket and runs the nested stack
+    delete                             Delete the s3 bucket contents
     -n, --project-name <project-name>  Push cf templates to the s3 bucket, and creates it if it does not exist
     -c, --config <config-path>         Load the configuration from the specified path
     -p, --aws-profile <profile>        The AWS profile to use
