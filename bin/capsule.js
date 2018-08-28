@@ -15,8 +15,8 @@ let s3;
 
 commander
   .version('0.0.1')
-  .option('init', 'Initializes the s3 bucket required to store nested stack templates')
-  .option('apply', 'Updates the templates into the s3 bucket and runs the nested stack')
+  .option('create', 'Initializes the s3 bucket required to store nested stack templates')
+  .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
@@ -374,7 +374,7 @@ const updateStack = async (name, templateBody, parameters) => {
 }
 
 /*
- * updateStack:
+ * deleteStack:
  * Given the stack name, it deletes the stack and monitors it by polling for
  * the stack events and printing it in stdout.
  */
@@ -432,16 +432,6 @@ const clearS3Bucket = async (name) => {
 }
 
 /*
- * deleteS3CIBucket:
- * Given the name of the project, it removes the CF templates stored in the s3
- * bucket used for the CI. And finally removes the CI s3 bucket.
- */
-const deleteS3CIBucket = async (name) => {
-  await clearS3Bucket(`cf-${name}-capsule-ci`);
-  await deleteStack(name);
-}
-
-/*
  * createS3CIBucket:
  * Given the name of the project, it creates the s3 bucket used for storing the
  * CF templates for nested CF Stacks.
@@ -469,6 +459,15 @@ const updateS3CIBucket = async (name) => {
   );
 }
 
+/*
+ * deleteS3CIBucket:
+ * Given the name of the project, it removes the CF templates stored in the s3
+ * bucket used for the CI. And finally removes the CI s3 bucket.
+ */
+const deleteS3CIBucket = async (name) => {
+  await clearS3Bucket(`cf-${name}-capsule-ci`);
+  await deleteStack(name);
+}
 
 // MAIN #######################################################################
 
@@ -480,15 +479,17 @@ const updateS3CIBucket = async (name) => {
     printErrorAndDie('Project name is required!', true);
   }
 
-  if (commander.removeCfBucket) {
-    await deleteS3CIBucket(commander.projectName);
-  }
-
-  if (commander.init) {
+  if (commander.create) {
     await createS3CIBucket(commander.projectName);
   }
 
-  if (commander.apply) {
+  if (commander.update) {
     await updateS3CIBucket(commander.projectName);
   }
+
+  if (commander.delete) {
+    await deleteS3CIBucket(commander.projectName);
+  }
+
+
 })();
