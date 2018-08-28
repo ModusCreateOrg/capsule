@@ -29,15 +29,15 @@ commander
 
 commander
   .command('ci')
-  .option('create', 'Initializes the s3 bucket required to store nested stack templates')
-  .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
-  .option('delete', 'Deletes the s3 bucket contents')
+  .option('create', 'Description')
+  .option('update', 'Description')
+  .option('delete', 'Description')
 
 commander
   .command('web')
-  .option('create', 'Initializes the s3 bucket required to store nested stack templates')
-  .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
-  .option('delete', 'Deletes the s3 bucket contents')
+  .option('create', 'Description')
+  .option('update', 'Description')
+  .option('delete', 'Description')
 
   commander.parse(process.argv);
 /*
@@ -491,6 +491,8 @@ const deleteS3CIBucket = async (name) => {
   global.cwd = process.cwd();
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
+
+  console.log(commander)
   if (!commander.projectName) {
     printErrorAndDie('Project name is required!', true);
   }
