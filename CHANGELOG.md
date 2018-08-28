@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-Currently in development. On initial release 1.0.0 an entry 
-will be made with the initial releases content. 
+Templates for:
+
+* Certificates
+* CloudFront
+* CFOAI
+* Route 53
+* S3
+
+Command line support for:
+
+* Initialize
+* Apply 
 
