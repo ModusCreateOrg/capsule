@@ -15,6 +15,7 @@ let s3;
 
 commander
   .version('0.0.1')
+  .command('s3')
   .option('create', 'Initializes the s3 bucket required to store nested stack templates')
   .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
   .option('delete', 'Deletes the s3 bucket contents')
