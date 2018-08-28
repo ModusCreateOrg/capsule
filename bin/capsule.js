@@ -15,6 +15,8 @@ let s3;
 
 commander
   .version('0.0.1')
+
+commander
   .command('s3')
   .option('create', 'Initializes the s3 bucket required to store nested stack templates')
   .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
@@ -24,8 +26,20 @@ commander
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-d, --remove-cf-bucket', 'Remove the bucket used for storing the nested templates')
   .option('-v, --verbose', 'verbose output')
-  .parse(process.argv);
 
+commander
+  .command('ci')
+  .option('create', 'Initializes the s3 bucket required to store nested stack templates')
+  .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
+  .option('delete', 'Deletes the s3 bucket contents')
+
+commander
+  .command('web')
+  .option('create', 'Initializes the s3 bucket required to store nested stack templates')
+  .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
+  .option('delete', 'Deletes the s3 bucket contents')
+
+  commander.parse(process.argv);
 /*
  * Globals
  */
