@@ -25,7 +25,10 @@
     "cdn",
     "cloudformation"
   ],
-  "contributors": ["Facundo Victor <facundovt@gmail.com>"],
+  "contributors": [
+    "Facundo Victor <facundovt@gmail.com>",
+    "Andy Dennis <andy.dennis@moduscreate.com>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ModusCreateOrg/capsule/issues"
