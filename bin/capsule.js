@@ -508,6 +508,35 @@ const deleteS3CIBucket = async (name) => {
   await deleteStack(name);
 }
 
+
+/*
+ * createCliStack:
+ * Given the name of the project, it grabs the scripts from
+ * the s3 bucket used for storing the
+ * CF templates and creates the CF Stack.
+ */
+const createCliStack = async (name) => {
+}
+
+/*
+ * updateCliStack:
+ * Given the name of the project, it updates the target projects stack
+ * CF templates for nested CF Stacks.
+ */
+const updateCliStack = async (name) => {
+}
+
+
+/*
+ * deleteCliStack:
+ * Given the name of the project, it removes the CF templates stored in the s3
+ * bucket used for and tears down the stack.
+ */
+const deleteCliStack = async (name) => {
+}
+
+
+
 /*
  * s3Cmnds:
  * Handle S3 bucket commands
@@ -534,6 +563,17 @@ const s3Cmds = async(cmd) => {
  *
  */
 const cliCmds = async(cmd) => {
+  if (commander.args.includes('create')) {
+    await createCliStack(commander.projectName);
+  }
+
+  if (commander.args.includes('update')) {
+    await updateCliStack(commander.projectName);
+  }
+
+  if (commander.args.includes('delete')) {
+    await deleteCliStack(commander.projectName);
+  }
 }
 
 /*
