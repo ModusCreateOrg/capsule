@@ -15,6 +15,7 @@ let s3;
 
 commander
   .version('0.0.1')
+  .option('-v, --verbose', 'verbose output')
 
 commander
   .command('create <type>')
@@ -22,9 +23,8 @@ commander
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
-  .option('-v, --verbose', 'verbose output')
   .action(function (type, options) {
-          console.log("Executing for: "+type)
+          console.log("Executing create for: "+type)
           commander.projectName = options.projectName || undefined
    });
 
@@ -34,7 +34,10 @@ commander
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
-  .option('-v, --verbose', 'verbose output')
+  .action(function (type, options) {
+          console.log("Executing update for: "+type)
+          commander.projectName = options.projectName || undefined
+   });
 
 commander
   .command('delete <type>')
@@ -43,9 +46,13 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-d, --remove-cf-bucket', 'Remove the bucket used for storing the nested templates')
-  .option('-v, --verbose', 'verbose output')
+  .action(function (type, options) {
+          console.log("Executing delete for: "+type)
+          commander.projectName = options.projectName || undefined
+   });
 
   commander.parse(process.argv);
+
 /*
  * Globals
  */
@@ -491,7 +498,11 @@ const deleteS3CIBucket = async (name) => {
   await deleteStack(name);
 }
 
-
+/*
+ * s3Cmnds:
+ * Handle S3 bucket commands
+ *
+ */
 const s3Cmds = async(cmd) => {
 
   if (commander.args.includes('create')) {
@@ -507,6 +518,21 @@ const s3Cmds = async(cmd) => {
   }
 }
 
+/*
+ * cliCmds:
+ * Handle commandline commands
+ *
+ */
+const cliCmds = async(cmd) => {
+}
+
+/*
+ * webComds:
+ * Handle web commands
+ *
+ */
+const webCmds = async(cmd) => {
+}
 
 // MAIN #######################################################################
 (async () => {
@@ -518,9 +544,16 @@ const s3Cmds = async(cmd) => {
      printErrorAndDie('Project name is required!', true);
   }
 
-
   if(commander.args.includes('s3')) {
      await s3Cmds()
+  }
+
+  if(commander.args.includes('cli')) {
+     await cliCmds()
+  }
+
+  if(commander.args.includes('web')) {
+     await webCmds()
   }
 
 })();
