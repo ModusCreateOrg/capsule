@@ -17,27 +17,33 @@ commander
   .version('0.0.1')
 
 commander
-  .command('s3')
-  .option('create', 'Initializes the s3 bucket required to store nested stack templates')
-  .option('update', 'Updates the templates into the s3 bucket and runs the nested stack')
-  .option('delete', 'Deletes the s3 bucket contents')
+  .command('create <type>')
+  .description('Initializes the s3 bucket required to store nested stack templates takes: s3, ci or web')
+  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
+  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-v, --verbose', 'verbose output')
+  .action(function (type, options) {
+          console.log("Executing for: "+type)
+          commander.projectName = options.projectName || undefined
+   });
+
+commander
+  .command('update <type>')
+  .description('Updates the templates into the s3 bucket and runs the nested stack takes: s3, ci or web')
+  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
+  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-v, --verbose', 'verbose output')
+
+commander
+  .command('delete <type>')
+  .description('Deletes the s3 bucket contents takes: s3, ci or web')
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-d, --remove-cf-bucket', 'Remove the bucket used for storing the nested templates')
   .option('-v, --verbose', 'verbose output')
-
-commander
-  .command('ci')
-  .option('create', 'Description')
-  .option('update', 'Description')
-  .option('delete', 'Description')
-
-commander
-  .command('web')
-  .option('create', 'Description')
-  .option('update', 'Description')
-  .option('delete', 'Description')
 
   commander.parse(process.argv);
 /*
@@ -485,29 +491,36 @@ const deleteS3CIBucket = async (name) => {
   await deleteStack(name);
 }
 
-// MAIN #######################################################################
 
+const s3Cmds = async(cmd) => {
+
+  if (commander.args.includes('create')) {
+    await createS3CIBucket(commander.projectName);
+  }
+
+  if (commander.args.includes('update')) {
+    await updateS3CIBucket(commander.projectName);
+  }
+
+  if (commander.args.includes('delete')) {
+    await deleteS3CIBucket(commander.projectName);
+  }
+}
+
+
+// MAIN #######################################################################
 (async () => {
 
   global.cwd = process.cwd();
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
-
   if (!commander.projectName) {
-    printErrorAndDie('Project name is required!', true);
+     printErrorAndDie('Project name is required!', true);
   }
 
-  if (commander.args.includes('s3') && commander.args.includes('create')) {
-    await createS3CIBucket(commander.projectName);
-  }
 
-  if (commander.args.includes('s3') && commander.args.includes('update')) {
-    await updateS3CIBucket(commander.projectName);
+  if(commander.args.includes('s3')) {
+     await s3Cmds()
   }
-
-  if (commander.args.includes('s3') && commander.args.includes('delete')) {
-    await deleteS3CIBucket(commander.projectName);
-  }
-
 
 })();
