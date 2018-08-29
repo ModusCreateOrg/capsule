@@ -121,7 +121,10 @@ const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
 
 // File Helpers ##############################################################
 
-// TODO: This may require to get it from github directly to avoid packing it
+/*
+ * getTemplateBody
+ * TODO: This may require to get it from github directly to avoid packing it
+ */
 const getTemplateBody = (path) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, data) => {
@@ -135,9 +138,12 @@ const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
 
 // AWS Helpers ################################################################
 
+/*
+ * loadAWSConfiguration:
+ * Environment variables should have higher precedence
+ * Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-environment.html
+ */
 const loadAWSConfiguration = async (config_path, aws_profile) => {
-  // Environment variables should have higher precedence
-  // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-environment.html
   if ((AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY) || AWS_PROFILE) {
     // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html
     // Reference: https://github.com/aws/aws-sdk-js/pull/1391
@@ -418,8 +424,12 @@ const deleteStack = async (name) => {
 
 // AWS S3 Helpers #############################################################
 
+/*
+ * listS3BucketObjects
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
+ */
 const listS3BucketObjects = async (name) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
   return new Promise((resolve, reject) => {
     s3.listObjectsV2({
       Bucket: name
