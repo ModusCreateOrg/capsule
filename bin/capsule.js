@@ -515,7 +515,7 @@ const deleteS3CIBucket = async (name) => {
  * the s3 bucket used for storing the
  * CF templates and creates the CF Stack.
  */
-const createCliStack = async (name) => {
+const createCiStack = async (name) => {
 }
 
 /*
@@ -523,18 +523,17 @@ const createCliStack = async (name) => {
  * Given the name of the project, it updates the target projects stack
  * CF templates for nested CF Stacks.
  */
-const updateCliStack = async (name) => {
+const updateCiStack = async (name) => {
 }
 
 
 /*
- * deleteCliStack:
+ * deleteCiStack:
  * Given the name of the project, it removes the CF templates stored in the s3
  * bucket used for and tears down the stack.
  */
-const deleteCliStack = async (name) => {
+const deleteCiStack = async (name) => {
 }
-
 
 
 /*
@@ -559,20 +558,20 @@ const s3Cmds = async(cmd) => {
 
 /*
  * cliCmds:
- * Handle commandline commands
+ * Handle continuous integration commands
  *
  */
-const cliCmds = async(cmd) => {
+const clCmds = async(cmd) => {
   if (commander.args.includes('create')) {
-    await createCliStack(commander.projectName);
+    await createCiStack(commander.projectName);
   }
 
   if (commander.args.includes('update')) {
-    await updateCliStack(commander.projectName);
+    await updateCiStack(commander.projectName);
   }
 
   if (commander.args.includes('delete')) {
-    await deleteCliStack(commander.projectName);
+    await deleteCiStack(commander.projectName);
   }
 }
 
@@ -598,8 +597,8 @@ const webCmds = async(cmd) => {
      await s3Cmds()
   }
 
-  if(commander.args.includes('cli')) {
-     await cliCmds()
+  if(commander.args.includes('ci')) {
+     await ciCmds()
   }
 
   if(commander.args.includes('web')) {
