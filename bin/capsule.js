@@ -488,24 +488,24 @@ const deleteS3CIBucket = async (name) => {
 // MAIN #######################################################################
 
 (async () => {
+
   global.cwd = process.cwd();
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
 
-  console.log(commander)
   if (!commander.projectName) {
     printErrorAndDie('Project name is required!', true);
   }
 
-  if (commander.create) {
+  if (commander.args.includes('s3') && commander.args.includes('create')) {
     await createS3CIBucket(commander.projectName);
   }
 
-  if (commander.update) {
+  if (commander.args.includes('s3') && commander.args.includes('update')) {
     await updateS3CIBucket(commander.projectName);
   }
 
-  if (commander.delete) {
+  if (commander.args.includes('s3') && commander.args.includes('delete')) {
     await deleteS3CIBucket(commander.projectName);
   }
 
