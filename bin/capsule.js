@@ -510,18 +510,43 @@ const deleteS3CIBucket = async (name) => {
 
 
 /*
- * createCliStack:
+ * createWebStack:
  * Given the name of the project, it grabs the scripts from
- * the s3 bucket used for storing the
- * CF templates and creates the CF Stack.
+ * the s3 bucket and spins up the web infrastructure
+ */
+const createWebStack = async (name) => {
+}
+
+/*
+ * updateWebStack:
+ * Given the name of the project, it updates the target projects stack
+ * and updates it..
+ */
+const updateWebStack = async (name) => {
+}
+
+
+/*
+ * deleteWebStack:
+ * Given the name of the project, it removes the web stack.
+ */
+const deleteWebStack = async (name) => {
+}
+
+
+
+/*
+ * createCiStack:
+ * Given the name of the project, it grabs the scripts from
+ * the s3 bucket used for codebuild
  */
 const createCiStack = async (name) => {
 }
 
 /*
- * updateCliStack:
+ * updateCiStack:
  * Given the name of the project, it updates the target projects stack
- * CF templates for nested CF Stacks.
+ * CF templates for codebuild.
  */
 const updateCiStack = async (name) => {
 }
@@ -529,8 +554,7 @@ const updateCiStack = async (name) => {
 
 /*
  * deleteCiStack:
- * Given the name of the project, it removes the CF templates stored in the s3
- * bucket used for and tears down the stack.
+ * Given the name of the project, it removes the CI process. .
  */
 const deleteCiStack = async (name) => {
 }
@@ -538,7 +562,10 @@ const deleteCiStack = async (name) => {
 
 /*
  * s3Cmnds:
- * Handle S3 bucket commands
+ * Handle S3 bucket commands.
+ * The S3 bucket contains the CF templates
+ * that are used by the web commands to
+ * built out the static hosting site.
  *
  */
 const s3Cmds = async(cmd) => {
@@ -558,7 +585,9 @@ const s3Cmds = async(cmd) => {
 
 /*
  * cliCmds:
- * Handle continuous integration commands
+ * Handle continuous integration stack build out
+ * THis allows you to use CloudBuild to pull code from
+ * a repository and dump it into the S3 bucket.
  *
  */
 const clCmds = async(cmd) => {
@@ -576,11 +605,25 @@ const clCmds = async(cmd) => {
 }
 
 /*
- * webComds:
- * Handle web commands
+ * webCmds:
+ * Handle web commands.
+ * These take the CF scripts from the S3 bucket
+ * and spin up the web hosting infrastructure
+ * for the static site.
  *
  */
 const webCmds = async(cmd) => {
+  if (commander.args.includes('create')) {
+    await createWebStack(commander.projectName);
+  }
+
+  if (commander.args.includes('update')) {
+    await updateWebStack(commander.projectName);
+  }
+
+  if (commander.args.includes('delete')) {
+    await deleteWebStack(commander.projectName);
+  }
 }
 
 // MAIN #######################################################################
