@@ -8,6 +8,7 @@ const fs = require('fs');
 const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
+const path = require('path')
 let cf;
 let s3;
 
@@ -97,7 +98,8 @@ const stack_states = [
 
 const paths = {
   base: `${__dirname}/../`,
-  ci_s3: 'ci/s3_cloudformation.cf'
+  ci_s3: 'ci/s3_cloudformation.cf',
+  cf_templates: 'templates/'
 }
 
 let last_time = new Date(new Date() - 1000);
@@ -544,6 +546,45 @@ const deleteS3Bucket = async (name) => {
   await deleteStack(name);
 }
 
+/*
+ * addFilesToS3Bucket:
+ *
+ */
+
+ const addFilesToS3Bucket = async (name) => {
+
+   const templates_path = `${paths.base}/${paths.cf_templates}`
+
+    fs.readdir(templates_path, (err, files) => {
+
+       if(!files || files.length === 0) {
+         console.log("Templates folder is missing")
+         return;
+       }
+
+       for (const file of files) {
+
+         const file_path = path.join(templates_path, file);
+
+         if (fs.lstatSync(file_path).isDirectory()) {
+              continue;
+         }
+
+         fs.readFile(file_path, (error, file_content) => {
+           if (error) { throw error; }
+
+           s3.putObject({
+             Bucket: `cf-${name}-capsule-ci`,
+             Key: file,
+             Body: file_content
+           }, (res) => {
+              console.log(`Successfully uploaded '${file}'!`);
+            });
+
+         });
+       }
+   });
+ }
 
 /*
  * createWebStack:
@@ -613,6 +654,8 @@ const s3Cmds = async() => {
 
   if (commander.type === 'create') {
     await createS3Bucket(commander.projectName);
+    console.log("Uploading files....")
+    await addFilesToS3Bucket(commander.projectName)
   }
 
   if (commander.type === 'update') {
