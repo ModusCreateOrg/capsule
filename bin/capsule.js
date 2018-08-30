@@ -136,6 +136,28 @@ const getTemplateBody = (path) => {
 
 const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
 
+/*
+ * getWebTemplate:
+ * Use bucket name to
+ * get the template.yml file from the S3 bucket
+ * then re-use the existing functions to
+ * build the stack
+ *
+ */
+const getWebTemplate = async (name) => {
+  let params = {Bucket: name, Key: 'template.yml'};
+  return new Promise((resolve, reject) => {
+      s3.getObject(params, function(err, data) {
+          if (err) reject(err);
+
+          let objectData = data.Body.toString('utf-8');
+          resolve(objectData);
+
+      });
+  });
+}
+
+
 // AWS Helpers ################################################################
 
 /*
@@ -255,7 +277,7 @@ const describeStack = async (StackName) => {
 }
 
 /*
- * updateCFStack:
+ * deleteCFStack:
  * Given the id and name of the stack,and a token, it starts the CF stack
  * delete request identifed by the token.
  * References:
@@ -385,6 +407,11 @@ const monitorStackProgress = async (id, token) => {
  * Given the stack name, the stack template in string format, and its
  * parameters. It creates the stack and monitors it by polling for the stack
  * events and printing it in stdout.
+ * When creating the initial S3 bucket to store the CF templates, it uses the
+ * s3_cloudformation.cf templates from the local file system.
+ * When building out the stack where the static website will be hosted
+ * it uses the bucket created from the s3_cloudformation.cf file, and looks
+ * in this for the template.yml file.
  */
 const createStack = async (name, templateBody, parameters) => {
   let token = `${name}-create-` + getRandomToken();
@@ -471,11 +498,11 @@ const clearS3Bucket = async (name) => {
 }
 
 /*
- * createS3CIBucket:
+ * createS3Bucket:
  * Given the name of the project, it creates the s3 bucket used for storing the
  * CF templates for nested CF Stacks.
  */
-const createS3CIBucket = async (name) => {
+const createS3Bucket = async (name) => {
   await createStack(
     name,
     await getCiS3Template(),
@@ -484,12 +511,12 @@ const createS3CIBucket = async (name) => {
 }
 
 /*
- * updateS3CIBucket:
+ * updateS3Bucket:
  * Given the name of the project, it updates the s3 bucket used for storing the
  * CF templates for nested CF Stacks. Given that the bucket may require to be
  * re-created, it will clean the bucket.
  */
-const updateS3CIBucket = async (name) => {
+const updateS3Bucket = async (name) => {
   await clearS3Bucket(`cf-${name}-capsule-ci`);
   await updateStack(
     name,
@@ -499,11 +526,11 @@ const updateS3CIBucket = async (name) => {
 }
 
 /*
- * deleteS3CIBucket:
+ * deleteS3Bucket:
  * Given the name of the project, it removes the CF templates stored in the s3
  * bucket used for the CI. And finally removes the CI s3 bucket.
  */
-const deleteS3CIBucket = async (name) => {
+const deleteS3Bucket = async (name) => {
   await clearS3Bucket(`cf-${name}-capsule-ci`);
   await deleteStack(name);
 }
@@ -515,6 +542,11 @@ const deleteS3CIBucket = async (name) => {
  * the s3 bucket and spins up the web infrastructure
  */
 const createWebStack = async (name) => {
+  await createStack(
+    name,
+    await getWebTemplate(name),
+    { ProjectName : name }
+  );
 }
 
 /*
@@ -571,15 +603,15 @@ const deleteCiStack = async (name) => {
 const s3Cmds = async(cmd) => {
 
   if (commander.args.includes('create')) {
-    await createS3CIBucket(commander.projectName);
+    await createS3Bucket(commander.projectName);
   }
 
   if (commander.args.includes('update')) {
-    await updateS3CIBucket(commander.projectName);
+    await updateS3Bucket(commander.projectName);
   }
 
   if (commander.args.includes('delete')) {
-    await deleteS3CIBucket(commander.projectName);
+    await deleteS3Bucket(commander.projectName);
   }
 }
 
