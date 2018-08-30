@@ -25,7 +25,10 @@ commander
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .action(function (type, options) {
           console.log("Executing create for: "+type)
+          commander.type = options._name || undefined
           commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
    });
 
 commander
@@ -36,7 +39,10 @@ commander
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .action(function (type, options) {
           console.log("Executing update for: "+type)
+          commander.type = options._name || undefined
           commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
    });
 
 commander
@@ -48,7 +54,10 @@ commander
   .option('-d, --remove-cf-bucket', 'Remove the bucket used for storing the nested templates')
   .action(function (type, options) {
           console.log("Executing delete for: "+type)
+          commander.type = options._name || undefined
           commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
    });
 
   commander.parse(process.argv);
@@ -600,17 +609,17 @@ const deleteCiStack = async (name) => {
  * built out the static hosting site.
  *
  */
-const s3Cmds = async(cmd) => {
+const s3Cmds = async() => {
 
-  if (commander.args.includes('create')) {
+  if (commander.type === 'create') {
     await createS3Bucket(commander.projectName);
   }
 
-  if (commander.args.includes('update')) {
+  if (commander.type === 'update') {
     await updateS3Bucket(commander.projectName);
   }
 
-  if (commander.args.includes('delete')) {
+  if (commander.type === 'delete') {
     await deleteS3Bucket(commander.projectName);
   }
 }
@@ -662,6 +671,7 @@ const webCmds = async(cmd) => {
 (async () => {
 
   global.cwd = process.cwd();
+
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
   if (!commander.projectName) {

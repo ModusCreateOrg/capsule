@@ -26,6 +26,142 @@ In order to use Capsule you will need the following:
 * A static website (HTMl, JS, CSS) that does not require server side code like PHP, Python or Java.
 
 
+### Security Credentials
+
+In order to use the Capsule command line interface you will need a number of security credentials.
+These credentials are used by the script to interact with your AWS account.
+
+
+#### JSON setup
+
+First we are going to create a single file `config.json`
+
+We a need directory to store this file, so create a new directory `.aws` under the root of your user 
+
+*Mac/Linux*
+
+`mkdir  ~/.aws`
+
+*Windows*
+
+`%UserProfile%\.aws`
+
+Next create the `config.json` file in the .aws directory, containing these keys:
+
+```json
+{ "accessKeyId": <YOUR_ACCESS_KEY_ID>, "secretAccessKey": <YOUR_SECRET_ACCESS_KEY>, "region": "us-west-1" }
+```
+
+After creating these files, log into your AWS account. We now need to create an Access Key. This can be done as follows:
+
+1. Open your AWS Console
+2. Click on your username in the top right
+3. Select `My Security Credentials`
+4. Fromt he screen that loads, click on `Users` in the sidebar
+5. Next click on your username in the table
+6. When this loads, click on the `Security Credentials` tab
+7. We can now create an Access Key by clking `Create Access Key`
+8. Finally click `Show User Security Credentials` and copy the ID and value. 
+
+These details can only be displayed once, so if forget or lose them, you will need to generate a new key. 
+If you wish you can download the CSV file from this screen as a backup.
+
+Re-open the config file e.g. vim `~/.aws/config.json`
+
+Now replace the `accessKeyId` value (<YOUR_ACCESS_KEY_ID>) with the value you copied from the AWS console.
+
+Next replace the `secretAccessKey` value (YOUR_SECRET_ACCESS_KEY) wuth the key you copied from the console.
+
+Make sure you wrap the value you paste in with `"` and `"`. 
+
+You can change the region if you wish as well.
+
+Save the file. You are now ready to use Capsule to build out your static site. 
+
+
+#### YAML setup
+
+First we are going to create two files. These are the `config` and `credentials` file.
+
+Create a new directory `.aws` under the root of your user 
+
+*Mac/Linux*
+
+`mkdir  ~/.aws`
+
+*Windows*
+
+`%UserProfile%\.aws`
+
+Next create a credentials file in the .aws directory, containing these keys:
+
+```yaml
+[default]
+aws_access_key_id=
+aws_secret_access_key=
+```
+
+After this, create a config file in the .aws directory and include the following:
+
+```yaml
+[default]
+region=
+output=
+```
+
+After creating these files, log into your AWS account. We now need to create an Access Key. This can be done as follows:
+
+1. Open your AWS Console
+2. Click on your username in the top right
+3. Select `My Security Credentials`
+4. Fromt he screen that loads, click on `Users` in the sidebar
+5. Next click on your username in the table
+6. When this loads, click on the `Security Credentials` tab
+7. We can now create an Access Key by clking `Create Access Key`
+8. Finally click `Show User Security Credentials` and copy the ID and value. 
+
+These details can only be displayed once, so if forget or lose them, you will need to generate a new key. 
+If you wish you can download the CSV file from this screen as a backup.
+
+Re-open the credentials file e.g. vim `~/.aws/credentials`
+
+Paste the ID into the key id value:
+
+```yaml
+aws_access_key_id=<the id you copied here>
+```
+
+Following this, paste the secret value into the secret key value:
+
+```yaml
+aws_secret_access_key=<the key value you copied here>
+```
+
+Our final step is the edit the `config` file and set a region and output type.
+
+You can chose whichever region makes sense to you, we are going to use us-west-2 as per the
+Amazon docs, and set the output to `json`.
+
+```yaml
+[default]
+region=us-west-2
+output=json
+```
+
+Save the file. 
+
+Your credentials and configuration are now setup to use Capsule.
+
+
+### Project Names
+
+During the setup of your site you will need to define a project name. This will be used to name the 
+S3 bucket in AWS. Therefore your project name must confirm to the S3 bucket naming standards.
+
+You can find these here:
+
+https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+
 ### Continuous Integration (CI)
 
 Capsule allows for Continuous Integration (CI) of your changes from a source code repository.
@@ -83,7 +219,7 @@ aws cloudformation create-stack \
 The capsule cli is a NodeJS cli app with the intention to simplify the generation of the hosting infrastructure and ci infrastructure. For nested stacks, it requires to generate a base s3 bucket. This can be generated in the following way:
 
 ```sh
-$ ./capsule init --project-name <project-name>
+$ ./capsule create --project-name <project-name> s3
 ```
 
 For getting the complete list of options, just enter `--help`:
