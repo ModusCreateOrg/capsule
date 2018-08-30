@@ -550,41 +550,31 @@ const deleteS3Bucket = async (name) => {
  * addFilesToS3Bucket:
  *
  */
-
- const addFilesToS3Bucket = async (name) => {
-
-   const templates_path = `${paths.base}/${paths.cf_templates}`
-
-    fs.readdir(templates_path, (err, files) => {
-
-       if(!files || files.length === 0) {
-         console.log("Templates folder is missing")
-         return;
-       }
-
-       for (const file of files) {
-
-         const file_path = path.join(templates_path, file);
-
-         if (fs.lstatSync(file_path).isDirectory()) {
-              continue;
-         }
-
-         fs.readFile(file_path, (error, file_content) => {
-           if (error) { throw error; }
-
-           s3.putObject({
-             Bucket: `cf-${name}-capsule-ci`,
-             Key: file,
-             Body: file_content
-           }, (res) => {
-              console.log(`Successfully uploaded '${file}'!`);
-            });
-
-         });
-       }
-   });
- }
+const addFilesToS3Bucket = async (name) => {
+  const templates_path = `${paths.base}/${paths.cf_templates}`
+  fs.readdir(templates_path, (err, files) => {
+    if(!files || files.length === 0) {
+      console.log("Templates folder is missing")
+      return;
+    }
+    for (const file of files) {
+      const file_path = path.join(templates_path, file);
+      if (fs.lstatSync(file_path).isDirectory()) {
+         continue;
+      }
+      fs.readFile(file_path, (error, file_content) => {
+        if (error) { throw error; }
+          s3.putObject({
+            Bucket: `cf-${name}-capsule-ci`,
+            Key: file,
+            Body: file_content
+          }, (res) => {
+            console.log(`Successfully uploaded '${file}'!`);
+          });
+      });
+    }
+  });
+}
 
 /*
  * createWebStack:
