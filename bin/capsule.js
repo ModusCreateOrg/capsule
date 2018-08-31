@@ -112,7 +112,8 @@ const paths = {
   base: `${__dirname}/../`,
   ci_s3: 'ci/s3_cloudformation.cf',
   cf_templates: 'templates/child_templates/',
-  web_template: 'templates/template.yaml'
+  web_template: 'templates/template.yaml',
+  aws_url: 'https://s3.amazonaws.com/'
 }
 
 let last_time = new Date(new Date() - 1000);
@@ -229,7 +230,6 @@ const getFormattedParameters = (parameters) => {
  * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const createCFStack = async (name, template_body, parameters, token) => {
-  var name = name.replace(/\./g,'')
   return new Promise((resolve, reject) => {
     cf.createStack({
       StackName: name,
@@ -257,7 +257,6 @@ const createCFStack = async (name, template_body, parameters, token) => {
  * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const updateCFStack = async (name, template_body, parameters, token) => {
-  var name = name.replace(/\./g,'')
   return new Promise((resolve, reject) => {
     cf.updateStack({
       StackName: name,
@@ -282,7 +281,6 @@ const updateCFStack = async (name, template_body, parameters, token) => {
  * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
  */
 const describeStack = async (StackName) => {
-  var StackName = StackName.replace(/\./g,'')
   return new Promise((resolve, reject) => {
     cf.describeStacks({ StackName }, (err, data) => {
       if (err) reject(err);
@@ -316,7 +314,6 @@ const deleteCFStack = async (id, name, token) => {
  * returns false.
  */
 const getStackIfExists = async (name) => {
-  var name = name.replace(/\./g,'')
   try {
     let { Stacks } = await describeStack(name);
     return Stacks[0];
@@ -430,8 +427,7 @@ const monitorStackProgress = async (id, token) => {
  * in this for the template.yml file.
  */
 const createStack = async (name, templateBody, parameters) => {
-  let tokenName = name.replace(/\./g,'')
-  let token = `${tokenName}-create-` + getRandomToken();
+  let token = `${name}-create-` + getRandomToken();
   let { StackId } = await createCFStack(name, templateBody, parameters, token);
   await monitorStackProgress(StackId, token);
 }
@@ -443,11 +439,10 @@ const createStack = async (name, templateBody, parameters) => {
  * events and printing it in stdout.
  */
 const updateStack = async (name, templateBody, parameters) => {
-  let tokenName = name.replace(/\./g,'')
   let stack = await getStackIfExists(name);
   if (stack.StackId) {
     let StackId = stack.StackId;
-    let token = `${tokenName}-update-` + getRandomToken();
+    let token = `${name}-update-` + getRandomToken();
     await updateCFStack(name, templateBody, parameters, token);
     await monitorStackProgress(StackId, token);
   }
@@ -459,11 +454,10 @@ const updateStack = async (name, templateBody, parameters) => {
  * the stack events and printing it in stdout.
  */
 const deleteStack = async (name) => {
-  let tokenName = name.replace(/\./g,'')
   let { StackId } = await getStackIfExists(name);
   if (StackId) {
-    let token = `${tokenName}-delete-` + getRandomToken();
-    await deleteCFStack(StackId, tokenName, token);
+    let token = `${name}-delete-` + getRandomToken();
+    await deleteCFStack(StackId, name, token);
     await monitorStackProgress(StackId, token);
   }
 }
@@ -590,23 +584,14 @@ const addFilesToS3Bucket = async (name) => {
  * it grabs the scripts from
  * the s3 bucket with that name and spins up the web infrastructure
  */
-const createWebStack = async (name) => {
-  let website = ""
-
-  if (commander.subdom) {
-      website = commander.subdom + "." + commander.dom
-  } else {
-      website = commander.dom
-  }
-
+const createWebStack = async (s3projectName, webProjectName, subdomain, domain) => {
   await createStack(
-    website,
+    webProjectName,
     await getWebTemplate(),
     {
-        //ProjectName : name,
-        TemplatesDirectoryUrl : "https://s3.amazonaws.com/cf-"+name+"-capsule-ci",
-        Domain: commander.dom,
-        Subdomain: commander.subdom
+        TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+        Domain: domain,
+        Subdomain: subdomain
     }
   );
 }
@@ -624,15 +609,8 @@ const updateWebStack = async (name) => {
  * deleteWebStack:
  * Given the name of the project, it removes the web stack.
  */
-const deleteWebStack = async () => {
-  let website = ""
-
-  if (commander.subdom) {
-      website = commander.subdom + "." +  commander.dom
-  } else {
-      website = commander.dom
-  }
-  await deleteStack(website);
+const deleteWebStack = async (webProjectName) => {
+  await deleteStack(webProjectName);
 }
 
 
@@ -717,16 +695,20 @@ const clCmds = async(cmd) => {
  *
  */
 const webCmds = async(cmd) => {
+  let s3projectName = commander.projectName
+  let webProjectName = "capsule-"+s3projectName+"-web"
+  s3projectName = "cf-"+s3projectName+"-capsule-ci"
+
   if (commander.type === 'create') {
-    await createWebStack(commander.projectName);
+    await createWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
   }
 
   if (commander.type === 'update') {
-    await updateWebStack(commander.projectName);
+    await updateWebStack(s3projectName, webProjectName);
   }
 
   if (commander.type === 'delete') {
-    await deleteWebStack(commander.projectName);
+    await deleteWebStack(webProjectName);
   }
 }
 
