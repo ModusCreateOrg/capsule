@@ -282,7 +282,7 @@ const updateCFStack = async (name, template_body, parameters, token) => {
  * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
  */
 const describeStack = async (StackName) => {
-  var name = name.replace(/\./g,'')
+  var StackName = StackName.replace(/\./g,'')
   return new Promise((resolve, reject) => {
     cf.describeStacks({ StackName }, (err, data) => {
       if (err) reject(err);
@@ -463,7 +463,7 @@ const deleteStack = async (name) => {
   let { StackId } = await getStackIfExists(name);
   if (StackId) {
     let token = `${tokenName}-delete-` + getRandomToken();
-    await deleteCFStack(StackId, name, token);
+    await deleteCFStack(StackId, tokenName, token);
     await monitorStackProgress(StackId, token);
   }
 }
