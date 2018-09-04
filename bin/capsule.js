@@ -515,11 +515,11 @@ const clearS3Bucket = async (name) => {
  * Given the name of the project, it creates the s3 bucket used for storing the
  * CF templates for nested CF Stacks.
  */
-const createS3Bucket = async (name) => {
+const createS3Bucket = async (projectName, bucketName) => {
   await createStack(
     name,
     await getCiS3Template(),
-    { ProjectName : name }
+    { ProjectName : projectName }
   );
 }
 
@@ -529,12 +529,12 @@ const createS3Bucket = async (name) => {
  * CF templates for nested CF Stacks. Given that the bucket may require to be
  * re-created, it will clean the bucket.
  */
-const updateS3Bucket = async (name) => {
-  await clearS3Bucket(`cf-${name}-capsule-ci`);
+const updateS3Bucket = async (projectName, bucketName) => {
+  await clearS3Bucket(bucketName);
   await updateStack(
     name,
     await getCiS3Template(),
-    { ProjectName : name }
+    { ProjectName : projectName }
   );
 }
 
@@ -543,16 +543,16 @@ const updateS3Bucket = async (name) => {
  * Given the name of the project, it removes the CF templates stored in the s3
  * bucket used for the CI. And finally removes the CI s3 bucket.
  */
-const deleteS3Bucket = async (name) => {
-  await clearS3Bucket(`cf-${name}-capsule-ci`);
-  await deleteStack(name);
+const deleteS3Bucket = async (projectName, bucketName) => {
+  await clearS3Bucket(bucketName);
+  await deleteStack(projectName);
 }
 
 /*
  * addFilesToS3Bucket:
  *
  */
-const addFilesToS3Bucket = async (name) => {
+const addFilesToS3Bucket = async (projectName, bucketName) => {
   const templates_path = `${paths.base}/${paths.cf_templates}`
   fs.readdir(templates_path, (err, files) => {
     if(!files || files.length === 0) {
@@ -567,11 +567,11 @@ const addFilesToS3Bucket = async (name) => {
       fs.readFile(file_path, (error, file_content) => {
         if (error) { throw error; }
           s3.putObject({
-            Bucket: `cf-${name}-capsule-ci`,
+            Bucket: bucketName,
             Key: file,
             Body: file_content
           }, (res) => {
-            console.log(`Successfully uploaded '${file}'!`);
+            console.log(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
           });
       });
     }
@@ -650,18 +650,21 @@ const deleteCiStack = async (name) => {
  */
 const s3Cmds = async() => {
 
+  let projectName = commander.projectName
+  let bucketName = `cf-${projectName}-capsule-ci`
+
   if (commander.type === 'create') {
-    await createS3Bucket(commander.projectName);
+    await createS3Bucket(projectName, bucketName);
     console.log("Uploading files....")
-    await addFilesToS3Bucket(commander.projectName)
+    await addFilesToS3Bucket(projectName, bucketName)
   }
 
   if (commander.type === 'update') {
-    await updateS3Bucket(commander.projectName);
+    await updateS3Bucket(projectName, bucketName);
   }
 
   if (commander.type === 'delete') {
-    await deleteS3Bucket(commander.projectName);
+    await deleteS3Bucket(projectName, bucketName);
   }
 }
 
