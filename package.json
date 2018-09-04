@@ -1,7 +1,36 @@
 {
   "name": "capsule",
   "version": "0.0.1",
-  "description": "Automated CLI for Static web application hosting on AWS",
+  "featured": true,
+  "weight": 100,
+  "repo": "https://github.com/moduscreateorg/capsule",
+  "headline": "Automated CLI for Static web application hosting on AWS",
+  "description": "This automated script simplifies setting up an AWS site. Add S3 buckets, register DNS, and create an SSL certificate in minutes with no DevOps knowledge",
+  "image": "capsule-graphic.png",
+  "stack": [
+    "aws",
+    "s3",
+    "cloudfront",
+    "cloudformation",
+    "route 53",
+    "cloudwatch"
+  ],
+  "tags": [
+    "Devops",
+    "AWS",
+    "CLI",
+    "CDN"
+  ],
+  "contributors": [
+    "Facundo Victor <facundovt@gmail.com>",
+    "Andy Dennis <andy.dennis@moduscreate.com>",
+    "Lucas Still",
+    "Sergio Bruder",
+    "Mike Schwartz (@ModusSchwartz)",
+    "Drew Falkman",
+    "Mike LaFortune",
+    "Grgur Grisogono (@ggrgur)"
+  ],
   "main": "bin/capsule.js",
   "bin": {
     "capsule": "bin/capsule.js"
@@ -24,10 +53,6 @@
     "cloudfront",
     "cdn",
     "cloudformation"
-  ],
-  "contributors": [
-    "Facundo Victor <facundovt@gmail.com>",
-    "Andy Dennis <andy.dennis@moduscreate.com>"
   ],
   "license": "MIT",
   "bugs": {
