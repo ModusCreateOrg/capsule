@@ -556,7 +556,7 @@ const addFilesToS3Bucket = async (name) => {
   const templates_path = `${paths.base}/${paths.cf_templates}`
   fs.readdir(templates_path, (err, files) => {
     if(!files || files.length === 0) {
-      console.log("Templates folder is missing")
+      logIfVerbose(`Templates folder is missing`);
       return;
     }
     for (const file of files) {
