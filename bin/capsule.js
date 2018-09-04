@@ -517,7 +517,7 @@ const clearS3Bucket = async (name) => {
  */
 const createS3Bucket = async (projectName, bucketName) => {
   await createStack(
-    name,
+    projectName,
     await getCiS3Template(),
     { ProjectName : projectName }
   );
@@ -532,7 +532,7 @@ const createS3Bucket = async (projectName, bucketName) => {
 const updateS3Bucket = async (projectName, bucketName) => {
   await clearS3Bucket(bucketName);
   await updateStack(
-    name,
+    projectName,
     await getCiS3Template(),
     { ProjectName : projectName }
   );
@@ -702,6 +702,10 @@ const webCmds = async(cmd) => {
   let webProjectName = "capsule-"+s3projectName+"-web"
   s3projectName = "cf-"+s3projectName+"-capsule-ci"
 
+  if(!commander.dom) {
+    printErrorAndDie('Website domain name is required!', true);
+  }
+
   if (commander.type === 'create') {
     await createWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
   }
@@ -735,11 +739,7 @@ const webCmds = async(cmd) => {
   }
 
   if (commander.args.includes('web')) {
-     if(!commander.dom) {
-         printErrorAndDie('Website domain name is required!', true);
-     } else {
-         await webCmds()
-     }
+     await webCmds()
   }
 
 })();
