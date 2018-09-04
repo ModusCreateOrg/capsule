@@ -246,6 +246,24 @@ $ ./bin/capsule.js --help
 
 Note: the CLI interface will be changed soon with a different set of sub-commands and options to make it more intuitive.
 
+#### Domain configuration
+
+As part of the process of creating your static site, you will need to point an existing domain or subdomain to your S3 bucket.
+When executing the `web` command from the cli the process will halt once it reaches the certificate manager portion.
+
+At this point you should log into your AWS console and select the ` Certificate Manager` service. On this screen the domain 
+you passed to the cli should be visible e.g. `example.com`.
+
+Open up the drop-down arrow for the domain and follow the insturctions provived bu Amazon to validate control of the domain. Note that Amazon will send an email to your account at: 
+
+* webmaster@example.com
+* admin@example.com
+* postmaster@example.com
+* administrator@example.com
+* hostmaster@example.com
+
+Wjere `example.com` is the domain you passed to the cli tool.
+
 ### Future steps:
 
 - The CI for the hosted project will still be using codebuild
