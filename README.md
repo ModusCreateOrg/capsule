@@ -184,6 +184,11 @@ https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
 Once the CloudFormation templates are kicked off the CloudFront stack process, you can expect to wait around ~20 mins for this
 process to complete.
 
+You can check on progress under the CloudFront services home page:
+
+https://console.aws.amazon.com/cloudfront/home?region=us-east-1
+
+
 ### Continuous Integration (CI)
 
 Capsule allows for Continuous Integration (CI) of your changes from a source code repository.
