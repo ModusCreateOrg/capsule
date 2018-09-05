@@ -198,6 +198,7 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
   // Load the aws libraries with authentication already set
   cf = new aws.CloudFormation();
   s3 = new aws.S3();
+  //s3 = new aws.S3({signatureVersion: 'v2'});
 }
 
 // AWS CF Helpers #############################################################
