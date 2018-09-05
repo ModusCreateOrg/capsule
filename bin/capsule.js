@@ -390,10 +390,10 @@ const monitorStackProgress = async (id, token) => {
       logIfVerbose(`Can't get stack events: ${e}`);
     }
 
-    if (events === undefined) {
+   /* if (events === undefined) {
       logIfVerbose(`No new Events`);
       continue;
-    }
+    } */
 
     for (e of events) {
       if (e.Timestamp < last_time ||
