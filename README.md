@@ -32,6 +32,18 @@ In order to use the Capsule command line interface you will need a number of sec
 These credentials are used by the script to interact with your AWS account.
 
 
+#### Region
+
+Currently only a few regions can handle Certificate Manager in combination with CloudFront. You should therefore when
+creating the configuration described in the next section, ensure you chose a region that supports these features.
+
+Amazon provides a fature list at the following site:
+
+https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/
+
+A safe bet is to use `us-east-1` as this is the region that Capsule has been tested in.
+
+
 #### JSON setup
 
 First we are going to create a single file `config.json`
@@ -49,7 +61,7 @@ We a need directory to store this file, so create a new directory `.aws` under t
 Next create the `config.json` file in the .aws directory, containing these keys:
 
 ```json
-{ "accessKeyId": <YOUR_ACCESS_KEY_ID>, "secretAccessKey": <YOUR_SECRET_ACCESS_KEY>, "region": "us-west-1" }
+{ "accessKeyId": <YOUR_ACCESS_KEY_ID>, "secretAccessKey": <YOUR_SECRET_ACCESS_KEY>, "region": "us-east-1" }
 ```
 
 After creating these files, log into your AWS account. We now need to create an Access Key. This can be done as follows:
@@ -74,7 +86,7 @@ Next replace the `secretAccessKey` value (YOUR_SECRET_ACCESS_KEY) wuth the key y
 
 Make sure you wrap the value you paste in with `"` and `"`. 
 
-You can change the region if you wish as well.
+You can change the region if you wish as well, but please check the region supports all the features required by Capsule.
 
 Save the file. You are now ready to use Capsule to build out your static site. 
 
@@ -139,12 +151,11 @@ aws_secret_access_key=<the key value you copied here>
 
 Our final step is the edit the `config` file and set a region and output type.
 
-You can chose whichever region makes sense to you, we are going to use us-west-2 as per the
-Amazon docs, and set the output to `json`.
+You can chose whichever region makes sense to you, we are going to use us-east-1, and set the output to `json`.
 
 ```yaml
 [default]
-region=us-west-2
+region=us-east-1
 output=json
 ```
 
@@ -161,6 +172,17 @@ S3 bucket in AWS. Therefore your project name must confirm to the S3 bucket nami
 You can find these here:
 
 https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+
+
+### Authorizing your certificate
+
+<steps>
+
+
+### CloudFront waiting time
+
+Once the CloudFormation templates are kicked off the CloudFront stack process, you can expect to wait around ~20 mins for this
+process to complete.
 
 ### Continuous Integration (CI)
 
