@@ -389,6 +389,10 @@ const monitorStackProgress = async (id, token) => {
       logIfVerbose(`Can't get stack events: ${e}`);
     }
 
+    if (events === undefined) {
+      logIfVerbose(`No new Events: In progress`);
+      continue;
+    }
 
     for (e of events) {
       if (e.Timestamp < last_time ||
@@ -396,8 +400,7 @@ const monitorStackProgress = async (id, token) => {
           (token && e.ClientRequestToken !== token)) {
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
-        // TODO: Improve event display
-        console.log('NEW Event: ',e);
+        logIfVerbose(`NEW Event: ${e}`);
         events_seen.push(e.EventId);
       }
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
@@ -573,7 +576,7 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
             Key: file,
             Body: file_content
           }, (res) => {
-            console.log(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
+            logIfVerbose(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
           });
       });
     }
@@ -657,6 +660,7 @@ const s3Cmds = async() => {
 
   if (commander.type === 'create') {
     await createS3Bucket(projectName);
+    logIfVerbose(`Uploading files....`);
     await addFilesToS3Bucket(projectName, bucketName)
   }
 
