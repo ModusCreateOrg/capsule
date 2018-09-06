@@ -198,7 +198,6 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
   // Load the aws libraries with authentication already set
   cf = new aws.CloudFormation();
   s3 = new aws.S3();
-  //s3 = new aws.S3({signatureVersion: 'v2'});
 }
 
 // AWS CF Helpers #############################################################
@@ -390,10 +389,6 @@ const monitorStackProgress = async (id, token) => {
       logIfVerbose(`Can't get stack events: ${e}`);
     }
 
-   /* if (events === undefined) {
-      logIfVerbose(`No new Events`);
-      continue;
-    } */
 
     for (e of events) {
       if (e.Timestamp < last_time ||
@@ -662,7 +657,6 @@ const s3Cmds = async() => {
 
   if (commander.type === 'create') {
     await createS3Bucket(projectName, bucketName);
-    console.log("Uploading files....")
     await addFilesToS3Bucket(projectName, bucketName)
   }
 
