@@ -26,6 +26,7 @@ commander
   .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-u, --url <repo>', 'The source control URL to use')
   .action(function (type, options) {
           console.log("Executing create for: "+type)
           commander.type = options._name || undefined
@@ -34,6 +35,7 @@ commander
           commander.awsProfile = options.awsProfile || undefined
           commander.dom = options.dom || undefined
           commander.subdom = options.subdom || undefined
+          commander.url = options.url || undefined
    });
 
 commander
@@ -638,14 +640,13 @@ const deleteWebStack = async (webProjectName) => {
  * Finally the code is pushed to the S3 bucklet defined by
  * the subdomain and domain.
  */
-const createCiStack = async (ciprojectName, subdomain, domain) => {
+const createCiStack = async (ciprojectName, url, subdomain, domain) => {
   await createStack(
     ciprojectName,
     await getCiTemplate(),
     {
-        ProjectName : ciprojectName
-        Domain: domain,
-        Subdomain: subdomain
+        CodeBuildProjectCodeName: ciprojectName,
+        RepositoryURL: url
     }
   );
 }
@@ -732,11 +733,12 @@ const webCmds = async(cmd) => {
  * a repository and dump it into the S3 bucket.
  *
  */
-const clCmds = async(cmd) => {
+const ciCmds = async(cmd) => {
   let ciprojectName = "capsule-"+commander.projectName+"-ci"
+  let url = commander.url
 
   if (commander.type === 'create') {
-    await createCiStack(ciprojectName, commander.subdom, commander.dom);
+    await createCiStack(ciprojectName, url, commander.subdom, commander.dom);
   }
 
   if (commander.type === 'update') {
