@@ -210,12 +210,20 @@ https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
 
 ### How to use it?
 
-From the CLI it can be used like:
+The `ci` tool can be executed from the command line in order to setup the 
+CodeBuild process. Located in this repository are two CodeBUild files:
+
+1. `codebuild_capsule.cf`  - this contains the CodeBuild CF templates for this project 
+2. `codebuild_project.cf` - which provides a template for the Capsule user to use for their own project
+
+In addition to the `ci` tool the CodeBuild cf templates can also be executed from the aws cli. 
+
+From the CLI it can be used like this:
 
 ```sh
 aws cloudformation create-stack \
     --stack-name <your-stack-name> \
-    --template-body file://<path-to-repo>/ci/codebuild.cf \
+    --template-body file://<path-to-repo>/ci/<codebuild_template>.cf \
     --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=<project-name> \
                  ParameterKey=RepositoryURL,ParameterValue=<https-clone-url> \
                  ParameterKey=BuildSpecLocation,ParameterValue=<path-to-buildspec>
@@ -226,7 +234,7 @@ Example:
 ```sh
 aws cloudformation create-stack \
     --stack-name moduscreate-labs \
-    --template-body file://<path-to-repo>/ci/codebuild.cf \
+    --template-body file://<path-to-repo>/ci/codebuild_project.cf \
     --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=labs \
                  ParameterKey=RepositoryURL,ParameterValue=https://github.com/ModusCreateOrg/labs.git
 ```
