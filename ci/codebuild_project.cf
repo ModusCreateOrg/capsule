@@ -1,11 +1,11 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Capsule CloudFormation stack - CodeBuild Project"
+Description: "User Website CloudFormation stack - CodeBuild Project"
 
 Parameters:
   CodeBuildProjectCodeName:
     Type: String
-    Description: "CodeBuild Capsule Project codename"
+    Description: "User CodeBuild Project codename"
   RepositoryURL:
     Type: String
     Description: "HTTPS URL for the Git repository"
