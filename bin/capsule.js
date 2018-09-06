@@ -517,7 +517,7 @@ const clearS3Bucket = async (name) => {
  * Given the name of the project, it creates the s3 bucket used for storing the
  * CF templates for nested CF Stacks.
  */
-const createS3Bucket = async (projectName, bucketName) => {
+const createS3Bucket = async (projectName) => {
   await createStack(
     projectName,
     await getCiS3Template(),
@@ -656,7 +656,7 @@ const s3Cmds = async() => {
   let bucketName = `cf-${projectName}-capsule-ci`
 
   if (commander.type === 'create') {
-    await createS3Bucket(projectName, bucketName);
+    await createS3Bucket(projectName);
     await addFilesToS3Bucket(projectName, bucketName)
   }
 
