@@ -26,6 +26,169 @@ In order to use Capsule you will need the following:
 * A static website (HTMl, JS, CSS) that does not require server side code like PHP, Python or Java.
 
 
+### Security Credentials
+
+In order to use the Capsule command line interface you will need a number of security credentials.
+These credentials are used by the script to interact with your AWS account.
+
+
+#### Region
+
+Currently only a few regions can handle Certificate Manager in combination with CloudFront. You should therefore when
+creating the configuration described in the next section, ensure you chose a region that supports these features.
+
+Amazon provides a fature list at the following site:
+
+https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/
+
+A safe bet is to use `us-east-1` as this is the region that Capsule has been tested in.
+
+
+#### JSON setup
+
+First we are going to create a single file `config.json`
+
+We a need directory to store this file, so create a new directory `.aws` under the root of your user 
+
+*Mac/Linux*
+
+`mkdir  ~/.aws`
+
+*Windows*
+
+`%UserProfile%\.aws`
+
+Next create the `config.json` file in the .aws directory, containing these keys:
+
+```json
+{ "accessKeyId": <YOUR_ACCESS_KEY_ID>, "secretAccessKey": <YOUR_SECRET_ACCESS_KEY>, "region": "us-east-1" }
+```
+
+After creating these files, log into your AWS account. We now need to create an Access Key. This can be done as follows:
+
+1. Open your AWS Console
+2. Click on your username in the top right
+3. Select `My Security Credentials`
+4. Fromt he screen that loads, click on `Users` in the sidebar
+5. Next click on your username in the table
+6. When this loads, click on the `Security Credentials` tab
+7. We can now create an Access Key by clking `Create Access Key`
+8. Finally click `Show User Security Credentials` and copy the ID and value. 
+
+These details can only be displayed once, so if forget or lose them, you will need to generate a new key. 
+If you wish you can download the CSV file from this screen as a backup.
+
+Re-open the config file e.g. vim `~/.aws/config.json`
+
+Now replace the `accessKeyId` value (<YOUR_ACCESS_KEY_ID>) with the value you copied from the AWS console.
+
+Next replace the `secretAccessKey` value (YOUR_SECRET_ACCESS_KEY) wuth the key you copied from the console.
+
+Make sure you wrap the value you paste in with `"` and `"`. 
+
+You can change the region if you wish as well, but please check the region supports all the features required by Capsule.
+
+Save the file. You are now ready to use Capsule to build out your static site. 
+
+
+#### YAML setup
+
+First we are going to create two files. These are the `config` and `credentials` file.
+
+Create a new directory `.aws` under the root of your user 
+
+*Mac/Linux*
+
+`mkdir  ~/.aws`
+
+*Windows*
+
+`%UserProfile%\.aws`
+
+Next create a credentials file in the .aws directory, containing these keys:
+
+```yaml
+[default]
+aws_access_key_id=
+aws_secret_access_key=
+```
+
+After this, create a config file in the .aws directory and include the following:
+
+```yaml
+[default]
+region=
+output=
+```
+
+After creating these files, log into your AWS account. We now need to create an Access Key. This can be done as follows:
+
+1. Open your AWS Console
+2. Click on your username in the top right
+3. Select `My Security Credentials`
+4. Fromt he screen that loads, click on `Users` in the sidebar
+5. Next click on your username in the table
+6. When this loads, click on the `Security Credentials` tab
+7. We can now create an Access Key by clking `Create Access Key`
+8. Finally click `Show User Security Credentials` and copy the ID and value. 
+
+These details can only be displayed once, so if forget or lose them, you will need to generate a new key. 
+If you wish you can download the CSV file from this screen as a backup.
+
+Re-open the credentials file e.g. vim `~/.aws/credentials`
+
+Paste the ID into the key id value:
+
+```yaml
+aws_access_key_id=<the id you copied here>
+```
+
+Following this, paste the secret value into the secret key value:
+
+```yaml
+aws_secret_access_key=<the key value you copied here>
+```
+
+Our final step is the edit the `config` file and set a region and output type.
+
+You can chose whichever region makes sense to you, we are going to use us-east-1, and set the output to `json`.
+
+```yaml
+[default]
+region=us-east-1
+output=json
+```
+
+Save the file. 
+
+Your credentials and configuration are now setup to use Capsule.
+
+
+### Project Names
+
+During the setup of your site you will need to define a project name. This will be used to name the 
+S3 bucket in AWS. Therefore your project name must confirm to the S3 bucket naming standards.
+
+You can find these here:
+
+https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+
+
+### Authorizing your certificate
+
+<steps>
+
+
+### CloudFront waiting time
+
+Once the CloudFormation templates are kicked off the CloudFront stack process, you can expect to wait around ~20 mins for this
+process to complete.
+
+You can check on progress under the CloudFront services home page:
+
+https://console.aws.amazon.com/cloudfront/home?region=us-east-1
+
+
 ### Continuous Integration (CI)
 
 Capsule allows for Continuous Integration (CI) of your changes from a source code repository.
@@ -83,7 +246,7 @@ aws cloudformation create-stack \
 The capsule cli is a NodeJS cli app with the intention to simplify the generation of the hosting infrastructure and ci infrastructure. For nested stacks, it requires to generate a base s3 bucket. This can be generated in the following way:
 
 ```sh
-$ ./capsule init --project-name <project-name>
+$ ./capsule create --project-name <project-name> s3
 ```
 
 For getting the complete list of options, just enter `--help`:
@@ -96,8 +259,9 @@ $ ./bin/capsule.js --help
   Options:
 
     -V, --version                      output the version number
-    init                               Initializes the s3 bucket required to store nested stack templates
-    apply                              Updates the templates into the s3 bucket and runs the nested stack
+    create                             Initializes the s3 bucket required to store nested stack templates
+    update                             Updates the templates into the s3 bucket and runs the nested stack
+    delete                             Delete the s3 bucket contents
     -n, --project-name <project-name>  Push cf templates to the s3 bucket, and creates it if it does not exist
     -c, --config <config-path>         Load the configuration from the specified path
     -p, --aws-profile <profile>        The AWS profile to use
@@ -108,6 +272,24 @@ $ ./bin/capsule.js --help
 ```
 
 Note: the CLI interface will be changed soon with a different set of sub-commands and options to make it more intuitive.
+
+#### Domain configuration
+
+As part of the process of creating your static site, you will need to point an existing domain or subdomain to your S3 bucket.
+When executing the `web` command from the cli the process will halt once it reaches the certificate manager portion.
+
+At this point you should log into your AWS console and select the ` Certificate Manager` service. On this screen the domain 
+you passed to the cli should be visible e.g. `example.com`.
+
+Open up the drop-down arrow for the domain and follow the insturctions provived bu Amazon to validate control of the domain. Note that Amazon will send an email to your account at: 
+
+* webmaster@example.com
+* admin@example.com
+* postmaster@example.com
+* administrator@example.com
+* hostmaster@example.com
+
+Wjere `example.com` is the domain you passed to the cli tool.
 
 ### Future steps:
 

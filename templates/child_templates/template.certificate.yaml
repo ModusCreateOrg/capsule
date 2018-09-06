@@ -26,7 +26,7 @@ Parameters:
     Type: String
     Description: "Flag to denote whether to use the wild card(*) or not as the subdomain for certificates"
     AllowedValues: [true, false]
-    Default: true
+    Default: false
 
 Conditions:
   UsingWildcardCertificate: !Equals [!Ref "UseWildcardCertificate", true]

@@ -8,6 +8,7 @@ const fs = require('fs');
 const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
+const path = require('path')
 let cf;
 let s3;
 
@@ -15,17 +16,68 @@ let s3;
 
 commander
   .version('0.0.1')
-  .option('init', 'Initializes the s3 bucket required to store nested stack templates')
-  .option('apply', 'Updates the templates into the s3 bucket and runs the nested stack')
+  .option('-v, --verbose', 'verbose output')
+
+commander
+  .command('create <type>')
+  .description('Initializes the s3 bucket required to store nested stack templates takes: s3, ci or web')
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
+  .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
+  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
+  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .action(function (type, options) {
+          console.log("Executing create for: "+type)
+          commander.type = options._name || undefined
+          commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
+          commander.dom = options.dom || undefined
+          commander.subdom = options.subdom || undefined
+   });
+
+commander
+  .command('update <type>')
+  .description('Updates the templates into the s3 bucket and runs the nested stack takes: s3, ci or web')
+  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
+  .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
+  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
+  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .action(function (type, options) {
+          console.log("Executing update for: "+type)
+          commander.type = options._name || undefined
+          commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
+          commander.dom = options.dom || undefined
+          commander.subdom = options.subdom || undefined
+   });
+
+commander
+  .command('delete <type>')
+  .description('Deletes the s3 bucket contents takes: s3, ci or web')
+  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
+  .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-d, --remove-cf-bucket', 'Remove the bucket used for storing the nested templates')
-  .option('-v, --verbose', 'verbose output')
-  .parse(process.argv);
+  .action(function (type, options) {
+          console.log("Executing delete for: "+type)
+          commander.type = options._name || undefined
+          commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
+          commander.dom = options.dom || undefined
+          commander.subdom = options.subdom || undefined
+   });
 
-// Globals ####################################################################
+  commander.parse(process.argv);
 
+/*
+ * Globals
+ */
 const {
   // AWS Access Key
   AWS_ACCESS_KEY_ID,
@@ -37,8 +89,11 @@ const {
   AWS_REGION
 } = process.env;
 
-// References
-// - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
+/*
+ * References
+ * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
+ *
+ */
 const stack_states = [
   'CREATE_COMPLETE',
   'CREATE_FAILED',
@@ -55,13 +110,18 @@ const stack_states = [
 
 const paths = {
   base: `${__dirname}/../`,
-  ci_s3: 'ci/s3_cloudformation.cf'
+  ci_s3: 'ci/s3_cloudformation.cf',
+  cf_templates: 'templates/child_templates/',
+  web_template: 'templates/template.yaml',
+  aws_url: 'https://s3.amazonaws.com/'
 }
 
 let last_time = new Date(new Date() - 1000);
 
-// Helpers ####################################################################
-
+/*
+ * Helpers
+ *
+ */
 const logIfVerbose = (str, error) => {
   if (commander.verbose){
     if (error){
@@ -86,7 +146,10 @@ const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
 
 // File Helpers ##############################################################
 
-// TODO: This may require to get it from github directly to avoid packing it
+/*
+ * getTemplateBody
+ * TODO: This may require to get it from github directly to avoid packing it
+ */
 const getTemplateBody = (path) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, data) => {
@@ -98,11 +161,24 @@ const getTemplateBody = (path) => {
 
 const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
 
+/*
+ * getWebTemplate:
+ * get the template.yml file
+ * then re-use the existing functions to
+ * build the stack
+ *
+ */
+const getWebTemplate = async () => getTemplateBody(`${paths.base}/${paths.web_template}`);
+
+
 // AWS Helpers ################################################################
 
+/*
+ * loadAWSConfiguration:
+ * Environment variables should have higher precedence
+ * Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-environment.html
+ */
 const loadAWSConfiguration = async (config_path, aws_profile) => {
-  // Environment variables should have higher precedence
-  // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-environment.html
   if ((AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY) || AWS_PROFILE) {
     // Reference: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html
     // Reference: https://github.com/aws/aws-sdk-js/pull/1391
@@ -131,7 +207,8 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
  *
  * Given an object of key->value, it will return the list of parameters in the
  * format expected by AWS.
- * See: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const getFormattedParameters = (parameters) => {
   let formated_parameters = [];
@@ -149,9 +226,10 @@ const getFormattedParameters = (parameters) => {
  * Given the name of the stack, a string with the template body to apply, an
  * object with the stack parameters, and a token, it starts the CF stack
  * creation request identifed by the token.
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const createCFStack = async (name, template_body, parameters, token) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
     cf.createStack({
       StackName: name,
@@ -175,9 +253,10 @@ const createCFStack = async (name, template_body, parameters, token) => {
  * Given the name of the stack, a string with the template body to apply, an
  * object with the stack parameters, and a token, it starts the CF stack
  * update request identifed by the token.
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
  */
 const updateCFStack = async (name, template_body, parameters, token) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#createStack-property
   return new Promise((resolve, reject) => {
     cf.updateStack({
       StackName: name,
@@ -196,9 +275,12 @@ const updateCFStack = async (name, template_body, parameters, token) => {
   });
 }
 
+/*
+ * describeStack
+ * References:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
+ */
 const describeStack = async (StackName) => {
-  // References:
-  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
   return new Promise((resolve, reject) => {
     cf.describeStacks({ StackName }, (err, data) => {
       if (err) reject(err);
@@ -208,13 +290,13 @@ const describeStack = async (StackName) => {
 }
 
 /*
- * updateCFStack:
+ * deleteCFStack:
  * Given the id and name of the stack,and a token, it starts the CF stack
  * delete request identifed by the token.
+ * References:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#deleteStack-property
  */
 const deleteCFStack = async (id, name, token) => {
-  // References:
-  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#deleteStack-property
   return new Promise((resolve, reject) => {
     cf.deleteStack({
       StackName: id,
@@ -244,10 +326,13 @@ const getStackIfExists = async (name) => {
   }
 }
 
+/*
+ * getNextStackEvent
+ * References:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
+ * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-listing-event-history.html
+ */
 const getNextStackEvent = async (id, next) => {
-  // References:
-  // - https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudFormation.html#describeStackEvents-property
-  // - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-listing-event-history.html
   return new Promise((resolve, reject) => {
     cf.describeStackEvents({
       StackName: id,
@@ -303,6 +388,8 @@ const monitorStackProgress = async (id, token) => {
     } catch (e) {
       logIfVerbose(`Can't get stack events: ${e}`);
     }
+
+
     for (e of events) {
       if (e.Timestamp < last_time ||
           events_seen.includes(e.EventId) ||
@@ -333,8 +420,13 @@ const monitorStackProgress = async (id, token) => {
 /*
  * createStack:
  * Given the stack name, the stack template in string format, and its
- * parameters. It creates the stack and monitors it by polling for the stack 
+ * parameters. It creates the stack and monitors it by polling for the stack
  * events and printing it in stdout.
+ * When creating the initial S3 bucket to store the CF templates, it uses the
+ * s3_cloudformation.cf templates from the local file system.
+ * When building out the stack where the static website will be hosted
+ * it uses the bucket created from the s3_cloudformation.cf file, and looks
+ * in this for the template.yml file.
  */
 const createStack = async (name, templateBody, parameters) => {
   let token = `${name}-create-` + getRandomToken();
@@ -345,7 +437,7 @@ const createStack = async (name, templateBody, parameters) => {
 /*
  * updateStack:
  * Given the stack name, the stack template in string format, and its
- * parameters. It updates the stack and monitors it by polling for the stack 
+ * parameters. It updates the stack and monitors it by polling for the stack
  * events and printing it in stdout.
  */
 const updateStack = async (name, templateBody, parameters) => {
@@ -359,7 +451,7 @@ const updateStack = async (name, templateBody, parameters) => {
 }
 
 /*
- * updateStack:
+ * deleteStack:
  * Given the stack name, it deletes the stack and monitors it by polling for
  * the stack events and printing it in stdout.
  */
@@ -374,8 +466,12 @@ const deleteStack = async (name) => {
 
 // AWS S3 Helpers #############################################################
 
+/*
+ * listS3BucketObjects
+ * Reference:
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
+ */
 const listS3BucketObjects = async (name) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
   return new Promise((resolve, reject) => {
     s3.listObjectsV2({
       Bucket: name
@@ -390,9 +486,9 @@ const listS3BucketObjects = async (name) => {
  * clearS3Bucket:
  * Given an s3 bucket, it removes all its content. This is required by CF in
  * order to remove an s3 bucket.
+ * Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
  */
 const clearS3Bucket = async (name) => {
-  // Reference: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
   try {
     let { Contents } = await listS3BucketObjects(name);
     if (Contents.length) {
@@ -417,63 +513,234 @@ const clearS3Bucket = async (name) => {
 }
 
 /*
- * deleteS3CIBucket:
- * Given the name of the project, it removes the CF templates stored in the s3
- * bucket used for the CI. And finally removes the CI s3 bucket.
- */
-const deleteS3CIBucket = async (name) => {
-  await clearS3Bucket(`cf-${name}-capsule-ci`);
-  await deleteStack(name);
-}
-
-/*
- * createS3CIBucket:
+ * createS3Bucket:
  * Given the name of the project, it creates the s3 bucket used for storing the
  * CF templates for nested CF Stacks.
  */
-const createS3CIBucket = async (name) => {
+const createS3Bucket = async (projectName) => {
   await createStack(
-    name,
+    projectName,
     await getCiS3Template(),
-    { ProjectName : name }
+    { ProjectName : projectName }
   );
 }
 
 /*
- * updateS3CIBucket:
+ * updateS3Bucket:
  * Given the name of the project, it updates the s3 bucket used for storing the
  * CF templates for nested CF Stacks. Given that the bucket may require to be
  * re-created, it will clean the bucket.
  */
-const updateS3CIBucket = async (name) => {
-  await clearS3Bucket(`cf-${name}-capsule-ci`);
+const updateS3Bucket = async (projectName, bucketName) => {
+  await clearS3Bucket(bucketName);
   await updateStack(
-    name,
+    projectName,
     await getCiS3Template(),
-    { ProjectName : name }
+    { ProjectName : projectName }
   );
 }
 
+/*
+ * deleteS3Bucket:
+ * Given the name of the project, it removes the CF templates stored in the s3
+ * bucket used for the CI. And finally removes the CI s3 bucket.
+ */
+const deleteS3Bucket = async (projectName, bucketName) => {
+  await clearS3Bucket(bucketName);
+  await deleteStack(projectName);
+}
+
+/*
+ * addFilesToS3Bucket:
+ *
+ */
+const addFilesToS3Bucket = async (projectName, bucketName) => {
+  const templates_path = `${paths.base}/${paths.cf_templates}`
+  fs.readdir(templates_path, (err, files) => {
+    if(!files || files.length === 0) {
+      logIfVerbose(`Templates folder is missing`);
+      return;
+    }
+    for (const file of files) {
+      const file_path = path.join(templates_path, file);
+      if (fs.lstatSync(file_path).isDirectory()) {
+         continue;
+      }
+      fs.readFile(file_path, (error, file_content) => {
+        if (error) { throw error; }
+          s3.putObject({
+            Bucket: bucketName,
+            Key: file,
+            Body: file_content
+          }, (res) => {
+            console.log(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
+          });
+      });
+    }
+  });
+}
+
+/*
+ * createWebStack:
+ * Given the name of the project where the cf templates are stired,
+ * it grabs the scripts from
+ * the s3 bucket with that name and spins up the web infrastructure
+ */
+const createWebStack = async (s3projectName, webProjectName, subdomain, domain) => {
+  await createStack(
+    webProjectName,
+    await getWebTemplate(),
+    {
+        TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+        Domain: domain,
+        Subdomain: subdomain
+    }
+  );
+}
+
+/*
+ * updateWebStack:
+ * Given the name of the project, it updates the target projects stack
+ * and updates it..
+ */
+const updateWebStack = async (name) => {
+}
+
+
+/*
+ * deleteWebStack:
+ * Given the name of the project, it removes the web stack.
+ */
+const deleteWebStack = async (webProjectName) => {
+  await deleteStack(webProjectName);
+}
+
+
+
+/*
+ * createCiStack:
+ * Given the name of the project, it grabs the scripts from
+ * the s3 bucket used for codebuild
+ */
+const createCiStack = async (name) => {
+}
+
+/*
+ * updateCiStack:
+ * Given the name of the project, it updates the target projects stack
+ * CF templates for codebuild.
+ */
+const updateCiStack = async (name) => {
+}
+
+
+/*
+ * deleteCiStack:
+ * Given the name of the project, it removes the CI process. .
+ */
+const deleteCiStack = async (name) => {
+}
+
+
+/*
+ * s3Cmnds:
+ * Handle S3 bucket commands.
+ * The S3 bucket contains the CF templates
+ * that are used by the web commands to
+ * built out the static hosting site.
+ *
+ */
+const s3Cmds = async() => {
+
+  let projectName = commander.projectName
+  let bucketName = `cf-${projectName}-capsule-ci`
+
+  if (commander.type === 'create') {
+    await createS3Bucket(projectName);
+    await addFilesToS3Bucket(projectName, bucketName)
+  }
+
+  if (commander.type === 'update') {
+    await updateS3Bucket(projectName, bucketName);
+  }
+
+  if (commander.type === 'delete') {
+    await deleteS3Bucket(projectName, bucketName);
+  }
+}
+
+/*
+ * cliCmds:
+ * Handle continuous integration stack build out
+ * THis allows you to use CloudBuild to pull code from
+ * a repository and dump it into the S3 bucket.
+ *
+ */
+const clCmds = async(cmd) => {
+  if (commander.args.includes('create')) {
+    await createCiStack(commander.projectName);
+  }
+
+  if (commander.args.includes('update')) {
+    await updateCiStack(commander.projectName);
+  }
+
+  if (commander.args.includes('delete')) {
+    await deleteCiStack(commander.projectName);
+  }
+}
+
+/*
+ * webCmds:
+ * Handle web commands.
+ * These take the CF scripts from the S3 bucket
+ * and spin up the web hosting infrastructure
+ * for the static site.
+ *
+ */
+const webCmds = async(cmd) => {
+  let s3projectName = commander.projectName
+  let webProjectName = "capsule-"+s3projectName+"-web"
+  s3projectName = "cf-"+s3projectName+"-capsule-ci"
+
+  if(!commander.dom) {
+    printErrorAndDie('Website domain name is required!', true);
+  }
+
+  if (commander.type === 'create') {
+    await createWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
+  }
+
+  if (commander.type === 'update') {
+    await updateWebStack(s3projectName, webProjectName);
+  }
+
+  if (commander.type === 'delete') {
+    await deleteWebStack(webProjectName);
+  }
+}
 
 // MAIN #######################################################################
-
 (async () => {
+
   global.cwd = process.cwd();
+
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
   if (!commander.projectName) {
-    printErrorAndDie('Project name is required!', true);
+     printErrorAndDie('Project name is required!', true);
   }
 
-  if (commander.removeCfBucket) {
-    await deleteS3CIBucket(commander.projectName);
+  if (commander.args.includes('s3')) {
+     await s3Cmds()
   }
 
-  if (commander.init) {
-    await createS3CIBucket(commander.projectName);
+  if (commander.args.includes('ci')) {
+     await ciCmds()
   }
 
-  if (commander.apply) {
-    await updateS3CIBucket(commander.projectName);
+  if (commander.args.includes('web')) {
+     await webCmds()
   }
+
 })();
