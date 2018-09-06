@@ -111,6 +111,7 @@ const stack_states = [
 const paths = {
   base: `${__dirname}/../`,
   ci_s3: 'ci/s3_cloudformation.cf',
+  ci: 'ci/codebuild_capsule.cf',
   cf_templates: 'templates/child_templates/',
   web_template: 'templates/template.yaml',
   aws_url: 'https://s3.amazonaws.com/'
@@ -160,6 +161,15 @@ const getTemplateBody = (path) => {
 }
 
 const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
+
+/*
+ * getCiTemplate:
+ * get the codebuild file
+ * then re-use the existing functions to
+ * build the stack
+ *
+ */
+const getCiTemplate = () => getTemplateBody(`${paths.base}/${paths.ci}`);
 
 /*
  * getWebTemplate:
@@ -619,10 +629,22 @@ const deleteWebStack = async (webProjectName) => {
 
 /*
  * createCiStack:
- * Given the name of the project, it grabs the scripts from
- * the s3 bucket used for codebuild
+ * Given the name of the project, it runs the codebuild
+ * template which in turn checks the code out from
+ * the repository, install, tests and buulds it
+ * Finally the code is pushed to the S3 bucklet defined by
+ * the subdomain and domain.
  */
-const createCiStack = async (name) => {
+const createCiStack = async (ciprojectName, subdomain, domain) => {
+  await createStack(
+    ciprojectName,
+    await getCiTemplate(),
+    {
+        ProjectName : ciprojectName
+        Domain: domain,
+        Subdomain: subdomain
+    }
+  );
 }
 
 /*
@@ -638,9 +660,9 @@ const updateCiStack = async (name) => {
  * deleteCiStack:
  * Given the name of the project, it removes the CI process. .
  */
-const deleteCiStack = async (name) => {
+const deleteCiStack = async (ciprojectName) => {
+  await deleteStack(ciprojectName);
 }
-
 
 /*
  * s3Cmnds:
@@ -666,27 +688,6 @@ const s3Cmds = async() => {
 
   if (commander.type === 'delete') {
     await deleteS3Bucket(projectName, bucketName);
-  }
-}
-
-/*
- * cliCmds:
- * Handle continuous integration stack build out
- * THis allows you to use CloudBuild to pull code from
- * a repository and dump it into the S3 bucket.
- *
- */
-const clCmds = async(cmd) => {
-  if (commander.args.includes('create')) {
-    await createCiStack(commander.projectName);
-  }
-
-  if (commander.args.includes('update')) {
-    await updateCiStack(commander.projectName);
-  }
-
-  if (commander.args.includes('delete')) {
-    await deleteCiStack(commander.projectName);
   }
 }
 
@@ -717,6 +718,29 @@ const webCmds = async(cmd) => {
 
   if (commander.type === 'delete') {
     await deleteWebStack(webProjectName);
+  }
+}
+
+/*
+ * cliCmds:
+ * Handle continuous integration stack build out
+ * THis allows you to use CloudBuild to pull code from
+ * a repository and dump it into the S3 bucket.
+ *
+ */
+const clCmds = async(cmd) => {
+  let ciprojectName = "capsule-"+commander.projectName+"-ci"
+
+  if (commander.type === 'create') {
+    await createCiStack(ciprojectName, commander.subdom, commander.dom);
+  }
+
+  if (commander.type === 'update') {
+    await updateCiStack(ciprojectName);
+  }
+
+  if (commander.type === 'delete') {
+    await deleteCiStack(ciprojectName);
   }
 }
 
