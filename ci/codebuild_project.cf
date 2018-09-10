@@ -67,6 +67,7 @@ Resources:
               commands:
                 - sudo apt-get update -y
                 - sudo apt-get upgrade -y
+                - sudo apt-get install -y nodejs
                 - sudo apt-get install -y npm
                 - sudo npm install .
                 - echo "Installing..."
