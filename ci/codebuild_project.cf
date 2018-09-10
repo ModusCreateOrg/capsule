@@ -67,7 +67,7 @@ Resources:
             install:
               commands:
                 - sudo ln -s /usr/bin/nodejs /usr/bin/node
-                - sudo npm install .
+                - sudo npm install capsule
                 - echo "Installing..."
               build:  
                 - echo "Running test"
