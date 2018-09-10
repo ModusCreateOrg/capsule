@@ -114,6 +114,7 @@ const paths = {
   base: `${__dirname}/../`,
   ci_s3: 'ci/s3_cloudformation.cf',
   ci: 'ci/codebuild_capsule.cf',
+  ci_project: 'ci/codebuild_project.cf',
   cf_templates: 'templates/child_templates/',
   web_template: 'templates/template.yaml',
   aws_url: 'https://s3.amazonaws.com/'
@@ -171,7 +172,7 @@ const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
  * build the stack
  *
  */
-const getCiTemplate = () => getTemplateBody(`${paths.base}/${paths.ci}`);
+const getCiTemplate = () => getTemplateBody(`${paths.base}/${paths.ci_project}`);
 
 /*
  * getWebTemplate:
