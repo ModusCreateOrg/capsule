@@ -2,7 +2,7 @@
 
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ModusCreateOrg/capsule/blob/OAS-15_documentation/LICENSE)
 
-Automated CLI for Static web application hosting on AWS using S3 buckets.
+Automated CLI for static web application hosting on AWS using S3 buckets.
 
 <p align="left">
     <img src="https://res.cloudinary.com/modus-labs/image/upload/f_auto,q_70,w_200/labs/logo-capsule.svg"
