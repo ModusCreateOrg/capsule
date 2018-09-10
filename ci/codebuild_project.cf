@@ -69,12 +69,14 @@ Resources:
                 - sudo ln -s /usr/bin/nodejs /usr/bin/node
                 - sudo npm install .
                 - echo "Installing..."
-              build:  
+            build:  
+              commands:    
                 - echo "Running test"
                 - sudo npm test 
                 - echo "Running build"
                 - sudo npm run build
-              post_build:
+            post_build:
+              commands: 
                 - aws s3 sync . s3://capsule.modus.app/
   CodeBuildRole:
     Type: AWS::IAM::Role
