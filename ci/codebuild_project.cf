@@ -69,7 +69,6 @@ Resources:
                 - sudo apt-get upgrade -y
                 - sudo apt-get install -y nodejs
                 - sudo apt-get install -y npm
-                - ls 
                 - sudo npm install npm@latest -g
                 - sudo npm install -g capsule
                 - echo "Installing..."
