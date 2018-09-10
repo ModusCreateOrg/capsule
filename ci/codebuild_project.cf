@@ -66,6 +66,7 @@ Resources:
           phases:
             install:
               commands:
+                - sudo ln -s /usr/bin/nodejs /usr/bin/node
                 - sudo npm install .
                 - echo "Installing..."
               build:  
