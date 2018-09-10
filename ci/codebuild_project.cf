@@ -60,7 +60,20 @@ Resources:
         Location: !Ref RepositoryURL
         Auth:
           Type: OAUTH
-        BuildSpec: !Ref BuildSpecLocation
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - npm install .
+                - echo "Installing..."
+              build:  
+                - echo "Running test"
+                - npm test 
+                - echo "Running build"
+                - npm run build
+              post_build:
+                - aws s3 sync . s3://capsule.modus.app/
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
