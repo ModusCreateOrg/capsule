@@ -207,6 +207,14 @@ You can read more on OAuth integration steps on GitHubs website here:
 
 https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/
 
+Make sure that the user you have setup in GitHub, to be used by CodeBuild has admin permissions on the repository.
+
+If it does not, you may see errors such as:
+
+```
+Repository not found or permission denied. (Service: AWSCodeBuild; Status Code: 400; Error Code: OAuthProviderException; Request ID: <an id value>)
+```
+
 
 ### How to use it?
 
