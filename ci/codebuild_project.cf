@@ -66,14 +66,15 @@ Resources:
             install:
               commands:
                 - sudo apt-get update -y
+                - sudo apt-get upgrade -y
                 - sudo apt-get install -y npm
-                - npm install .
+                - sudo npm install .
                 - echo "Installing..."
               build:  
                 - echo "Running test"
-                - npm test 
+                - sudo npm test 
                 - echo "Running build"
-                - npm run build
+                - sudo npm run build
               post_build:
                 - aws s3 sync . s3://capsule.modus.app/
   CodeBuildRole:
