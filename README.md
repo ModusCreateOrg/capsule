@@ -216,6 +216,15 @@ If it does not, you may see errors such as:
 Repository not found or permission denied. (Service: AWSCodeBuild; Status Code: 400; Error Code: OAuthProviderException; Request ID: <an id value>)
 ```
 
+This is especially important if you wish to manage webhooks e.g.
+
+```
+Triggers:
+  Webhook: yes
+```
+
+In this case, the user will need Admin permissions. 
+
 
 ### How to use it?
 
