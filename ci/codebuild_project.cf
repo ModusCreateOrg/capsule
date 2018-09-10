@@ -65,6 +65,8 @@ Resources:
           phases:
             install:
               commands:
+                - sudo apt-get update
+                - sudo apt-get install npm
                 - npm install .
                 - echo "Installing..."
               build:  
