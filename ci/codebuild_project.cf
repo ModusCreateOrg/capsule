@@ -27,7 +27,8 @@ Parameters:
     Description: "Image to use for running a container where the build will execute"
     AllowedPattern: "^(.*)\\/(.*)\\/(.)*:(.)*"
     ConstraintDescription: "Image reference (<repository>/<image>:<tag>)"
-    Default: aws/codebuild/ubuntu-base:14.04
+    #Default: aws/codebuild/ubuntu-base:14.04
+    Default: aws/codebuild/nodejs:10.1.0
   ComputeType:
     Type: String
     Description: "Small (3 GB memory, 2 vCPU) | Medium (7 GB memory, 4 vCPU) | large (15 GB memory, 8 vCPU)"
@@ -65,12 +66,7 @@ Resources:
           phases:
             install:
               commands:
-                - sudo apt-get update -y
-                - sudo apt-get upgrade -y
-                - sudo apt-get install -y nodejs
-                - sudo apt-get install -y npm
-                - sudo npm install npm@latest -g
-                - sudo npm install -g capsule
+                - sudo npm install .
                 - echo "Installing..."
               build:  
                 - echo "Running test"
