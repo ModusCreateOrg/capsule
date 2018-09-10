@@ -201,6 +201,7 @@ setup a basic CI infrastructure for any repository.
 
 The following section lists any specific requirements for source control products and services.
 
+
 ##### GitHub
 The AWS codebuild service must be already authenticated with Github using OAuth before creating the stack.
 You can read more on OAuth integration steps on GitHubs website here:
