@@ -14,7 +14,8 @@
         {
             "Effect": "Allow",
             "Resource": [
-                "arn:aws:s3:::codepipeline-us-east-1-*"
+                "arn:aws:s3:::codepipeline-us-east-1-*",
+                "arn:aws:s3:::codepipeline-us-east-1-*/*"
             ],
             "Action": [
                 "s3:PutObject",
@@ -32,7 +33,7 @@
                 "s3:PutObject",
                 "s3:Get*",
                 "s3:List*"
-           ]
+            ]
         }
     ]
 }
