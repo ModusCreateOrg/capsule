@@ -176,7 +176,9 @@ https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
 
 ### Authorizing your certificate
 
-<steps>
+In order to authorize your certificate you will need to log into the AWS console.
+
+Depending on whether you are using DNS or Email authroitzation you will need to follow the relevant steps below.
 
 
 ### CloudFront waiting time
