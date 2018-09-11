@@ -44,7 +44,7 @@ Parameters:
   ProjectS3Bucket:
     Type: String
     Description: "S3 Bucket to be used for static hosting"
-    Default: None
+    Default: "usingdefaultbreaks"
   WebsiteCode:
     Type: String
     Description: "Default build location for static assets"
