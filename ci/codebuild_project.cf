@@ -122,6 +122,10 @@ Resources:
               - "arn:aws:s3:::capsule.modus.app"
               - "arn:aws:s3:::capsule.modus.app/*"
           - 
+            Effect: Allow
+            Action: "sts:AssumeRole"
+            Resource: "arn:aws:smm:::*"
+          - 
             Effect: Allow 
             Action: "ssm:GetParameters"
             Resource:
