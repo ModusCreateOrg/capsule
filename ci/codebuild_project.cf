@@ -82,17 +82,12 @@ Resources:
               commands:
                 - sudo ln -s /usr/bin/nodejs /usr/bin/node
                 - sudo npm install .
-                - echo "Installing..."
             build:  
               commands:    
-                - echo "Running test"
                 - sudo npm test 
-                - echo "Running build"
                 - sudo npm run build
             post_build:
               commands:
-                - echo "Syncing:"
-                - echo $TEST
                 - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
   CodeBuildRole:
     Type: AWS::IAM::Role
