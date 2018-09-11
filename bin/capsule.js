@@ -638,54 +638,6 @@ const deleteWebStack = async (webProjectName) => {
   await deleteStack(webProjectName);
 }
 
-/*
- * Add CiStack env vars
- *
- *
- */
-const addCiStackEnvVars = async (parameters) => {
-  for (var param in parameters) {
-    console.log(parameters[param])
-    ssm.putParameter(parameters[param], function(err, data) {
-      if (err) {
-          console.log(err, err.stack); // an error occurred
-      } else {
-          console.log(data);           // successful response
-      }
-    });
-  }
-}
-
-/*
- * Delete CiStack env vars
- *
- */
-const deleteCiStackEnvVars = async (parameters) => {
-  console.log(parameters)
-  for (var param in parameters) {
-    ssm.deleteParameter(parameters[param], function(err, data) {
-      if (err) {
-          console.log(err, err.stack); // an error occurred
-      } else {
-          console.log(data);           // successful response
-      }
-    });
-  }
-}
-
-/*
- * Construct parameter
- *
- */
-const constructParameter = (name, type, value) => {
-
-  var param = {}
-  param['Name'] = name
-  param['Type'] = type
-  param['Value'] = value
-
-  return param
-}
 
 /*
  * createCiStack:
@@ -697,21 +649,14 @@ const constructParameter = (name, type, value) => {
  */
 const createCiStack = async (ciprojectName, url, subdomain, domain) => {
 
-  var parameters = []
-  var param1 = constructParameter('S3_BUCKET_NAME','String','capsule.modus.app')
-  var param2 = constructParameter('WEBSITE_CODE','String','./build')
-
-  parameters.push(param1)
-  parameters.push(param2)
-
-  addCiStackEnvVars(parameters)
-
   await createStack(
     ciprojectName,
     await getCiTemplate(),
     {
         CodeBuildProjectCodeName: ciprojectName,
-        RepositoryURL: url
+        RepositoryURL: url,
+        WebsiteCode: '.',
+        ProjectS3Bucket: subdomain+'.'+domain
     }
   );
 }
@@ -735,13 +680,6 @@ const updateCiStack = async (ciprojectName) => {
  * Given the name of the project, it removes the CI process. .
  */
 const deleteCiStack = async (ciprojectName) => {
-  var parameters = []
-  var param1 = {"Name": "S3_BUCKET_NAME"}
-  var param2 = {"Name": "WEBSITE_CODE"}
-
-  parameters.push(param1)
-  parameters.push(param2)
-  deleteCiStackEnvVars(parameters)
   await deleteStack(ciprojectName);
 }
 
