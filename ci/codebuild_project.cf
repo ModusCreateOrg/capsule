@@ -84,8 +84,9 @@ Resources:
                 - echo "Running build"
                 - sudo npm run build
             post_build:
-              commands: !Sub 
-                - aws s3 sync ${WebsiteCode} s3://${ProjectS3Bucket}/
+              commands:
+                - !Ref WebsiteCode 
+                - !Sub aws s3 sync ${WebsiteCode} s3://${ProjectS3Bucket}/
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
