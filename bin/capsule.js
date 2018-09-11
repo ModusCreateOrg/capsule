@@ -619,7 +619,12 @@ const createWebStack = async (s3projectName, webProjectName, subdomain, domain) 
  * Given the name of the project, it updates the target projects stack
  * and updates it..
  */
-const updateWebStack = async (name) => {
+const updateWebStack = async (webProjectName) => {
+  await updateStack(
+    webProjectName,
+    await getWebTemplate(),
+    { ProjectName : webProjectName }
+  );
 }
 
 
@@ -657,7 +662,12 @@ const createCiStack = async (ciprojectName, url, subdomain, domain) => {
  * Given the name of the project, it updates the target projects stack
  * CF templates for codebuild.
  */
-const updateCiStack = async (name) => {
+const updateCiStack = async (ciprojectName) => {
+  await updateStack(
+    ciprojectName,
+    await getCiTemplate(),
+    { ProjectName : ciprojectName }
+  );
 }
 
 
@@ -719,7 +729,7 @@ const webCmds = async(cmd) => {
   }
 
   if (commander.type === 'update') {
-    await updateWebStack(s3projectName, webProjectName);
+    await updateWebStack(webProjectName);
   }
 
   if (commander.type === 'delete') {
