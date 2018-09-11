@@ -11,7 +11,6 @@ const aws = require('aws-sdk');
 const path = require('path')
 let cf;
 let s3;
-let ssm;
 
 //#############################################################################
 
@@ -212,7 +211,6 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
   // Load the aws libraries with authentication already set
   cf = new aws.CloudFormation();
   s3 = new aws.S3();
-  ssm = new aws.SSM();
 }
 
 // AWS CF Helpers #############################################################
