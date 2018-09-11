@@ -384,6 +384,17 @@ To learn more visit the official webpage here:
 
 https://aws.amazon.com/s3/
 
+###  CodeBuild - codebuild_project.cf
+
+CodeBuild configuration to handle:
+
+1. Creating environment to check project into
+2. Pull code from GitHub/Source control 
+3. Install code
+4. Run tests
+5. Create build
+6. Upload build to S3 bucket 
+
 
 ## Modus Create
 
