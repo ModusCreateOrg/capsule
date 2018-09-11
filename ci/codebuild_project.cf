@@ -77,6 +77,8 @@ Resources:
                 - sudo npm run build
             post_build:
               commands:
+                - echo "Syncing:"
+                - echo $WEBSITE_CODE
                 - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
   CodeBuildRole:
     Type: AWS::IAM::Role
