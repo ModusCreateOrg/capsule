@@ -77,7 +77,7 @@ Resources:
                 - sudo npm run build
             post_build:
               commands: 
-                - aws s3 sync . s3://capsule.modus.app/
+                - aws s3 sync ./build s3://capsule.modus.app/
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
