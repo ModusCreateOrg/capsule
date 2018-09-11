@@ -125,8 +125,8 @@ Resources:
             Effect: Allow 
             Action: "ssm:*"
             Resource:
-              - "arn:aws:ssm:*:parameter/WebsiteCode"
-              - "arn:aws:ssm:*:parameter/ProjectS3Bucket"
+              - "arn:aws:ssm:::parameter/WebsiteCode"
+              - "arn:aws:ssm:::parameter/ProjectS3Bucket"
 
       Roles: 
           - Ref: "CodeBuildRole"
