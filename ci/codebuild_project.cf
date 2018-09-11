@@ -69,7 +69,7 @@ Resources:
         Location: !Ref RepositoryURL
         Auth:
           Type: OAUTH
-        BuildSpec: !Sub |
+        BuildSpec: |
           version: 0.2
           phases:
             install:
@@ -84,7 +84,7 @@ Resources:
                 - echo "Running build"
                 - sudo npm run build
             post_build:
-              commands: 
+              commands: !Sub 
                 - aws s3 sync ${WebsiteCode} s3://${ProjectS3Bucket}/
   CodeBuildRole:
     Type: AWS::IAM::Role
