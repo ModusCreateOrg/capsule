@@ -43,9 +43,11 @@ Parameters:
     Default: buildspec.yml
   ProjectS3Bucket:
     Type: String
+    Description: "S3 Bucket to be used for static hosting"
     Default: None
   WebsiteCode:
     Type: String
+    Description: "Default build location for static assets"
     Default: ./build
 Resources:
   CodeBuildProject:
@@ -82,8 +84,8 @@ Resources:
                 - echo "Running build"
                 - sudo npm run build
             post_build:
-              commands: 
-                - !Sub aws s3 sync ${WebsiteCode} s3://${ProjectS3Bucket}/
+              commands: !Sub 
+                - aws s3 sync ${WebsiteCode} s3://${ProjectS3Bucket}/
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
