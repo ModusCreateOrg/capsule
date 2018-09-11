@@ -53,6 +53,12 @@ Resources:
         Image: !Ref EnvironmentImage
         Type: LINUX_CONTAINER
         ComputeType: !Ref ComputeType
+        EnvironmentVariables:
+          -
+            Name: "TEST"
+            Type: "String"
+            Value: !Ref CodeBuildProjectCodeName
+
       ServiceRole: !Ref CodeBuildRole
       Triggers:
         Webhook: yes
@@ -78,7 +84,7 @@ Resources:
             post_build:
               commands:
                 - echo "Syncing:"
-                - echo $WEBSITE_CODE
+                - echo $TEST
                 - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
   CodeBuildRole:
     Type: AWS::IAM::Role
