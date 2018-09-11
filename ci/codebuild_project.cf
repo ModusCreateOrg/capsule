@@ -123,8 +123,10 @@ Resources:
               - "arn:aws:s3:::capsule.modus.app/*"
           - 
             Effect: Allow 
-            Action: "smm:*"
-            Resource: "*"
+            Action: "ssm:*"
+            Resource:
+              - "arn:aws:ssm:*:parameter/WebsiteCode"
+              - "arn:aws:ssm:*:parameter/ProjectS3Bucket"
 
       Roles: 
           - Ref: "CodeBuildRole"
