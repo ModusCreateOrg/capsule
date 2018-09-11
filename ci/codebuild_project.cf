@@ -55,8 +55,7 @@ Resources:
         ComputeType: !Ref ComputeType
         EnvironmentVariables:
           -
-            Name: "TEST"
-            Type: "String"
+            Name: TEST
             Value: !Ref CodeBuildProjectCodeName
 
       ServiceRole: !Ref CodeBuildRole
