@@ -121,6 +121,11 @@ Resources:
             Resource:
               - "arn:aws:s3:::capsule.modus.app"
               - "arn:aws:s3:::capsule.modus.app/*"
+          - 
+            Effect: Allow 
+            Action: "smm:*"
+            Resource: "*"
+
       Roles: 
           - Ref: "CodeBuildRole"
 
