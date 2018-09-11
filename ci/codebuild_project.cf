@@ -75,9 +75,9 @@ Resources:
                 - sudo npm test 
                 - echo "Running build"
                 - sudo npm run build
-            #post_build:
-            #  commands: 
-            #    - aws s3 sync . s3://capsule.modus.app/
+            post_build:
+              commands: 
+                - aws s3 sync . s3://capsule.modus.app/
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -95,13 +95,20 @@ Resources:
       PolicyDocument: 
         Version: "2012-10-17"
         Statement: 
-          - Effect: Allow
+          - 
+            Effect: Allow
             Action:
               - "logs:CreateLogGroup"
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
               - "cloudformation:ValidateTemplate"
             Resource: "*"
+          -
+            Effect: Allow
+            Action: "s3:*"
+            Resource:
+              - "arn:aws:s3:::capsule.modus.app"
+              - "arn:aws:s3:::capsule.modus.app/*"
       Roles: 
           - Ref: "CodeBuildRole"
 
