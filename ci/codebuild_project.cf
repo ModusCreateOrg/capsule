@@ -124,7 +124,7 @@ Resources:
           - 
             Effect: Allow
             Action: "sts:AssumeRole"
-            Resource: "arn:aws:smm:::*"
+            Resource: "arn:aws:ssm:::*"
           - 
             Effect: Allow 
             Action: "ssm:GetParameters"
