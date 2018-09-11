@@ -15,6 +15,15 @@ Automated CLI for static web application hosting on AWS using S3 buckets.
 This automated script simplifies setting up an AWS site. Add S3 buckets,
 register DNS, and create an SSL certificate in minutes with no DevOps knowledge.
 
+Capsule uses the following AWS technologies:
+
+1. Amazon S3
+2. Amazon CloudFormation
+3. Amazon Certificate Manager
+4. Amazon Route53
+5. Amazon CloudFront
+6. Amazon CloudBuild
+
 
 ## Getting Started
 
@@ -23,7 +32,7 @@ In order to use Capsule you will need the following:
 * An AWS account. You can sign up here: https://aws.amazon.com/
 * A registered domain name. This can be obtained through AWS or via a third party such as GoDaddy.
 * For continuous integration, a source code repository such as GitHub where your static website is located
-* A static website (HTMl, JS, CSS) that does not require server side code like PHP, Python or Java.
+* A static website (HTML, JS, CSS) that does not require server side code like PHP, Python or Java.
 
 
 ### Security Credentials
