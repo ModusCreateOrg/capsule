@@ -386,7 +386,7 @@ https://aws.amazon.com/s3/
 
 ###  CodeBuild - codebuild_project.cf
 
-Included in this project are two Codebuild clodu formation templates"
+Included in this project are two CodeBuild Cloud Formation templates:
 
 1. The template for Capsule itself
 2. A parameterized template for use with your own project. 
