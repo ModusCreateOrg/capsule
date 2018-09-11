@@ -323,7 +323,7 @@ Wjere `example.com` is the domain you passed to the cli tool.
 
 - The CI for the hosted project will still be using codebuild
 - The CI infrastructure for Capsule will be evolving soon to use codepipeline to execute several integration tests the cloudformation templates and the cli with different node versions.
-
+- Add in CloudTrail support for debugging
 
 
 ## Templates
