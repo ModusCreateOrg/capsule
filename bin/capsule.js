@@ -652,7 +652,9 @@ const createCiStack = async (ciprojectName, url, subdomain, domain) => {
     await getCiTemplate(),
     {
         CodeBuildProjectCodeName: ciprojectName,
-        RepositoryURL: url
+        RepositoryURL: url,
+        WebsiteCode: "./build",
+        ProjectS3Bucket: subdomain+"."+domain
     }
   );
 }
