@@ -44,7 +44,6 @@ Parameters:
   ProjectS3Bucket:
     Type: String
     Description: "S3 Bucket to be used for static hosting"
-    Default: "usingdefaultbreaks"
   WebsiteCode:
     Type: String
     Description: "Default build location for static assets"
@@ -74,7 +73,7 @@ Resources:
           env:
             parameter-store:
               WEBSITE_CODE: !Ref WebsiteCode
-              PROJECT_S3_BUCKET: !Ref ProjectS3Bucket
+              #PROJECT_S3_BUCKET: !Ref ProjectS3Bucket
           phases:
             install:
               commands:
@@ -89,7 +88,7 @@ Resources:
                 - sudo npm run build
             post_build:
               commands:
-                - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
+                - aws s3 sync $WEBSITE_CODE s3://capsule.modus.app/
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -126,7 +125,7 @@ Resources:
             Action: "ssm:GetParameters"
             Resource:
               - "arn:aws:ssm:*:*:parameter/WebsiteCode"
-              - "arn:aws:ssm:*:*:parameter/ProjectS3Bucket"
+              #- "arn:aws:ssm:*:*:parameter/ProjectS3Bucket"
 
       Roles: 
           - Ref: "CodeBuildRole"
