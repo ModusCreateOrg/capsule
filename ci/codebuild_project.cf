@@ -71,6 +71,10 @@ Resources:
           Type: OAUTH
         BuildSpec: |
           version: 0.2
+          env:
+            parameter-store:
+              WEBSITE_CODE: !Ref WebsiteCode
+              PROJECT_S3_BUCKET: !Ref ProjectS3Bucket
           phases:
             install:
               commands:
@@ -85,8 +89,7 @@ Resources:
                 - sudo npm run build
             post_build:
               commands:
-                - !Ref WebsiteCode 
-                - !Sub aws s3 sync ${WebsiteCode} s3://${ProjectS3Bucket}/
+                - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
