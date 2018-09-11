@@ -394,7 +394,7 @@ CodeBuild configuration to handle:
 4. Run tests
 5. Create build
 6. Upload build to S3 bucket 
-
+7. Setup trigger so that new pushes to master are built/test/deployed
 
 ## Modus Create
 
