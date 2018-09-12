@@ -53,7 +53,7 @@ https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services
 A safe bet is to use `us-east-1` as this is the region that Capsule has been tested in.
 
 
-#### JSON setup
+#### AWS Config - JSON setup
 
 First we are going to create a single file `config.json`
 
@@ -100,7 +100,7 @@ You can change the region if you wish as well, but please check the region suppo
 Save the file. You are now ready to use Capsule to build out your static site. 
 
 
-#### YAML setup
+#### AWS Config - YAML setup
 
 First we are going to create two files. These are the `config` and `credentials` file.
 
@@ -171,6 +171,19 @@ output=json
 Save the file. 
 
 Your credentials and configuration are now setup to use Capsule.
+
+### Your website configuration 
+
+Capsule supports a number of command line parameters to allow you to configure your web site.
+
+In addition to this, you can use a JSON configuration file, containing these values.
+
+An example can be found in the `config/site_config.json` file in the capsule repository. 
+
+When loading configuration options, the JSON config is loaded first, if specified. Following this any command line
+parameters are then loaded. Command line parameters will override any parameters specified in the JSON file.
+
+You can always check what command line parameters are available by running the `capsule -h` command.
 
 
 ### Project Names
