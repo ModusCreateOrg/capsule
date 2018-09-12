@@ -159,23 +159,42 @@ const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
 // File Helpers ##############################################################
 
 
+/*
+ * siteParamsFromCmdLine:
+ * Merge in commandline params into
+ * an object that can be used in codebuild.
+ * Commandline params take prescedent over
+ * params in the site_config.json
+ * TODO: Check if either is undefined
+ * and populate with value from user config file
+ * if it is present.
+ */
+const siteParamsFromCmdLine = async(ciprojectName) => {
+  let site_config = {}
+  site_config['CodeBuildProjectCodeName'] = ciprojectName
+  site_config['RepositoryURL'] = commander.url
+  site_config['ProjectS3Bucket'] = commander.subdom+'.'+commander.dom
+  return site_config
+}
 
 /*
  * mergeConfig:
  * Merges together the values from the site_config.json file
  * (or whatever named file the user specified) with any values
- * passed in from the command line
+ * passed in from the command line as part of the sc flag.
  */
-const mergeConfig = async (site_config_params, site_config_file) => {
+const mergeConfig = async (site_config, site_config_params, site_config_file) => {
   let config_params = JSON.parse(site_config_params)
   let file_params = {}
+  let merged_params = {}
   if(site_config_file !== undefined) {
       file_params = await parseJsonConfig(site_config_file)
   }
   if (config_params === undefined) {
       config_params = {}
   }
-  return Object.assign({}, file_params, config_params);
+  merged_params = Object.assign({}, file_params, config_params);
+  return Object.assign({}, merged_params, site_config);
 }
 
 /*
@@ -206,6 +225,11 @@ const getJsonFile = (path) => {
   });
 }
 
+/*
+ * parseJsonConfig:
+ * Pass in a config file in JSON format
+ * process and return an object
+ */
 const parseJsonConfig = async (site_config_file) => getJsonFile(site_config_file);
 
 /*
@@ -698,7 +722,6 @@ const deleteWebStack = async (webProjectName) => {
  * the subdomain and domain.
  */
 const createCiStack = async (ciprojectName, site_config) => {
-  console.log(site_config)
   await createStack(
     ciprojectName,
     await getCiTemplate(),
@@ -789,28 +812,24 @@ const webCmds = async(cmd) => {
 /*
  * cliCmds:
  * Handle continuous integration stack build out
- * THis allows you to use CloudBuild to pull code from
+ * This allows you to use CloudBuild to pull code from
  * a repository and dump it into the S3 bucket.
  *
  */
 const ciCmds = async(cmd) => {
   let ciprojectName = "capsule-"+commander.projectName+"-ci"
-  let url = commander.url
   let site_config_params = commander.site_config
   let site_config_file = commander.site_config_file
-  let site_config = {}
+  let site_config = await siteParamsFromCmdLine(ciprojectName)
 
   if (commander.type === 'create') {
-    site_config = await mergeConfig(site_config_params, site_config_file)
-    // NB: will create new functionality to handle merging this in one place
-    site_config['CodeBuildProjectCodeName'] = ciprojectName
-    site_config['RepositoryURL'] = url
-    site_config['ProjectS3Bucket'] = commander.subdom+'.'+commander.dom
+    site_config = await mergeConfig(site_config, site_config_params, site_config_file)
     await createCiStack(ciprojectName, site_config);
   }
 
   if (commander.type === 'update') {
-    site_config = await mergeConfig(site_config_params, site_config_file)
+    site_config = await mergeConfig(site_config, site_config_params, site_config_file)
+    //TODO: handle site_config params
     await updateCiStack(ciprojectName);
   }
 
