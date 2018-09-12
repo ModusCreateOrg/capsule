@@ -27,6 +27,8 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-u, --url <repo>', 'The source control URL to use')
+  .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
+  .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
           console.log("Executing create for: "+type)
           commander.type = options._name || undefined
@@ -36,6 +38,8 @@ commander
           commander.dom = options.dom || undefined
           commander.subdom = options.subdom || undefined
           commander.url = options.url || undefined
+          commander.site_config = options.site_config || {}
+          commander.site_config_file = options.site_config_file || undefined
    });
 
 commander
@@ -46,6 +50,8 @@ commander
   .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
+  .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
           console.log("Executing update for: "+type)
           commander.type = options._name || undefined
@@ -54,6 +60,8 @@ commander
           commander.awsProfile = options.awsProfile || undefined
           commander.dom = options.dom || undefined
           commander.subdom = options.subdom || undefined
+          commander.site_config = options.site_config || {}
+          commander.site_config_file = options.site_config_file || undefined
    });
 
 commander
@@ -150,6 +158,26 @@ const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
 
 // File Helpers ##############################################################
 
+
+
+/*
+ * mergeConfig:
+ * Merges together the values from the site_config.json file
+ * (or whatever named file the user specified) with any values
+ * passed in from the command line
+ */
+const mergeConfig = async (site_config_params, site_config_file) => {
+  let config_params = JSON.parse(site_config_params)
+  let file_params = {}
+  if(site_config_file !== undefined) {
+      file_params = await parseJsonConfig(site_config_file)
+  }
+  if (config_params === undefined) {
+      config_params = {}
+  }
+  return Object.assign({}, file_params, config_params);
+}
+
 /*
  * getTemplateBody
  * TODO: This may require to get it from github directly to avoid packing it
@@ -163,6 +191,30 @@ const getTemplateBody = (path) => {
   });
 }
 
+/*
+ * getJsonFile:
+ * Takes a JSON config file, opens its, reads the contents
+ * passes it, and returns a JS object.
+ *
+ */
+const getJsonFile = (path) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf8', (err, data) => {
+      if (err) reject(err);
+      else resolve(JSON.parse(data));
+    })
+  });
+}
+
+const parseJsonConfig = async (site_config_file) => getJsonFile(site_config_file);
+
+/*
+ * getCiS3Template:
+ * get the S3 file
+ * then re-use the existing functions to
+ * build the stack
+ *
+ */
 const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
 
 /*
@@ -645,17 +697,12 @@ const deleteWebStack = async (webProjectName) => {
  * Finally the code is pushed to the S3 bucklet defined by
  * the subdomain and domain.
  */
-const createCiStack = async (ciprojectName, url, subdomain, domain) => {
-
+const createCiStack = async (ciprojectName, site_config) => {
+  console.log(site_config)
   await createStack(
     ciprojectName,
     await getCiTemplate(),
-    {
-        CodeBuildProjectCodeName: ciprojectName,
-        RepositoryURL: url,
-        WebsiteCode: '.',
-        ProjectS3Bucket: subdomain+'.'+domain
-    }
+    site_config
   );
 }
 
@@ -749,12 +796,21 @@ const webCmds = async(cmd) => {
 const ciCmds = async(cmd) => {
   let ciprojectName = "capsule-"+commander.projectName+"-ci"
   let url = commander.url
+  let site_config_params = commander.site_config
+  let site_config_file = commander.site_config_file
+  let site_config = {}
 
   if (commander.type === 'create') {
-    await createCiStack(ciprojectName, url, commander.subdom, commander.dom);
+    site_config = await mergeConfig(site_config_params, site_config_file)
+    // NB: will create new functionality to handle merging this in one place
+    site_config['CodeBuildProjectCodeName'] = ciprojectName
+    site_config['RepositoryURL'] = url
+    site_config['ProjectS3Bucket'] = commander.subdom+'.'+commander.dom
+    await createCiStack(ciprojectName, site_config);
   }
 
   if (commander.type === 'update') {
+    site_config = await mergeConfig(site_config_params, site_config_file)
     await updateCiStack(ciprojectName);
   }
 
