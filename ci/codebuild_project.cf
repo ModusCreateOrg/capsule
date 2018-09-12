@@ -48,6 +48,15 @@ Parameters:
   ProjectS3Bucket:
     Type: String
     Description: "Name of S3 bucket hosting the site"
+  InstallCommands:
+    Type: String
+    Description: "List of command to run on install e.g. apt-get."
+  BuildCommands:
+    Type: String
+    Description: "List of command to run on build e.g. npm test."
+  PostBuildCommands:
+    Type: String
+    Description: "List of command to run on post build."
 Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -67,6 +76,16 @@ Resources:
           -
             Name: PROJECT_S3_BUCKET
             Value: !Ref ProjectS3Bucket
+          - 
+            Name: INSTALL_COMMANDS
+            Value: !Ref InstallCommands
+          - 
+            Name: BUILD_COMMANDS
+            Value: !Ref BuildCommands
+          - 
+            Name: POST_BUILD_COMMANDS
+            Value: !Ref PostBuildCommands
+            
       ServiceRole: !Ref CodeBuildRole
       Triggers:
         Webhook: yes
@@ -80,15 +99,14 @@ Resources:
           phases:
             install:
               commands:
-                - sudo ln -s /usr/bin/nodejs /usr/bin/node
-                - sudo npm install .
+                - $INSTALL_COMMANDS
             build:  
               commands:    
-                - sudo npm test 
-                - sudo npm run build
+                - $BUILD_COMMANDS
             post_build:
               commands:
                 - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
+                - $POST_BUILD_COMMANDS
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -117,9 +135,9 @@ Resources:
           -
             Effect: Allow
             Action: "s3:*"
-            Resource:
-              - "arn:aws:s3:::capsule.modus.app"
-              - "arn:aws:s3:::capsule.modus.app/*"
+            Resource: 
+              - !Sub "arn:aws:s3:::${ProjectS3Bucket}"
+              - !Sub "arn:aws:s3:::${ProjectS3Bucket}/*"
           - 
             Effect: Allow 
             Action: "ssm:GetParameters"
