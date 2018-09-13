@@ -869,6 +869,7 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
   });
 }
 
+
 /**
  * Given the name of the project where the cf templates are stired,
  * it grabs the scripts from
@@ -983,7 +984,8 @@ const updateCiStack = async (ciprojectName, site_config) => {
  *
  * @return {void}
  */
-const deleteCiStack = async (ciprojectName) => {
+const deleteCiStack = async (ciprojectName, bucketName) => {
+  await clearS3Bucket(bucketName);
   await deleteStack(ciprojectName);
 }
 
@@ -1079,7 +1081,8 @@ const ciCmds = async(type) => {
   }
 
   if (type === 'delete') {
-    await deleteCiStack(ciprojectName);
+    let bucketName = commander.subdom+'.'+commander.dom
+    await deleteCiStack(ciprojectName, bucketName);
   }
 }
 
@@ -1107,12 +1110,12 @@ const ciCmds = async(type) => {
      await s3Cmds(type)
   }
 
-  if (commander.args.includes('ci')) {
-     await ciCmds(type)
-  }
-
   if (commander.args.includes('web')) {
      await webCmds(type)
+  }
+
+  if (commander.args.includes('ci')) {
+     await ciCmds(type)
   }
 
 })();
