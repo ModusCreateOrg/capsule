@@ -178,7 +178,7 @@ Capsule supports a number of command line parameters to allow you to configure y
 
 In addition to this, you can use a JSON configuration file, containing these values.
 
-An example can be found in the `config/site_config.json` file in the capsule repository. 
+An example can be found in the `config/capsule.json` file in the capsule repository. 
 
 When loading configuration options, the JSON config is loaded first, if specified. Following this any command line
 parameters are then loaded. Command line parameters will override any parameters specified in the JSON file.
@@ -186,11 +186,11 @@ parameters are then loaded. Command line parameters will override any parameters
 An example can be seen here:
 
 ```
-./bin/capsule.js create --project-name "exampledotcom" --dom example.com --subdom app --url https://github.com/ExampleCom/exampledotcom  --config ~/.aws/config.json --site_config='{"WebsiteCode":"./build"}' --site_config_file=./config/site_config.json ci
+./bin/capsule.js create --project-name "exampledotcom" --dom example.com --subdom app --url https://github.com/ExampleCom/exampledotcom  --config ~/.aws/config.json --site_config='{"WebsiteCode":"./build"}' --site_config_file=./config/capsule.json ci
 ```
 
 In this example the value of the `--site_config` flag will overwrite the the key value pair specified in the `--site_config_file` JSON file.
-Thus if `WebsiteCode` is defined in `site_config.json` it's value will be overridden with `./build`.
+Thus if `WebsiteCode` is defined in `capsule.json` it's value will be overridden with `./build`.
 
 
 You can always check what command line parameters are available by running the `capsule -h` command.
