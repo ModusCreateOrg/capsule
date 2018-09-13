@@ -873,6 +873,9 @@ const createWebStack = async (s3projectName, webProjectName, subdomain, domain) 
  * Given the name of the project, it updates the target projects stack
  * and updates it..
  *
+ * TODO: paramters should be passed through as a single object for
+ * createStack.
+ *
  * @method updateWebStack
  *
  * @param {String} webProjectName
