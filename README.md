@@ -196,6 +196,25 @@ Thus if `WebsiteCode` is defined in `capsule.json` it's value will be overridden
 You can always check what command line parameters are available by running the `capsule -h` command.
 
 
+If you wish to run multiple bash commands inside of the build or post_build CodeBuild actions, then you will need to pass these as a single paramter.
+
+Use the following chart as a guide for bash commands:
+
+```
+A; B    # Run A and then B, regardless of success of A
+A && B  # Run B if and only if A succeeded
+A || B  # Run B if and only if A failed
+```
+
+In the nodejs world for example this could translate to the following:
+
+```
+npm build dev; npm test
+```
+
+
+
+
 ### Project Names
 
 During the setup of your site you will need to define a project name. This will be used to name the 
