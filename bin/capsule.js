@@ -50,6 +50,7 @@ commander
   .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-u, --url <repo>', 'The source control URL to use')
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
@@ -60,6 +61,7 @@ commander
           commander.awsProfile = options.awsProfile || undefined
           commander.dom = options.dom || undefined
           commander.subdom = options.subdom || undefined
+          commander.url = options.url || undefined
           commander.site_config = options.site_config || {}
           commander.site_config_file = options.site_config_file || undefined
    });
@@ -924,11 +926,11 @@ const createCiStack = async (ciprojectName, site_config) => {
  *
  * @return {void}
  */
-const updateCiStack = async (ciprojectName) => {
+const updateCiStack = async (ciprojectName, site_config) => {
   await updateStack(
     ciprojectName,
     await getCiTemplate(),
-    { ProjectName : ciprojectName }
+    site_config
   );
 }
 
@@ -1034,8 +1036,7 @@ const ciCmds = async(cmd) => {
 
   if (commander.type === 'update') {
     site_config = await mergeConfig(site_config, site_config_params, site_config_file)
-    //TODO: handle site_config params
-    await updateCiStack(ciprojectName);
+    await updateCiStack(ciprojectName, site_config);
   }
 
   if (commander.type === 'delete') {
