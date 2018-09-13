@@ -259,6 +259,7 @@ Triggers:
 
 In this case, the user will need Admin permissions. 
 
+You will need to create a webhook in GitHub.
 
 ### How to use it?
 
