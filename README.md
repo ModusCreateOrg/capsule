@@ -201,7 +201,7 @@ If you wish to run multiple bash commands inside of the build or post_build Code
 Use the following chart as a guide for bash commands:
 
 ```
-A; B    # Run A and then B, regardless of success of A
+A ; B    # Run A and then B, regardless of success of A
 A && B  # Run B if and only if A succeeded
 A || B  # Run B if and only if A failed
 ```
@@ -209,7 +209,7 @@ A || B  # Run B if and only if A failed
 In the nodejs world for example this could translate to the following:
 
 ```
-npm build dev; npm test
+npm build dev ; npm test
 ```
 
 
