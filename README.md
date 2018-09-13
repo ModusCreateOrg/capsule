@@ -325,6 +325,9 @@ $ ./bin/capsule.js --help
     -n, --project-name <project-name>  Push cf templates to the s3 bucket, and creates it if it does not exist
     -c, --config <config-path>         Load the configuration from the specified path
     -p, --aws-profile <profile>        The AWS profile to use
+    -u, --url <repo>                   The source control URL to use
+    -sc, --site_config <site-config>   A JSON object contianing site configuration, overrides values defined in site config file
+    -scf, --site_config_file <site-config-path>  Custom configuration file used in CodeBuild for building the static site
     -d, --remove-cf-bucket             Remove the bucket used for storing the nested templates
     -v, --verbose                      verbose output
     -h, --help                         output usage information
