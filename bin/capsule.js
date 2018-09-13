@@ -276,9 +276,14 @@ const parseJsonConfig = async (site_config_file) => getJsonFile(site_config_file
 const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
 
 /**
- * get the codebuild file
+ * Get the codebuild file
  * then re-use the existing functions to
- * build the stack
+ * build the stack.
+ *
+ * By default we use the ci_project path.
+ *
+ * TODO: Add in a flag to use the capsule CodeBuild file
+ * or make the path a parameter that defaults to ci_project.
  *
  * @method getCiTemplate
  *
@@ -992,8 +997,8 @@ const s3Cmds = async() => {
  */
 const webCmds = async(cmd) => {
   let s3projectName = commander.projectName
-  let webProjectName = "capsule-"+s3projectName+"-web"
-  s3projectName = "cf-"+s3projectName+"-capsule-ci"
+  let webProjectName = `capsule-${s3projectName}-web`
+  s3projectName = `cf-${s3projectName}-capsule-ci`
 
   if(!commander.dom) {
     printErrorAndDie('Website domain name is required!', true);
@@ -1024,7 +1029,7 @@ const webCmds = async(cmd) => {
  * @return {void}
  */
 const ciCmds = async(cmd) => {
-  let ciprojectName = "capsule-"+commander.projectName+"-ci"
+  let ciprojectName = `capsule-${commander.projectName}-ci`
   let site_config_params = commander.site_config
   let site_config_file = commander.site_config_file
   let site_config = await siteParamsFromCmdLine(ciprojectName)
