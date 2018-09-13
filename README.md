@@ -213,8 +213,6 @@ npm build dev ; npm test
 ```
 
 
-
-
 ### Project Names
 
 During the setup of your site you will need to define a project name. This will be used to name the 
@@ -338,7 +336,8 @@ $ ./bin/capsule.js --help
 
   Options:
 
-    -V, --version                      output the version number
+    -V, --version                      Output the version number
+    init                               Builds out the web hosting infrastructure in one go
     create                             Initializes the s3 bucket required to store nested stack templates
     update                             Updates the templates into the s3 bucket and runs the nested stack
     delete                             Delete the s3 bucket contents
@@ -349,12 +348,18 @@ $ ./bin/capsule.js --help
     -sc, --site_config <site-config>   A JSON object contianing site configuration, overrides values defined in site config file
     -scf, --site_config_file <site-config-path>  Custom configuration file used in CodeBuild for building the static site
     -d, --remove-cf-bucket             Remove the bucket used for storing the nested templates
-    -v, --verbose                      verbose output
+    -v, --verbose                      Verbose output
     -h, --help                         output usage information
 
 ```
 
-Note: the CLI interface will be changed soon with a different set of sub-commands and options to make it more intuitive.
+To kick off building out a project with a single command, you can use the `init` option. The example below demonstrates this:
+
+```
+./bin/capsule.js init --project-name "exampledotcom" --dom example.com --subdom app --url https://github.com/ExampleCom/exampledotcom  --config ~/.aws/config.json --site_config='{"WebsiteCode":"."}' --site_config_file=./config/capsule.json 
+```
+
+
 
 #### Domain configuration
 
