@@ -18,6 +18,35 @@ commander
   .version('0.0.1')
   .option('-v, --verbose', 'verbose output')
 
+
+//TODO - move code for assigning vars into a separate function
+//to allow code re-use.
+commander
+  .command('init')
+  .description('Builds out the web hosting infrastructure in one go')
+  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
+  .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
+  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
+  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .option('-u, --url <repo>', 'The source control URL to use')
+  .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
+  .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
+  .action(function (options) {
+          console.log("Executing project initalization")
+          commander.type = options._name || undefined
+          commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
+          commander.dom = options.dom || undefined
+          commander.subdom = options.subdom || undefined
+          commander.url = options.url || undefined
+          commander.site_config = options.site_config || {}
+          commander.site_config_file = options.site_config_file || undefined
+   });
+
+// The following commands are the mroe granular ones, that allow step by step deployment
+// of the web hosting infrastructure
 commander
   .command('create <type>')
   .description('Initializes the s3 bucket required to store nested stack templates takes: s3, ci or web')
@@ -185,7 +214,7 @@ const siteParamsFromCmdLine = async(ciprojectName) => {
   return site_config
 }
 
-/*
+/**
  * Merges together the values from the site_config.json file
  * (or whatever named file the user specified) with any values
  * passed in from the command line as part of the sc flag.
@@ -405,7 +434,7 @@ const createCFStack = async (name, template_body, parameters, token) => {
   });
 }
 
-/*
+/**
  * Given the name of the stack, a string with the template body to apply, an
  * object with the stack parameters, and a token, it starts the CF stack
  * update request identifed by the token.
@@ -537,7 +566,7 @@ const getNextStackEvent = async (id, next) => {
   });
 }
 
-/*
+/**
  * Given the Stack id, it returns the list of events of the stack and nested
  * stacks.
  *
@@ -567,7 +596,7 @@ const getStackEvents = async (id) => {
   return events.sort((e1, e2) => e1.Timestamp - e2.Timestamp);
 };
 
-/*
+/**
  * Given the stack id and the token that identifies the stack change request,
  * it prints the events filtered by the id and the token, and it ensures the
  * events are always new.
@@ -751,7 +780,7 @@ const clearS3Bucket = async (name) => {
   }
 }
 
-/*
+/**
  * Given the name of the project, it creates the s3 bucket used for storing the
  * CF templates for nested CF Stacks.
  *
@@ -945,7 +974,6 @@ const updateCiStack = async (ciprojectName, site_config) => {
   );
 }
 
-
 /**
  * Given the name of the project, it removes the CI process. .
  *
@@ -969,22 +997,22 @@ const deleteCiStack = async (ciprojectName) => {
  *
  * @return {void}
  */
-const s3Cmds = async() => {
+const s3Cmds = async(type) => {
 
   let projectName = commander.projectName
   let bucketName = `cf-${projectName}-capsule-ci`
 
-  if (commander.type === 'create') {
+  if (type === 'create') {
     await createS3Bucket(projectName);
     logIfVerbose(`Uploading files....`);
     await addFilesToS3Bucket(projectName, bucketName)
   }
 
-  if (commander.type === 'update') {
+  if (type === 'update') {
     await updateS3Bucket(projectName, bucketName);
   }
 
-  if (commander.type === 'delete') {
+  if (type === 'delete') {
     await deleteS3Bucket(projectName, bucketName);
   }
 }
@@ -1001,7 +1029,7 @@ const s3Cmds = async() => {
  *
  * @return {void}
  */
-const webCmds = async(cmd) => {
+const webCmds = async(type) => {
   let s3projectName = commander.projectName
   let webProjectName = `capsule-${s3projectName}-web`
   s3projectName = `cf-${s3projectName}-capsule-ci`
@@ -1010,15 +1038,15 @@ const webCmds = async(cmd) => {
     printErrorAndDie('Website domain name is required!', true);
   }
 
-  if (commander.type === 'create') {
+  if (type === 'create') {
     await createWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
   }
 
-  if (commander.type === 'update') {
+  if (type === 'update') {
     await updateWebStack(webProjectName);
   }
 
-  if (commander.type === 'delete') {
+  if (type === 'delete') {
     await deleteWebStack(webProjectName);
   }
 }
@@ -1034,23 +1062,23 @@ const webCmds = async(cmd) => {
  *
  * @return {void}
  */
-const ciCmds = async(cmd) => {
+const ciCmds = async(type) => {
   let ciprojectName = `capsule-${commander.projectName}-ci`
   let site_config_params = commander.site_config
   let site_config_file = commander.site_config_file
   let site_config = await siteParamsFromCmdLine(ciprojectName)
 
-  if (commander.type === 'create') {
+  if (type === 'create') {
     site_config = await mergeConfig(site_config, site_config_params, site_config_file)
     await createCiStack(ciprojectName, site_config);
   }
 
-  if (commander.type === 'update') {
+  if (type === 'update') {
     site_config = await mergeConfig(site_config, site_config_params, site_config_file)
     await updateCiStack(ciprojectName, site_config);
   }
 
-  if (commander.type === 'delete') {
+  if (type === 'delete') {
     await deleteCiStack(ciprojectName);
   }
 }
@@ -1059,6 +1087,7 @@ const ciCmds = async(cmd) => {
 (async () => {
 
   global.cwd = process.cwd();
+  let type = commander.type;
 
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
@@ -1066,16 +1095,24 @@ const ciCmds = async(cmd) => {
      printErrorAndDie('Project name is required!', true);
   }
 
+
+  if (commander.type === 'init') {
+     let initType = 'create'
+     await s3Cmds(initType)
+     await ciCmds(initType)
+     await webCmds(initType)
+  }
+
   if (commander.args.includes('s3')) {
-     await s3Cmds()
+     await s3Cmds(type)
   }
 
   if (commander.args.includes('ci')) {
-     await ciCmds()
+     await ciCmds(type)
   }
 
   if (commander.args.includes('web')) {
-     await webCmds()
+     await webCmds(type)
   }
 
 })();
