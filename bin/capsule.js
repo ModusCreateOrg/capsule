@@ -845,6 +845,9 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
  * it grabs the scripts from
  * the s3 bucket with that name and spins up the web infrastructure
  *
+ * TODO: paramters should be passed through as a single object for
+ * createStack.
+ *
  * @method createWebStack
  *
  * @param {String} s3projectName
