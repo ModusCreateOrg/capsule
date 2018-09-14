@@ -1,11 +1,11 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Website CloudFormation stack - CodeBuild Project"
+Description: "User Website CloudFormation stack - CodeBuild Project"
 
 Parameters:
   CodeBuildProjectCodeName:
     Type: String
-    Description: "CodeBuild Project codename"
+    Description: "User CodeBuild Project codename"
   RepositoryURL:
     Type: String
     Description: "HTTPS URL for the Git repository"
@@ -27,7 +27,8 @@ Parameters:
     Description: "Image to use for running a container where the build will execute"
     AllowedPattern: "^(.*)\\/(.*)\\/(.)*:(.)*"
     ConstraintDescription: "Image reference (<repository>/<image>:<tag>)"
-    Default: aws/codebuild/ubuntu-base:14.04
+    #Default: aws/codebuild/ubuntu-base:14.04
+    Default: aws/codebuild/nodejs:10.1.0
   ComputeType:
     Type: String
     Description: "Small (3 GB memory, 2 vCPU) | Medium (7 GB memory, 4 vCPU) | large (15 GB memory, 8 vCPU)"
@@ -40,6 +41,22 @@ Parameters:
     Type: String
     Description: "Location of the build spec to use (Defaults to the repository root)"
     Default: buildspec.yml
+  WebsiteCode:
+    Type: String
+    Description: "Location of code to be moved to S3 bucket"
+    Default: "./build"
+  ProjectS3Bucket:
+    Type: String
+    Description: "Name of S3 bucket hosting the site"
+  InstallCommands:
+    Type: String
+    Description: "List of command to run on install e.g. apt-get."
+  BuildCommands:
+    Type: String
+    Description: "List of command to run on build e.g. npm test."
+  PostBuildCommands:
+    Type: String
+    Description: "List of command to run on post build."
 Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -52,6 +69,23 @@ Resources:
         Image: !Ref EnvironmentImage
         Type: LINUX_CONTAINER
         ComputeType: !Ref ComputeType
+        EnvironmentVariables:
+          -
+            Name: WEBSITE_CODE
+            Value: !Ref WebsiteCode
+          -
+            Name: PROJECT_S3_BUCKET
+            Value: !Ref ProjectS3Bucket
+          - 
+            Name: INSTALL_COMMANDS
+            Value: !Ref InstallCommands
+          - 
+            Name: BUILD_COMMANDS
+            Value: !Ref BuildCommands
+          - 
+            Name: POST_BUILD_COMMANDS
+            Value: !Ref PostBuildCommands
+            
       ServiceRole: !Ref CodeBuildRole
       Triggers:
         Webhook: yes
@@ -60,7 +94,19 @@ Resources:
         Location: !Ref RepositoryURL
         Auth:
           Type: OAUTH
-        BuildSpec: !Ref BuildSpecLocation
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - $INSTALL_COMMANDS
+            build:  
+              commands:    
+                - $BUILD_COMMANDS
+            post_build:
+              commands:
+                - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
+                - $POST_BUILD_COMMANDS
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -78,13 +124,26 @@ Resources:
       PolicyDocument: 
         Version: "2012-10-17"
         Statement: 
-          - Effect: Allow
+          - 
+            Effect: Allow
             Action:
               - "logs:CreateLogGroup"
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
               - "cloudformation:ValidateTemplate"
             Resource: "*"
+          -
+            Effect: Allow
+            Action: "s3:*"
+            Resource: 
+              - !Sub "arn:aws:s3:::${ProjectS3Bucket}"
+              - !Sub "arn:aws:s3:::${ProjectS3Bucket}/*"
+          - 
+            Effect: Allow 
+            Action: "ssm:GetParameters"
+            Resource:
+              - "arn:aws:ssm:*:*:parameter/*"
+
       Roles: 
           - Ref: "CodeBuildRole"
 
