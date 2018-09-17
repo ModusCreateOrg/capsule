@@ -45,6 +45,24 @@ commander
           commander.site_config_file = options.site_config_file || undefined
    });
 
+commander
+  .command('remove')
+  .description('Removes the whole of the web hosting infrastructure, including files in S3 buckets')
+  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
+  .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
+  .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
+  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
+  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
+  .action(function (options) {
+          console.log("Executing project removal")
+          commander.type = options._name || undefined
+          commander.projectName = options.projectName || undefined
+          commander.config = options.config || undefined
+          commander.awsProfile = options.awsProfile || undefined
+          commander.dom = options.dom || undefined
+          commander.subdom = options.subdom || undefined
+   });
+
 // The following commands are the mroe granular ones, that allow step by step deployment
 // of the web hosting infrastructure
 commander
@@ -103,7 +121,6 @@ commander
   .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
-  .option('-d, --remove-cf-bucket', 'Remove the bucket used for storing the nested templates')
   .action(function (type, options) {
           console.log("Executing delete for: "+type)
           commander.type = options._name || undefined
@@ -1104,6 +1121,13 @@ const ciCmds = async(type) => {
      await s3Cmds(initType)
      await ciCmds(initType)
      await webCmds(initType)
+  }
+
+  if (commander.type === 'remove') {
+     let deleteType = 'delete'
+     await ciCmds(deleteType)
+     await webCmds(deleteType)
+     await s3Cmds(deleteType)
   }
 
   if (commander.args.includes('s3')) {
