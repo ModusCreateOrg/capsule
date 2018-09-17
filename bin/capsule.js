@@ -11,6 +11,7 @@ const aws = require('aws-sdk');
 const path = require('path')
 let cf;
 let s3;
+let cfr;
 
 //#############################################################################
 
@@ -388,6 +389,7 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
 
   cf = new aws.CloudFormation();
   s3 = new aws.S3();
+  cfr = new aws.CloudFront()
 }
 
 // AWS CF Helpers #############################################################
@@ -886,6 +888,54 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
   });
 }
 
+/**
+ *
+ * @method getCloudFrontDistID
+ *
+ * @param {String} bucketName
+ *
+ * @return {String} distId
+ *
+ */
+const getCloudFrontDistID = async (bucketName) => {
+  let params = {};
+  return new Promise((resolve, reject) => {
+    cfr.listDistributions(params, function(err, data) {
+      if (err) {
+        logIfVerbose(`${err} , ${err.stack}`);
+        reject(undefined)
+      } else {
+        resolve(extractDistId(data, bucketName));
+      }
+    });
+  })
+}
+
+/**
+ * Search through object and get id
+ * of CloudFront distribtuion associated
+ * with the S3 bucket.
+ *
+ * @method extractDistId
+ *
+ * @param {Object} data
+ * @param {String} bucketName
+ *
+ * @return {String} distId
+ *
+ */
+const extractDistId = async (data, bucketName) => {
+  return new Promise((resolve, reject) => {
+    for(var i in data.DistributionList.Items) {
+      for ( var id in data.DistributionList.Items[i].Origins.Items) {
+        if(data.DistributionList.Items[i].Origins.Items[id].Id === bucketName) {
+          resolve(data.DistributionList.Items[i].Id)
+        }
+      }
+    }
+    reject(undefined)
+  });
+}
 
 /**
  * Given the name of the project where the cf templates are stired,
@@ -1086,6 +1136,15 @@ const ciCmds = async(type) => {
   let site_config_params = commander.site_config
   let site_config_file = commander.site_config_file
   let site_config = await siteParamsFromCmdLine(ciprojectName)
+  let bucketName = ""
+
+  if(commander.subdom) {
+    bucketName = commander.subdom+'.'+commander.dom
+  } else {
+    bucketName = commander.subdom+'.'+commander.dom
+  }
+
+  site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
 
   if (type === 'create') {
     site_config = await mergeConfig(site_config, site_config_params, site_config_file)
@@ -1098,7 +1157,6 @@ const ciCmds = async(type) => {
   }
 
   if (type === 'delete') {
-    let bucketName = commander.subdom+'.'+commander.dom
     await deleteCiStack(ciprojectName, bucketName);
   }
 }
@@ -1115,12 +1173,11 @@ const ciCmds = async(type) => {
      printErrorAndDie('Project name is required!', true);
   }
 
-
   if (commander.type === 'init') {
      let initType = 'create'
      await s3Cmds(initType)
-     await ciCmds(initType)
      await webCmds(initType)
+     await ciCmds(initType)
   }
 
   if (commander.type === 'remove') {
