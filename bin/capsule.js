@@ -939,7 +939,7 @@ const extractDistId = async (data, bucketName) => {
 
 /**
  * Given the name of the project where the cf templates are stored,
- * grab the scripts from the s3 bucket with that name and spin 
+ * grab the scripts from the s3 bucket with that name and spin
  * up the web infrastructure.
  *
  * TODO: paramters should be passed through as a single object for
@@ -1141,7 +1141,7 @@ const ciCmds = async(type) => {
   if(commander.subdom) {
     bucketName = commander.subdom+'.'+commander.dom
   } else {
-    bucketName = commander.subdom+'.'+commander.dom
+    bucketName = commander.dom
   }
 
   site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
