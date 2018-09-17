@@ -1006,7 +1006,7 @@ const deleteWebStack = async (webProjectName) => {
  * Given the name of the project, it runs the codebuild
  * template which in turn checks the code out from
  * the repository, install, tests and buulds it
- * Finally the code is pushed to the S3 bucklet defined by
+ * Finally the code is pushed to the S3 bucket defined by
  * the subdomain and domain.
  *
  * @method createCiStack
