@@ -938,9 +938,9 @@ const extractDistId = async (data, bucketName) => {
 }
 
 /**
- * Given the name of the project where the cf templates are stired,
- * it grabs the scripts from
- * the s3 bucket with that name and spins up the web infrastructure
+ * Given the name of the project where the cf templates are stored,
+ * grab the scripts from the s3 bucket with that name and spin 
+ * up the web infrastructure.
  *
  * TODO: paramters should be passed through as a single object for
  * createStack.
