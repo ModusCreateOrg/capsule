@@ -106,13 +106,13 @@ Resources:
             install:
               commands:
                 - $INSTALL_COMMANDS
-                - aws cloudfront create-invalidation --distribution-id $CLOUD_DIST_ID --path "/*"
             build:  
               commands:    
                 - $BUILD_COMMANDS
             post_build:
               commands:
                 - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
+                - aws cloudfront create-invalidation --distribution-id $CLOUD_DIST_ID --path "/*"
                 - $POST_BUILD_COMMANDS
   CodeBuildRole:
     Type: AWS::IAM::Role
