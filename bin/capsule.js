@@ -898,12 +898,11 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
  *
  */
 const getCloudFrontDistID = async (bucketName) => {
-  let params = {};
   return new Promise((resolve, reject) => {
-    cfr.listDistributions(params, function(err, data) {
+    cfr.listDistributions({}, function(err, data) {
       if (err) {
         logIfVerbose(`${err} , ${err.stack}`);
-        reject(undefined)
+        reject(err)
       } else {
         resolve(extractDistId(data, bucketName));
       }
@@ -924,7 +923,7 @@ const getCloudFrontDistID = async (bucketName) => {
  * @return {String} distId
  *
  */
-const extractDistId = async (data, bucketName) => {
+const extractDistId = (data, bucketName) => {
   return new Promise((resolve, reject) => {
     for(var i in data.DistributionList.Items) {
       for ( var id in data.DistributionList.Items[i].Origins.Items) {
@@ -1136,13 +1135,8 @@ const ciCmds = async(type) => {
   let site_config_params = commander.site_config
   let site_config_file = commander.site_config_file
   let site_config = await siteParamsFromCmdLine(ciprojectName)
-  let bucketName = ""
 
-  if(commander.subdom) {
-    bucketName = commander.subdom+'.'+commander.dom
-  } else {
-    bucketName = commander.dom
-  }
+  const bucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
 
   site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
 
