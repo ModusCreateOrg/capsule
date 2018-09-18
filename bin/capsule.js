@@ -923,7 +923,7 @@ const getCloudFrontDistID = async (bucketName) => {
  * @return {String} distId
  *
  */
-const extractDistId = async (data, bucketName) => {
+const extractDistId = (data, bucketName) => {
   return new Promise((resolve, reject) => {
     for(var i in data.DistributionList.Items) {
       for ( var id in data.DistributionList.Items[i].Origins.Items) {
