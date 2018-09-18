@@ -898,12 +898,11 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
  *
  */
 const getCloudFrontDistID = async (bucketName) => {
-  let params = {};
   return new Promise((resolve, reject) => {
-    cfr.listDistributions(params, function(err, data) {
+    cfr.listDistributions({}, function(err, data) {
       if (err) {
         logIfVerbose(`${err} , ${err.stack}`);
-        reject(undefined)
+        reject(err)
       } else {
         resolve(extractDistId(data, bucketName));
       }
