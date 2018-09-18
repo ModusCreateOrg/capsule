@@ -1181,13 +1181,6 @@ const ciCmds = async(type) => {
      await s3Cmds(deleteType)
   }
 
-  if (commander.type === 'remove') {
-     let deleteType = 'delete'
-     await ciCmds(deleteType)
-     await webCmds(deleteType)
-     await s3Cmds(deleteType)
-  }
-
   if (commander.args.includes('s3')) {
      await s3Cmds(type)
   }
