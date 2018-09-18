@@ -1136,13 +1136,8 @@ const ciCmds = async(type) => {
   let site_config_params = commander.site_config
   let site_config_file = commander.site_config_file
   let site_config = await siteParamsFromCmdLine(ciprojectName)
-  let bucketName = ""
 
-  if(commander.subdom) {
-    bucketName = commander.subdom+'.'+commander.dom
-  } else {
-    bucketName = commander.dom
-  }
+  const bucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
 
   site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
 
