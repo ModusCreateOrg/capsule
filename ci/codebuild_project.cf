@@ -41,6 +41,9 @@ Parameters:
     Type: String
     Description: "Location of the build spec to use (Defaults to the repository root)"
     Default: buildspec.yml
+  CloudDistId:
+    Type: String
+    Description: CloudFront Distribution ID
   WebsiteCode:
     Type: String
     Description: "Location of code to be moved to S3 bucket"
@@ -70,6 +73,9 @@ Resources:
         Type: LINUX_CONTAINER
         ComputeType: !Ref ComputeType
         EnvironmentVariables:
+          - 
+            Name: CLOUD_DIST_ID
+            Value: !Ref CloudDistId 
           -
             Name: WEBSITE_CODE
             Value: !Ref WebsiteCode
@@ -106,6 +112,7 @@ Resources:
             post_build:
               commands:
                 - aws s3 sync $WEBSITE_CODE s3://$PROJECT_S3_BUCKET/
+                - aws cloudfront create-invalidation --distribution-id $CLOUD_DIST_ID --path "/*"
                 - $POST_BUILD_COMMANDS
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -131,6 +138,7 @@ Resources:
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
               - "cloudformation:ValidateTemplate"
+              - "cloudfront:CreateInvalidation"
             Resource: "*"
           -
             Effect: Allow
