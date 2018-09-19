@@ -9,6 +9,7 @@ const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
 const path = require('path')
+const Spinner = require('cli-spinner').Spinner;
 let cf;
 let s3;
 let cfr;
@@ -167,6 +168,14 @@ const stack_states = [
   'REVIEW_IN_PROGRESS'
 ];
 
+const error_states = [
+  'CREATE_FAILED',
+  'DELETE_FAILED',
+  'UPDATE_FAILED',
+  'ROLLBACK_FAILED',
+  'UPDATE_ROLLBACK_FAILED'
+];
+
 const paths = {
   base: `${__dirname}/../`,
   ci_s3: 'ci/s3_cloudformation.cf',
@@ -179,10 +188,8 @@ const paths = {
 
 let last_time = new Date(new Date() - 1000);
 
-/*
- * Helpers
- *
- */
+// Helpers ####################################################################
+
 const logIfVerbose = (str, error) => {
   if (commander.verbose){
     if (error){
@@ -205,8 +212,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
 
-// File Helpers ##############################################################
-
+// File Helpers ###############################################################
 
 /**
  * Merge in commandline params into
@@ -393,6 +399,43 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
 }
 
 // AWS CF Helpers #############################################################
+
+/**
+ * Given the cloud formation stack state, it returns the color red if it is a
+ * failure state, green if it is a success state, and yellow otherwise.
+ *
+ * @method getStackEventColor
+ *
+ * @param {String} state
+ *
+ * @return {String} color
+ */
+const getStackEventColor = (state) => {
+  switch (true) {
+    case error_states.includes(state): return 'red';
+    case stack_states.includes(state): return 'green';
+    default: return 'yellow';
+  }
+}
+
+/**
+ * Given the cloud formation stack event, it returns a string with a single
+ * line description for it.
+ *
+ * @method getStackEventColor
+ *
+ * @param {String} event
+ *
+ * @return {String} output_line
+ */
+const getStackEventOutputLine = (e) => {
+  let time = `${e.Timestamp.toLocaleString()}`;
+  let status = `${chalk[getStackEventColor(e.ResourceStatus)](e.ResourceStatus)}`;
+  let resource = `${e.ResourceType}`;
+  let id = `${e.PhysicalResourceId}`;
+
+  return `${time} ${status} ${resource} ${id}`;
+}
 
 /**
  * Given an object of key->value, it will return the list of parameters in the
@@ -634,7 +677,10 @@ const getStackEvents = async (id) => {
 const monitorStackProgress = async (id, token) => {
   let in_progress = true;
   let events_seen = []
+  let spinner = new Spinner();
+  spinner.setSpinnerString('|/-\\');
   logIfVerbose(`Start monitoring stack ${id}`);
+  spinner.start();
   while (in_progress) {
     let events;
     try {
@@ -655,6 +701,10 @@ const monitorStackProgress = async (id, token) => {
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
         logIfVerbose(`NEW Event: ${e}`);
+        spinner.text = getStackEventOutputLine(e);
+        if (e.ResourceStatusReason !== 'User Initiated') {
+          process.stdout.write('\n');
+        }
         events_seen.push(e.EventId);
       }
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
@@ -671,6 +721,7 @@ const monitorStackProgress = async (id, token) => {
       await delay(1000);
     }
   }
+  spinner.stop();
   logIfVerbose(`End monitoring stack ${id} with token ${token}`);
 }
 
@@ -1157,7 +1208,6 @@ const ciCmds = async(type) => {
 
 // MAIN #######################################################################
 (async () => {
-
   global.cwd = process.cwd();
   let type = commander.type;
 
