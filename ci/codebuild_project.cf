@@ -65,10 +65,30 @@ Resources:
     Type: "AWS::CodePipeline::Pipeline"
     Properties:
       Name: !Sub CodePipeline-${AWS::StackName}
+      RoleArn:
       Stages:
         -
           Name: Test
-
+          Actions:
+            -
+              Name: TestCode 
+              ActionTypeId: 
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              OutputArtifacts:
+                -
+                  Name: TestCodeOutput
+              Configuration:
+                BranchName: master
+                RepositoryName:
+                  Ref: RepositoryURL
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location:
+          Ref: ProjectS3Bucket
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     DependsOn: CodeBuildRole
