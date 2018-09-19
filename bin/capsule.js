@@ -231,11 +231,11 @@ const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
  *
  */
 const siteParamsFromCmdLine = async(ciprojectName) => {
-  let site_config = {}
-  site_config['CodeBuildProjectCodeName'] = ciprojectName
-  site_config['RepositoryURL'] = commander.url
-  site_config['ProjectS3Bucket'] = commander.subdom+'.'+commander.dom
-  return site_config
+  return {
+    CodeBuildProjectCodeName: ciprojectName,
+    RepositoryURL: commander.url,
+    ProjectS3Bucket: `${commander.subdom}.${commander.dom}`
+  };
 }
 
 /**
