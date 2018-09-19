@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "User Website CloudFormation stack - CodeBuild Project"
+Description: "User Website CloudFormation stack - CodeBuild and CodePipeline Project"
 
 Parameters:
   CodeBuildProjectCodeName:
@@ -61,6 +61,14 @@ Parameters:
     Type: String
     Description: "List of command to run on post build."
 Resources:
+  DeployPipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      Name: !Sub CodePipeline-${AWS::StackName}
+      Stages:
+        -
+          Name: Test
+
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     DependsOn: CodeBuildRole
