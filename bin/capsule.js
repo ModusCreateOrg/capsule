@@ -35,17 +35,17 @@ commander
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (options) {
-          console.log("Executing project initalization")
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-          commander.url = options.url || undefined
-          commander.site_config = options.site_config || {}
-          commander.site_config_file = options.site_config_file || undefined
-   });
+    console.log("Executing project initalization")
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+    commander.url = options.url || undefined
+    commander.site_config = options.site_config || {}
+    commander.site_config_file = options.site_config_file || undefined
+  });
 
 commander
   .command('remove')
@@ -56,14 +56,14 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .action(function (options) {
-          console.log("Executing project removal")
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-   });
+    console.log("Executing project removal")
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+  });
 
 // The following commands are the mroe granular ones, that allow step by step deployment
 // of the web hosting infrastructure
@@ -79,17 +79,17 @@ commander
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
-          console.log("Executing create for: "+type)
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-          commander.url = options.url || undefined
-          commander.site_config = options.site_config || {}
-          commander.site_config_file = options.site_config_file || undefined
-   });
+    console.log("Executing create for: "+type)
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+    commander.url = options.url || undefined
+    commander.site_config = options.site_config || {}
+    commander.site_config_file = options.site_config_file || undefined
+  });
 
 commander
   .command('update <type>')
@@ -103,17 +103,17 @@ commander
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
-          console.log("Executing update for: "+type)
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-          commander.url = options.url || undefined
-          commander.site_config = options.site_config || {}
-          commander.site_config_file = options.site_config_file || undefined
-   });
+    console.log("Executing update for: "+type)
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+    commander.url = options.url || undefined
+    commander.site_config = options.site_config || {}
+    commander.site_config_file = options.site_config_file || undefined
+  });
 
 commander
   .command('delete <type>')
@@ -124,16 +124,16 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .action(function (type, options) {
-          console.log("Executing delete for: "+type)
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-   });
+    console.log("Executing delete for: "+type)
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+  });
 
-  commander.parse(process.argv);
+commander.parse(process.argv);
 
 /*
  * Globals
@@ -257,10 +257,10 @@ const mergeConfig = async (site_config, site_config_params, site_config_file) =>
   let file_params = {}
   let merged_params = {}
   if(site_config_file !== undefined) {
-      file_params = await parseJsonConfig(site_config_file)
+    file_params = await parseJsonConfig(site_config_file)
   }
   if (config_params === undefined) {
-      config_params = {}
+    config_params = {}
   }
   merged_params = Object.assign({}, file_params, config_params);
   return Object.assign({}, merged_params, site_config);
@@ -433,7 +433,6 @@ const getStackEventOutputLine = (e) => {
   let status = `${chalk[getStackEventColor(e.ResourceStatus)](e.ResourceStatus)}`;
   let resource = `${e.ResourceType}`;
   let id = `${e.PhysicalResourceId}`;
-
   return `${time} ${status} ${resource} ${id}`;
 }
 
@@ -926,14 +925,16 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
          continue;
       }
       fs.readFile(file_path, (error, file_content) => {
-        if (error) { throw error; }
-          s3.putObject({
-            Bucket: bucketName,
-            Key: file,
-            Body: file_content
-          }, (res) => {
-            logIfVerbose(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
-          });
+        if (error) {
+          throw error;
+        }
+        s3.putObject({
+          Bucket: bucketName,
+          Key: file,
+          Body: file_content
+        }, (res) => {
+          logIfVerbose(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
+        });
       });
     }
   });
@@ -1009,9 +1010,9 @@ const createWebStack = async (s3projectName, webProjectName, subdomain, domain) 
     webProjectName,
     await getWebTemplate(),
     {
-        TemplatesDirectoryUrl : paths.aws_url+s3projectName,
-        Domain: domain,
-        Subdomain: subdomain
+      TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+      Domain: domain,
+      Subdomain: subdomain
     }
   );
 }
@@ -1214,33 +1215,32 @@ const ciCmds = async(type) => {
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
   if (!commander.projectName) {
-     printErrorAndDie('Project name is required!', true);
+    printErrorAndDie('Project name is required!', true);
   }
 
   if (commander.type === 'init') {
-     let initType = 'create'
-     await s3Cmds(initType)
-     await webCmds(initType)
-     await ciCmds(initType)
+    let initType = 'create'
+    await s3Cmds(initType)
+    await webCmds(initType)
+    await ciCmds(initType)
   }
 
   if (commander.type === 'remove') {
-     let deleteType = 'delete'
-     await ciCmds(deleteType)
-     await webCmds(deleteType)
-     await s3Cmds(deleteType)
+    let deleteType = 'delete'
+    await ciCmds(deleteType)
+    await webCmds(deleteType)
+    await s3Cmds(deleteType)
   }
 
   if (commander.args.includes('s3')) {
-     await s3Cmds(type)
+    await s3Cmds(type)
   }
 
   if (commander.args.includes('web')) {
-     await webCmds(type)
+    await webCmds(type)
   }
 
   if (commander.args.includes('ci')) {
-     await ciCmds(type)
+    await ciCmds(type)
   }
-
 })();
