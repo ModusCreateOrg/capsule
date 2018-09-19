@@ -922,7 +922,7 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
     for (const file of files) {
       const file_path = path.join(templates_path, file);
       if (fs.lstatSync(file_path).isDirectory()) {
-         continue;
+        continue;
       }
       fs.readFile(file_path, (error, file_content) => {
         if (error) {
