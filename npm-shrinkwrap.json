@@ -53,6 +53,11 @@
         "supports-color": "^5.3.0"
       }
     },
+    "cli-spinner": {
+      "version": "0.2.8",
+      "resolved": "https://registry.npmjs.org/cli-spinner/-/cli-spinner-0.2.8.tgz",
+      "integrity": "sha512-Z4l0jljucEUsW/5GNaVYOpGgVmnB/Sq4l2vG9k7RbJYRZ97hVncP+BqRMemTZNBHZ4aYUPJPU/wl6zt/ZSqzPQ=="
+    },
     "color-convert": {
       "version": "1.9.2",
       "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-1.9.2.tgz",
