@@ -266,6 +266,34 @@ const mergeConfig = async (site_config, site_config_params, site_config_file) =>
   return Object.assign({}, merged_params, site_config);
 }
 
+
+/**
+ * Read the contents of an S3 file
+ *
+ * @method getS3File
+ *
+ * @param {String} fileName
+ *
+ * @return {String} contents
+ *
+ */
+const getS3File = (bucketName, fileName) => {
+  let params = {
+    Bucket: bucketName,
+    Key: fileName
+  }
+  return new Promise((resolve, reject) => {
+    s3.getObject(params, function(err, data) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data.Body.toString());
+      }
+    });
+  });
+}
+
+
 /**
  * TODO: This may require to get it from github directly to avoid packing it
  *
@@ -989,6 +1017,84 @@ const extractDistId = (data, bucketName) => {
 }
 
 /**
+ * Get the current bucket configuration
+ * including redirects from the S3 bucket
+ *
+ * @method getBucketConfigFromName
+ *
+ * @param {String} bucketName
+ *
+ * @return {Object} data
+ *
+ */
+const getBucketConfigFromName = async (bucketName) => {
+  return new Promise ((resolve, reject) => {
+    s3.getBucketWebsite({Bucket: bucketName}, function(err, data) {
+      if (err) {
+          reject(err);
+      } else {
+          resolve(data);
+      }
+    });
+  });
+}
+
+/**
+ * Convert redirects file into a JSOn object that
+ * can be inserted into the S3 bucket config
+ *
+ * @method convertToS3Redirects
+ *
+ * @param {String} redirects
+ *
+ * @return {Object} s3Redirects
+ */
+
+ const convertToS3Redirects = async (redirectsList) => {
+   let redirectsArray = await convertToRedirectsArray(redirectsList)
+   return new Promise ((resolve, reject) => {
+     let routingRules = []
+     for (var i in redirectsArray) {
+       if (redirectsArray[i].length !== 0) {
+         console.log(redirectsArray[i])
+         let rule = {
+           Redirect: {
+             HostName: redirectsArray[i][1],
+             HttpRedirectCode: redirectsArray[i][2],
+             Protocol: 'https'
+           },
+           Condition: {
+             KeyPrefixEquals: redirectsArray[i][0]
+           }
+         }
+         routingRules.push(rule)
+       }
+     }
+     resolve(routingRules)
+    });
+  }
+
+
+ const convertToRedirectsArray = async (redirectsList) => {
+   return new Promise ((resolve, reject) => {
+      const re = /[^\.](\S+)\b/g;
+      let entries = redirectsList.split("\n");
+      var processedRedirects = []
+      var arr = [];
+
+      for (var i in entries) {
+        while ((m=re.exec(entries[i])) !== null) {
+          arr.push(m[1]);
+        }
+        processedRedirects.push(arr)
+        arr = []
+      }
+      resolve(processedRedirects)
+    });
+  }
+
+
+/**
  * Given the name of the project where the cf templates are stored,
  * grab the scripts from the s3 bucket with that name and spin
  * up the web infrastructure.
@@ -1030,11 +1136,15 @@ const createWebStack = async (s3projectName, webProjectName, subdomain, domain) 
  *
  * @return {void}
  */
-const updateWebStack = async (webProjectName) => {
+const updateWebStack = async (s3projectName, webProjectName,subdomain, domain) => {
   await updateStack(
     webProjectName,
     await getWebTemplate(),
-    { ProjectName : webProjectName }
+    {
+      TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+      Domain: domain,
+      Subdomain: subdomain
+    }
   );
 }
 
@@ -1163,7 +1273,7 @@ const webCmds = async(type) => {
   }
 
   if (type === 'update') {
-    await updateWebStack(webProjectName);
+    await updateWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
   }
 
   if (type === 'delete') {
@@ -1187,10 +1297,18 @@ const ciCmds = async(type) => {
   let site_config_params = commander.site_config
   let site_config_file = commander.site_config_file
   let site_config = await siteParamsFromCmdLine(ciprojectName)
+  let getBucketConfig = {}
 
   const bucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
 
   if (type === 'create' || type === 'update') {
+    getBucketConfig = await getBucketConfigFromName(bucketName)
+
+    let getRedirects = await getS3File(bucketName, '_redirects')
+    let s3Redirects = await convertToS3Redirects(getRedirects)
+    console.log(s3Redirects)
+
+
     site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
   }
 
@@ -1201,7 +1319,7 @@ const ciCmds = async(type) => {
 
   if (type === 'update') {
     site_config = await mergeConfig(site_config, site_config_params, site_config_file)
-    await updateCiStack(ciprojectName, site_config);
+    //await updateCiStack(ciprojectName, site_config);
   }
 
   if (type === 'delete') {
