@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "User Website CloudFormation stack - CodeBuild and CodePipeline Project"
+Description: "User Website CloudFormation stack - CodeBuild Project"
 
 Parameters:
   CodeBuildProjectCodeName:
