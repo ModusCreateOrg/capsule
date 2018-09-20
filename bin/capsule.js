@@ -1190,7 +1190,9 @@ const ciCmds = async(type) => {
 
   const bucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
 
-  site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
+  if (type === 'create' || type === 'update') {
+    site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
+  }
 
   if (type === 'create') {
     site_config = await mergeConfig(site_config, site_config_params, site_config_file)
