@@ -9,6 +9,7 @@ const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
 const path = require('path')
+const Spinner = require('cli-spinner').Spinner;
 let cf;
 let s3;
 let cfr;
@@ -34,17 +35,17 @@ commander
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (options) {
-          console.log("Executing project initalization")
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-          commander.url = options.url || undefined
-          commander.site_config = options.site_config || {}
-          commander.site_config_file = options.site_config_file || undefined
-   });
+    console.log("Executing project initalization")
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+    commander.url = options.url || undefined
+    commander.site_config = options.site_config || {}
+    commander.site_config_file = options.site_config_file || undefined
+  });
 
 commander
   .command('remove')
@@ -55,14 +56,14 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .action(function (options) {
-          console.log("Executing project removal")
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-   });
+    console.log("Executing project removal")
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+  });
 
 // The following commands are the mroe granular ones, that allow step by step deployment
 // of the web hosting infrastructure
@@ -78,17 +79,17 @@ commander
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
-          console.log("Executing create for: "+type)
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-          commander.url = options.url || undefined
-          commander.site_config = options.site_config || {}
-          commander.site_config_file = options.site_config_file || undefined
-   });
+    console.log("Executing create for: "+type)
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+    commander.url = options.url || undefined
+    commander.site_config = options.site_config || {}
+    commander.site_config_file = options.site_config_file || undefined
+  });
 
 commander
   .command('update <type>')
@@ -102,17 +103,17 @@ commander
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
-          console.log("Executing update for: "+type)
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-          commander.url = options.url || undefined
-          commander.site_config = options.site_config || {}
-          commander.site_config_file = options.site_config_file || undefined
-   });
+    console.log("Executing update for: "+type)
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+    commander.url = options.url || undefined
+    commander.site_config = options.site_config || {}
+    commander.site_config_file = options.site_config_file || undefined
+  });
 
 commander
   .command('delete <type>')
@@ -123,16 +124,16 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .action(function (type, options) {
-          console.log("Executing delete for: "+type)
-          commander.type = options._name || undefined
-          commander.projectName = options.projectName || undefined
-          commander.config = options.config || undefined
-          commander.awsProfile = options.awsProfile || undefined
-          commander.dom = options.dom || undefined
-          commander.subdom = options.subdom || undefined
-   });
+    console.log("Executing delete for: "+type)
+    commander.type = options._name || undefined
+    commander.projectName = options.projectName || undefined
+    commander.config = options.config || undefined
+    commander.awsProfile = options.awsProfile || undefined
+    commander.dom = options.dom || undefined
+    commander.subdom = options.subdom || undefined
+  });
 
-  commander.parse(process.argv);
+commander.parse(process.argv);
 
 /*
  * Globals
@@ -167,6 +168,14 @@ const stack_states = [
   'REVIEW_IN_PROGRESS'
 ];
 
+const error_states = [
+  'CREATE_FAILED',
+  'DELETE_FAILED',
+  'UPDATE_FAILED',
+  'ROLLBACK_FAILED',
+  'UPDATE_ROLLBACK_FAILED'
+];
+
 const paths = {
   base: `${__dirname}/../`,
   ci_s3: 'ci/s3_cloudformation.cf',
@@ -179,10 +188,8 @@ const paths = {
 
 let last_time = new Date(new Date() - 1000);
 
-/*
- * Helpers
- *
- */
+// Helpers ####################################################################
+
 const logIfVerbose = (str, error) => {
   if (commander.verbose){
     if (error){
@@ -205,8 +212,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
 
-// File Helpers ##############################################################
-
+// File Helpers ###############################################################
 
 /**
  * Merge in commandline params into
@@ -225,11 +231,11 @@ const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
  *
  */
 const siteParamsFromCmdLine = async(ciprojectName) => {
-  let site_config = {}
-  site_config['CodeBuildProjectCodeName'] = ciprojectName
-  site_config['RepositoryURL'] = commander.url
-  site_config['ProjectS3Bucket'] = commander.subdom+'.'+commander.dom
-  return site_config
+  return {
+    CodeBuildProjectCodeName: ciprojectName,
+    RepositoryURL: commander.url,
+    ProjectS3Bucket: `${commander.subdom}.${commander.dom}`
+  };
 }
 
 /**
@@ -251,10 +257,10 @@ const mergeConfig = async (site_config, site_config_params, site_config_file) =>
   let file_params = {}
   let merged_params = {}
   if(site_config_file !== undefined) {
-      file_params = await parseJsonConfig(site_config_file)
+    file_params = await parseJsonConfig(site_config_file)
   }
   if (config_params === undefined) {
-      config_params = {}
+    config_params = {}
   }
   merged_params = Object.assign({}, file_params, config_params);
   return Object.assign({}, merged_params, site_config);
@@ -393,6 +399,42 @@ const loadAWSConfiguration = async (config_path, aws_profile) => {
 }
 
 // AWS CF Helpers #############################################################
+
+/**
+ * Given the cloud formation stack state, it returns the color red if it is a
+ * failure state, green if it is a success state, and yellow otherwise.
+ *
+ * @method getStackEventColor
+ *
+ * @param {String} state
+ *
+ * @return {String} color
+ */
+const getStackEventColor = (state) => {
+  switch (true) {
+    case error_states.includes(state): return 'red';
+    case stack_states.includes(state): return 'green';
+    default: return 'yellow';
+  }
+}
+
+/**
+ * Given the cloud formation stack event, it returns a string with a single
+ * line description for it.
+ *
+ * @method getStackEventColor
+ *
+ * @param {String} event
+ *
+ * @return {String} output_line
+ */
+const getStackEventOutputLine = (e) => {
+  let time = `${e.Timestamp.toLocaleString()}`;
+  let status = `${chalk[getStackEventColor(e.ResourceStatus)](e.ResourceStatus)}`;
+  let resource = `${e.ResourceType}`;
+  let id = `${e.PhysicalResourceId}`;
+  return `${time} ${status} ${resource} ${id}`;
+}
 
 /**
  * Given an object of key->value, it will return the list of parameters in the
@@ -634,7 +676,10 @@ const getStackEvents = async (id) => {
 const monitorStackProgress = async (id, token) => {
   let in_progress = true;
   let events_seen = []
+  let spinner = new Spinner();
+  spinner.setSpinnerString('|/-\\');
   logIfVerbose(`Start monitoring stack ${id}`);
+  spinner.start();
   while (in_progress) {
     let events;
     try {
@@ -655,6 +700,10 @@ const monitorStackProgress = async (id, token) => {
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
         logIfVerbose(`NEW Event: ${e}`);
+        spinner.text = getStackEventOutputLine(e);
+        if (e.ResourceStatusReason !== 'User Initiated') {
+          process.stdout.write('\n');
+        }
         events_seen.push(e.EventId);
       }
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
@@ -671,6 +720,7 @@ const monitorStackProgress = async (id, token) => {
       await delay(1000);
     }
   }
+  spinner.stop();
   logIfVerbose(`End monitoring stack ${id} with token ${token}`);
 }
 
@@ -872,17 +922,19 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
     for (const file of files) {
       const file_path = path.join(templates_path, file);
       if (fs.lstatSync(file_path).isDirectory()) {
-         continue;
+        continue;
       }
       fs.readFile(file_path, (error, file_content) => {
-        if (error) { throw error; }
-          s3.putObject({
-            Bucket: bucketName,
-            Key: file,
-            Body: file_content
-          }, (res) => {
-            logIfVerbose(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
-          });
+        if (error) {
+          throw error;
+        }
+        s3.putObject({
+          Bucket: bucketName,
+          Key: file,
+          Body: file_content
+        }, (res) => {
+          logIfVerbose(`Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`);
+        });
       });
     }
   });
@@ -958,9 +1010,9 @@ const createWebStack = async (s3projectName, webProjectName, subdomain, domain) 
     webProjectName,
     await getWebTemplate(),
     {
-        TemplatesDirectoryUrl : paths.aws_url+s3projectName,
-        Domain: domain,
-        Subdomain: subdomain
+      TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+      Domain: domain,
+      Subdomain: subdomain
     }
   );
 }
@@ -1157,40 +1209,38 @@ const ciCmds = async(type) => {
 
 // MAIN #######################################################################
 (async () => {
-
   global.cwd = process.cwd();
   let type = commander.type;
 
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
   if (!commander.projectName) {
-     printErrorAndDie('Project name is required!', true);
+    printErrorAndDie('Project name is required!', true);
   }
 
   if (commander.type === 'init') {
-     let initType = 'create'
-     await s3Cmds(initType)
-     await webCmds(initType)
-     await ciCmds(initType)
+    let initType = 'create'
+    await s3Cmds(initType)
+    await webCmds(initType)
+    await ciCmds(initType)
   }
 
   if (commander.type === 'remove') {
-     let deleteType = 'delete'
-     await ciCmds(deleteType)
-     await webCmds(deleteType)
-     await s3Cmds(deleteType)
+    let deleteType = 'delete'
+    await ciCmds(deleteType)
+    await webCmds(deleteType)
+    await s3Cmds(deleteType)
   }
 
   if (commander.args.includes('s3')) {
-     await s3Cmds(type)
+    await s3Cmds(type)
   }
 
   if (commander.args.includes('web')) {
-     await webCmds(type)
+    await webCmds(type)
   }
 
   if (commander.args.includes('ci')) {
-     await ciCmds(type)
+    await ciCmds(type)
   }
-
 })();
