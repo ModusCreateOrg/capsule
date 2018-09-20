@@ -21,6 +21,9 @@ Resources:
     Type: "AWS::S3::Bucket"
     Properties:
       BucketName: !Sub "${Subdomain}.${Domain}"
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
     DeletionPolicy: "Delete"
   S3BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
