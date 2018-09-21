@@ -60,6 +60,7 @@ Resources:
         Subdomain: !Ref "Subdomain"
         AcmCertificateArn: !GetAtt ["CmcCloudFormationStack", "Outputs.CertificateArn"]
         CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
+        OriginS3EndPoint: !GetAtt ["S3CloudFormationStack", "Outputs.WebsiteURL"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.cloudfront.yaml"
 
   # Route 53

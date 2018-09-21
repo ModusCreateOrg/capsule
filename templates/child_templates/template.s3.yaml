@@ -41,3 +41,10 @@ Resources:
                 - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentityId}"
             Action: "s3:GetObject"
             Resource: !Sub "${S3Bucket.Arn}/*"
+Outputs:
+  WebsiteURL:
+    Value: !Select [1, !Split ["http://", !GetAtt S3Bucket.WebsiteURL]] 
+    #Value: !GetAtt  
+    #  - S3Bucket
+    #  - WebsiteURL
+    Description: "URL for website hosted on S3" 

@@ -12,6 +12,10 @@ Parameters:
     Description: "The DNS subdomain name, e.g. www"
     AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
     ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+  OriginS3EndPoint:
+    Type: String
+    Description: "The Static website, S3 buckets Endpoint URL"
+    Default: ""
   OriginPath:
     Type: String
     Description: "The S3 bucket origin path, e.g. /1.0.0"
@@ -510,10 +514,16 @@ Resources:
         Origins:
           -
             Id: !Sub "${Subdomain}.${Domain}"
-            DomainName: !Sub "${Subdomain}.${Domain}.s3.amazonaws.com"
+            DomainName: !Ref "OriginS3EndPoint"
             OriginPath: !Ref "OriginPath"
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentityId}"
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginKeepaliveTimeout: 5
+              OriginProtocolPolicy: "http-only"
+              OriginReadTimeout: 30
+            #S3OriginConfig:
+            #  OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentityId}"
         DefaultCacheBehavior:
           TargetOriginId: !Sub "${Subdomain}.${Domain}"
           Compress: true
