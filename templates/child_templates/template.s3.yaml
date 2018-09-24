@@ -43,8 +43,8 @@ Resources:
             Resource: !Sub "${S3Bucket.Arn}/*"
 Outputs:
   WebsiteURL:
-    Value: !Select [1, !Split ["http://", !GetAtt S3Bucket.WebsiteURL]] 
-    #Value: !GetAtt  
-    #  - S3Bucket
-    #  - WebsiteURL
+    #Value: !Select [1, !Split ["http://", !GetAtt S3Bucket.WebsiteURL]] 
+    Value: !GetAtt  
+      - S3Bucket
+      - DomainName
     Description: "URL for website hosted on S3" 
