@@ -35,28 +35,31 @@ Resources:
         Subdomain: !Ref "Subdomain"
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.cfoai.yaml"
 
-  # S3
-  S3CloudFormationStack:
+  # Lambda
+  LambdaCloudFormationStack:
     Type: "AWS::CloudFormation::Stack"
     DependsOn:
       - "CfoaiCloudFormationStack"
     Properties:
       Parameters:
+        ReDirectUrls: ""
+        ProjectS3Bucket: !Sub "${Subdomain}.${Domain}.s3.amazonaws.com" 
+      TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.lambda.yaml"
+
+  # S3
+  S3CloudFormationStack:
+    Type: "AWS::CloudFormation::Stack"
+    DependsOn:
+      - "CfoaiCloudFormationStack"
+      - "LambdaCloudFormationStack"
+    Properties:
+      Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
         CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
+        LambdaRedirectFunctionId: !GetAtt ["LambdaCloudFormationStack", "Outputs.LambdaRedirectFunctionId"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.s3.yaml"
-
-  # Lambda
-  LambdaCloudFormationStack:
-    Type: "AWS::CloudFormation::Stack"
-    DependsOn:
-      - "S3CloudFormationStack"
-    Properties:
-      Parameters:
-        ReDirectUrls: "var redirects = []"
-      TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.lambda.yaml"
-
+  
   # CloudFront
   CfCloudFormationStack:
     Type: "AWS::CloudFormation::Stack"

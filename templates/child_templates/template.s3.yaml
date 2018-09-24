@@ -15,16 +15,33 @@ Parameters:
   CloudFrontOriginAccessIdentityId:
     Type: String
     Description: "CloudFront origin access identity id"
+  LambdaRedirectFunctionId:
+    Type: String
+    Description: "ARN of the Lambda function attached to the bucket"
 
 Resources:
   S3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
       BucketName: !Sub "${Subdomain}.${Domain}"
+      NotificationConfiguration:
+        LambdaConfigurations:
+        - Event: 's3:ObjectCreated:*'
+          Function: !Ref LambdaRedirectFunctionId
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
     DeletionPolicy: "Delete"
+
+  LambdaRedirectFunction:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref LambdaRedirectFunctionId
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref "AWS::AccountId"
+      SourceArn: !Sub "arn:aws:s3:::${Subdomain}.${Domain}"
+    
   S3BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     DependsOn:

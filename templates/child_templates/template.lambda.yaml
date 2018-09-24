@@ -10,6 +10,10 @@ Parameters:
     Description: Pass in array of redirects
     Default: "[[]]"
 
+  ProjectS3Bucket:
+    Type: String
+    Description: S3 Bucket Name where redirects are stored
+
 Resources:
   SimpleParameter:
     Type: AWS::SSM::Parameter
@@ -97,7 +101,6 @@ Resources:
       Roles:
         - Ref: "TheOriginRequestLambdaFunctionExecutionRole"
 
-
   TheOriginRequestLambdaFunctionVersion:
     Type: AWS::Lambda::Version
     Properties:
@@ -105,8 +108,113 @@ Resources:
       Description: !Sub "URL rewriting"
 
 
+  # Handle writing data to SSM param store.
+  ProcessRedirectsLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: >
+        Lambda function to process _redirects file and populate param store
+      Code:
+        ZipFile: !Sub |
+          var AWS = require('aws-sdk');
+          var s3 = new AWS.S3();
+          var ssm = new AWS.SSM();
+          
+          exports.handler = (event, context, callback) => {
+              
+            const re = /[^\.](\S+)\b/g;
+            const params = {
+               Bucket: event.Records[0].s3.bucket.name,
+               Key: event.Records[0].s3.object.key
+            }
+            
+            let redirectsList;
+            let processedRedirects = []
+            let arr = [];
+            let m =''
+            
+            s3.getObject(params, function(err, data) {
+              if (err) {
+                console.log(err);
+              } else { 
+                redirectsList = data.Body.toString();
+              } 
+            });       
+            
+            let entries = redirectsList.split("\n");
+           
+            for (var i in entries) {
+              while ((m=re.exec(entries[i])) !== null) {
+                arr.push(m[1]);
+              }
+              processedRedirects.push(arr)
+              arr = []
+            } 
+            
+            let paramsPut = {
+              Name: 'redirects',
+              Type: 'String',
+              Value: JSON.stringify(processedRedirects)
+            }
+            ssm.putParameter(paramsPut, function(err, data) {
+              if (err) {
+                console.log(err, err.stack);
+              } 
+            })
+          }; 
+      Handler: index.handler
+      MemorySize: 128
+      Role: !Sub ${ProcessRedirectsLambdaFunctionRole.Arn}
+      Runtime: nodejs6.10
+
+  ProcessRedirectsLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - edgelambda.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+
+  RedirectRolePolicies:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "root"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: Allow 
+            Action: "ssm:*"
+            Resource:
+              - "arn:aws:ssm:*:*:parameter/*"
+          -
+            Effect: Allow
+            Action: "s3:*"
+            Resource: 
+              - !Sub "arn:aws:s3:::${ProjectS3Bucket}"
+              - !Sub "arn:aws:s3:::${ProjectS3Bucket}/*"
+      Roles:
+        - Ref: "ProcessRedirectsLambdaFunctionRole"
+
+  ProcessRedirectsLambdaFunctionVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref ProcessRedirectsLambdaFunction
+      Description: !Sub "URL rewriting"
+
 Outputs:
   LambdaFunctions:
     Value: !Ref "TheOriginRequestLambdaFunctionVersion"
     Description: "The Lambda function to use in CloudFront" 
+  LambdaRedirectFunctionId:
+    Value: !Ref "ProcessRedirectsLambdaFunctionVersion"
+    Description: "The Lambda function to use on the S3 bucket"
+    
 
