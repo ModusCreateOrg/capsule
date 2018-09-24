@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  Resources for hosting a static website on
+  Amazon Simple Storage Service (S3), CloudFront & Lambda@Edge for URI
+  rewriting.
+Parameters:
+
+  ReDirectUrls:
+    Type: String
+    Description: Pass in array of redirects
+    Default: "[[]]"
+
+Resources:
+  SimpleParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: 'redirects'
+      Description: 'Array of redirects pulled from _redirects'
+      Type: String
+      Value: "[['angular-sortable-view','http://kamilkp.github.io/angular-sortable-view/','301']]"
+
+
+  TheOriginRequestLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: >
+        Lambda function performing request URI redirection.
+      Code:
+        ZipFile: !Sub |
+          var AWS = require('aws-sdk');
+          var ssm = new AWS.SSM();
+          const path = require('path');
+          exports.handler = (event, context, callback) => {
+              const params = {
+                  Name: 'redirects',
+                  WithDecryption: false
+              };
+              const { request } = event.Records[0].cf;
+              const parsedPath = path.parse(request.uri);
+              let newUri = request.uri
+              const processRedirects = ssm.getParameter(params, function(err, data) {
+                if (err) { 
+                  console.log(err, err.stack);
+                } else { 
+                  let redirects = JSON.parse(data.Parameter.Value);
+                  for(var i in redirects) { 
+                    if (parsedPath.base === redirects[i][0]) {
+                      newUri = redirects[i][1];
+                      const response = {
+                        status:  redirects[i][2],
+                        headers: {
+                          location: [{
+                            key: 'Location',
+                            value: newUri,
+                          }],
+                        },
+                      }; 
+                      return callback(null, response);
+                    }
+                  }
+                  request.uri = newUri;
+                  return callback(null, request);
+                 }    
+              });  
+            };
+      Handler: index.handler
+      MemorySize: 128
+      Role: !Sub ${TheOriginRequestLambdaFunctionExecutionRole.Arn}
+      Runtime: nodejs6.10
+
+  TheOriginRequestLambdaFunctionExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - edgelambda.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+  RolePolicies:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "root"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: Allow 
+            Action: "ssm:GetParameter"
+            Resource:
+              - "arn:aws:ssm:*:*:parameter/*"
+      Roles:
+        - Ref: "TheOriginRequestLambdaFunctionExecutionRole"
+
+
+  TheOriginRequestLambdaFunctionVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref TheOriginRequestLambdaFunction
+      Description: !Sub "URL rewriting"
+
+
+Outputs:
+  LambdaFunctions:
+    Value: !Ref "TheOriginRequestLambdaFunctionVersion"
+    Description: "The Lambda function to use in CloudFront" 
+
