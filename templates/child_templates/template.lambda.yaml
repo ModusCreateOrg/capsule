@@ -18,7 +18,7 @@ Resources:
       Name: 'redirects'
       Description: 'Array of redirects pulled from _redirects'
       Type: String
-      Value: "[['angular-sortable-view','http://kamilkp.github.io/angular-sortable-view/','301']]"
+      Value: '[["angular-sortable-view","http://kamilkp.github.io/angular-sortable-view/","301"]]'
 
 
   TheOriginRequestLambdaFunction:
@@ -123,7 +123,7 @@ Resources:
             const re = /[^\.](\S+)\b/g;
             const params = {
                Bucket: event.Records[0].s3.bucket.name,
-               Key: event.Records[0].s3.object.key
+               Key: '_redirects'
             }
             
             let redirectsList;
@@ -149,6 +149,7 @@ Resources:
                 let paramsPut = {
                   Name: 'redirects',
                   Type: 'String',
+                  Overwrite: true,
                   Value: JSON.stringify(processedRedirects)
                 }
                 ssm.putParameter(paramsPut, function(err, data) {
@@ -196,7 +197,6 @@ Resources:
             Effect: Allow
             Action: "s3:*"
             Resource: 
-              - !Sub "arn:aws:s3:::${ProjectS3Bucket}"
               - !Sub "arn:aws:s3:::${ProjectS3Bucket}/*"
           - 
             Effect: Allow
