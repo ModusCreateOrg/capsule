@@ -1,8 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: >
-  Resources for hosting a static website on
-  Amazon Simple Storage Service (S3), CloudFront & Lambda@Edge for URI
-  rewriting.
+Description: "Website CloudFormation stack - Lambda"
 Parameters:
 
   ReDirectUrls:
@@ -138,29 +135,28 @@ Resources:
                 console.log(err);
               } else { 
                 redirectsList = data.Body.toString();
-              } 
-            });       
-            
-            let entries = redirectsList.split("\n");
+                let entries = redirectsList.split("\n");
            
-            for (var i in entries) {
-              while ((m=re.exec(entries[i])) !== null) {
-                arr.push(m[1]);
-              }
-              processedRedirects.push(arr)
-              arr = []
-            } 
+                for (var i in entries) {
+                  while ((m=re.exec(entries[i])) !== null) {
+                    arr.push(m[1]);
+                  }
+                  processedRedirects.push(arr)
+                  arr = []
+                } 
             
-            let paramsPut = {
-              Name: 'redirects',
-              Type: 'String',
-              Value: JSON.stringify(processedRedirects)
-            }
-            ssm.putParameter(paramsPut, function(err, data) {
-              if (err) {
-                console.log(err, err.stack);
+                let paramsPut = {
+                  Name: 'redirects',
+                  Type: 'String',
+                  Value: JSON.stringify(processedRedirects)
+                }
+                ssm.putParameter(paramsPut, function(err, data) {
+                  if (err) {
+                    console.log(err, err.stack);
+                  } 
+                })
               } 
-            })
+            });  
           }; 
       Handler: index.handler
       MemorySize: 128
@@ -178,6 +174,7 @@ Resources:
               Service:
                 - edgelambda.amazonaws.com
                 - lambda.amazonaws.com
+                - s3.amazonaws.com
             Action:
               - sts:AssumeRole
 
@@ -200,6 +197,11 @@ Resources:
             Resource: 
               - !Sub "arn:aws:s3:::${ProjectS3Bucket}"
               - !Sub "arn:aws:s3:::${ProjectS3Bucket}/*"
+          - 
+            Effect: Allow
+            Action: "lambda:*"
+            Resource:
+              - "arn:aws:lambda:*:*:function:*"
       Roles:
         - Ref: "ProcessRedirectsLambdaFunctionRole"
 

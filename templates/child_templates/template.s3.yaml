@@ -22,6 +22,7 @@ Parameters:
 Resources:
   S3Bucket:
     Type: "AWS::S3::Bucket"
+    DependsOn: LambdaRedirectFunctionPermission
     Properties:
       BucketName: !Sub "${Subdomain}.${Domain}"
       NotificationConfiguration:
@@ -33,7 +34,7 @@ Resources:
         ErrorDocument: error.html
     DeletionPolicy: "Delete"
 
-  LambdaRedirectFunction:
+  LambdaRedirectFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: 'lambda:InvokeFunction'
