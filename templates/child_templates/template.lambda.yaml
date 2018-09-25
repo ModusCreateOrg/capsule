@@ -54,6 +54,7 @@ Resources:
                             key: 'Location',
                             value: newUri,
                           }],
+                          'x-lae-region': [ { key: 'x-lae-region', value: process.env.AWS_REGION } ],
                         },
                       }; 
                       return callback(null, response);
