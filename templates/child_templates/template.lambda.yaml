@@ -4,12 +4,12 @@ Parameters:
 
   ReDirectUrls:
     Type: String
-    Description: Pass in array of redirects
+    Description: "Pass in array of redirects"
     Default: "[[]]"
 
   ProjectS3Bucket:
     Type: String
-    Description: S3 Bucket Name where redirects are stored
+    Description: "Project S3 Bucket Name where redirects are stored"
 
 Resources:
   SimpleParameter:
@@ -18,7 +18,7 @@ Resources:
       Name: 'redirects'
       Description: 'Array of redirects pulled from _redirects'
       Type: String
-      Value: '[["angular-sortable-view","http://kamilkp.github.io/angular-sortable-view/","301"]]'
+      Value: !Ref "ReDirectUrls" 
 
 
   TheOriginRequestLambdaFunction:
@@ -84,7 +84,7 @@ Resources:
             Action:
               - sts:AssumeRole
 
-  RolePolicies:
+  TheOriginRequestLambdaFunctionRolePolicies:
     Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: "root"
@@ -117,35 +117,29 @@ Resources:
           var AWS = require('aws-sdk');
           var s3 = new AWS.S3();
           var ssm = new AWS.SSM();
-          
-          exports.handler = (event, context, callback) => {
-              
+          exports.handler = (event, context, callback) => { 
             const re = /[^\.](\S+)\b/g;
             const params = {
                Bucket: event.Records[0].s3.bucket.name,
                Key: '_redirects'
             }
-            
             let redirectsList;
             let processedRedirects = []
             let arr = [];
             let m =''
-            
             s3.getObject(params, function(err, data) {
               if (err) {
                 console.log(err);
               } else { 
                 redirectsList = data.Body.toString();
                 let entries = redirectsList.split("\n");
-           
                 for (var i in entries) {
                   while ((m=re.exec(entries[i])) !== null) {
                     arr.push(m[1]);
                   }
                   processedRedirects.push(arr)
                   arr = []
-                } 
-            
+                }  
                 let paramsPut = {
                   Name: 'redirects',
                   Type: 'String',
@@ -181,7 +175,7 @@ Resources:
               - sts:AssumeRole
 
 
-  RedirectRolePolicies:
+  ProcessRedirectsLambdaRolePolicies:
     Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: "root"
@@ -213,10 +207,10 @@ Resources:
       Description: !Sub "URL rewriting"
 
 Outputs:
-  LambdaFunctions:
+  TheOriginRequestLambdaFunctionOutput:
     Value: !Ref "TheOriginRequestLambdaFunctionVersion"
     Description: "The Lambda function to use in CloudFront" 
-  LambdaRedirectFunctionId:
+  ProcessRedirectsLambdaFunctionOutput::
     Value: !Ref "ProcessRedirectsLambdaFunctionVersion"
     Description: "The Lambda function to use on the S3 bucket"
     

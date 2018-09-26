@@ -42,8 +42,8 @@ Resources:
       - "CfoaiCloudFormationStack"
     Properties:
       Parameters:
-        ReDirectUrls: ""
-        ProjectS3Bucket: !Sub "${Subdomain}.${Domain}.s3.amazonaws.com" 
+        ReDirectUrls: "[[]]"
+        ProjectS3Bucket: !Sub "${Subdomain}.${Domain}" 
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.lambda.yaml"
 
   # S3
@@ -57,7 +57,7 @@ Resources:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
         CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
-        LambdaRedirectFunctionId: !GetAtt ["LambdaCloudFormationStack", "Outputs.LambdaRedirectFunctionId"]
+        ProcessRedirectsLambdaFunction: !GetAtt ["LambdaCloudFormationStack", "Outputs.ProcessRedirectsLambdaFunctionOutput"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.s3.yaml"
   
   # CloudFront
@@ -72,7 +72,7 @@ Resources:
       Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
-        TheOriginRequestLambdaFunctionVersion: !GetAtt ["LambdaCloudFormationStack", "Outputs.LambdaFunctions"]  
+        TheOriginRequestLambdaFunction: !GetAtt ["LambdaCloudFormationStack", "Outputs.TheOriginRequestLambdaFunctionOutput"]  
         AcmCertificateArn: !GetAtt ["CmcCloudFormationStack", "Outputs.CertificateArn"]
         CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
         OriginS3EndPoint: !GetAtt ["S3CloudFormationStack", "Outputs.WebsiteURL"]
