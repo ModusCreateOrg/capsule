@@ -134,24 +134,6 @@ commander
   });
 
 
-commander
-  .command('redirects')
-  .description('Processes a redirects file and adds redifrects to S3 bucket configuration ')
-  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
-  .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
-  .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
-  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
-  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
-  .action(function (options) {
-    console.log("Updating website redirects")
-    commander.type = options._name || undefined
-    commander.projectName = options.projectName || undefined
-    commander.config = options.config || undefined
-    commander.awsProfile = options.awsProfile || undefined
-    commander.dom = options.dom || undefined
-    commander.subdom = options.subdom || undefined
-  });
-
 commander.parse(process.argv);
 
 /*
@@ -1037,152 +1019,6 @@ const extractDistId = (data, bucketName) => {
   });
 }
 
-/**
- * Get the current bucket configuration
- * including redirects from the S3 bucket
- *
- * @method getBucketConfigFromName
- *
- * @param {String} bucketName
- *
- * @return {Object} data
- *
- */
-const getBucketConfigFromName = async (bucketName) => {
-  return new Promise ((resolve, reject) => {
-    s3.getBucketWebsite({Bucket: bucketName}, function(err, data) {
-      if (err) {
-          reject(err);
-      } else {
-          resolve(data);
-      }
-    });
-  });
-}
-
-/**
- * Convert redirects file into a JSOn object that
- * can be inserted into the S3 bucket config
- *
- * @method convertToS3Redirects
- *
- * @param {String} redirects
- *
- * @return {Object} s3Redirects
- */
- const convertToS3Redirects = async (redirectsList) => {
-   let redirectsArray = await convertToRedirectsArray(redirectsList)
-   return new Promise ((resolve, reject) => {
-     let routingRules = []
-     for (var i in redirectsArray) {
-       if (redirectsArray[i].length !== 0) {
-         let host = redirectsArray[i][1].replace(/http:\/\/|https:\/\//g,'')
-         let replaceKeyPrefixWith = undefined;
-         if (host.includes('/')) {
-           host = host.split('/')
-           replaceKeyPrefixWith = host[1]
-           host = host[0]
-         }
-         let rule = {
-           Redirect: {
-             HostName: host,
-             HttpRedirectCode: redirectsArray[i][2],
-             Protocol: 'https'
-           },
-           Condition: {
-             KeyPrefixEquals: redirectsArray[i][0]
-           }
-         }
-         if(replaceKeyPrefixWith !== undefined) {
-           rule.Redirect['ReplaceKeyPrefixWith'] = replaceKeyPrefixWith
-         }
-         routingRules.push(rule)
-       }
-     }
-     resolve(routingRules)
-    });
-  }
-
-
-/**
- * Extract redirects from file using regex.
- * Then return the matches as an array
- *
- * @method convertToS3Redirects
- *
- * @param {String} redirects
- *
- * @return {Array} processedRedirects
- */
- const convertToRedirectsArray = async (redirectsList) => {
-   return new Promise ((resolve, reject) => {
-      const re = /[^\.](\S+)\b/g;
-      let entries = redirectsList.split("\n");
-      var processedRedirects = []
-      var arr = [];
-
-      for (var i in entries) {
-        while ((m=re.exec(entries[i])) !== null) {
-          arr.push(m[1]);
-        }
-        processedRedirects.push(arr)
-        arr = []
-      }
-      resolve(processedRedirects)
-    });
-  }
-
-
-/**
- * Extract redirects from file using regex.
- * Then return the matches as an array
- *
- * @method convertToS3Redirects
- *
- * @param {String} redirects
- *
- * @return {Array} processedRedirects
- */
- const populateRoutingRules = async (bucketName) => {
-   let getBucketConfig = await getBucketConfigFromName(bucketName)
-   let getRedirects = await getS3File(bucketName, '_redirects')
-   let s3Redirects = await convertToS3Redirects(getRedirects)
-   return new Promise ((resolve, reject) => {
-     getBucketConfig['RoutingRules'] = s3Redirects
-     let params = {
-       Bucket: bucketName,
-       WebsiteConfiguration: getBucketConfig
-     }
-     resolve(putBucketConfig(params))
-   });
- }
-
-
-/**
- * Set the bucket configuration
- * with any new redirects for the S3 bucket
- *
- * @method putBucketConfig
- *
- * @param {String} bucketName
- *
- * @return {Object} data
- *
- */
-const putBucketConfig = async (params) => {
-  logIfVerbose(`Updating Routing Rules....`);
-  return new Promise ((resolve, reject) => {
-    s3.putBucketWebsite(params, function(err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
-
-
 
 /**
  * Given the name of the project where the cf templates are stored,
@@ -1307,18 +1143,6 @@ const deleteCiStack = async (ciprojectName, bucketName) => {
   await deleteStack(ciprojectName);
 }
 
-/**
- * Handle adding redifects to the S3 bucket, using the _redirects file
- *
- * @method redirectCmds
- *
- * @return {void}
- *
- */
-const redirectCmds = async() => {
-  const bucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
-  await populateRoutingRules(bucketName)
-}
 
 /**
  * Handle S3 bucket commands.
@@ -1448,10 +1272,6 @@ const ciCmds = async(type) => {
     await ciCmds(deleteType)
     await webCmds(deleteType)
     await s3Cmds(deleteType)
-  }
-
-  if (commander.type === 'redirects') {
-    await redirectCmds()
   }
 
   if (commander.args.includes('s3')) {
