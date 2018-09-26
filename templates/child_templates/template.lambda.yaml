@@ -210,7 +210,7 @@ Outputs:
   TheOriginRequestLambdaFunctionOutput:
     Value: !Ref "TheOriginRequestLambdaFunctionVersion"
     Description: "The Lambda function to use in CloudFront" 
-  ProcessRedirectsLambdaFunctionOutput::
+  ProcessRedirectsLambdaFunctionOutput:
     Value: !Ref "ProcessRedirectsLambdaFunctionVersion"
     Description: "The Lambda function to use on the S3 bucket"
     

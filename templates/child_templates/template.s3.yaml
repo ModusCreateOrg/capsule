@@ -29,6 +29,12 @@ Resources:
         LambdaConfigurations:
         - Event: 's3:ObjectCreated:*'
           Function: !Ref ProcessRedirectsLambdaFunction
+          Filter:
+            S3Key:
+              Rules:
+                -
+                  Name: prefix
+                  Value: "_redirect"
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
