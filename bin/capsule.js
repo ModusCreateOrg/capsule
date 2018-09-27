@@ -270,32 +270,6 @@ const mergeConfig = async (site_config, site_config_params, site_config_file) =>
   return Object.assign({}, merged_params, site_config);
 }
 
-/**
- * Read the contents of an S3 file
- *
- * @method getS3File
- *
- * @param {String} fileName
- *
- * @return {String} contents
- *
- */
-const getS3File = (bucketName, fileName) => {
-  let params = {
-    Bucket: bucketName,
-    Key: fileName
-  }
-  return new Promise((resolve, reject) => {
-    s3.getObject(params, function(err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data.Body.toString());
-      }
-    });
-  });
-}
-
 
 /**
  * TODO: This may require to get it from github directly to avoid packing it
