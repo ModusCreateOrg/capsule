@@ -68,7 +68,7 @@ Resources:
       Handler: index.handler
       MemorySize: 128
       Role: !Sub ${TheOriginRequestLambdaFunctionExecutionRole.Arn}
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
 
   TheOriginRequestLambdaFunctionExecutionRole:
     Type: AWS::IAM::Role
@@ -157,7 +157,7 @@ Resources:
       Handler: index.handler
       MemorySize: 128
       Role: !Sub ${ProcessRedirectsLambdaFunctionRole.Arn}
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
 
   ProcessRedirectsLambdaFunctionRole:
     Type: AWS::IAM::Role
