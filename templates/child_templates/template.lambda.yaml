@@ -168,7 +168,6 @@ Resources:
           - Effect: Allow
             Principal:
               Service:
-                - edgelambda.amazonaws.com
                 - lambda.amazonaws.com
             Action:
               - sts:AssumeRole
