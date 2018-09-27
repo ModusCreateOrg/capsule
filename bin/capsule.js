@@ -262,8 +262,7 @@ const mergeConfig = async (site_config, site_config_params, site_config_file) =>
   }
   if (typeof config_params === "string") {
     config_params = JSON.parse(config_params)
-  }
-  if (config_params === undefined) {
+  } else if (config_params === undefined) {
     config_params = {}
   }
   merged_params = Object.assign({}, file_params, config_params);
