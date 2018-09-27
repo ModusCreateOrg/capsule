@@ -12,6 +12,13 @@ Parameters:
     Description: "The DNS subdomain name, e.g. www"
     AllowedPattern: "(?!-)[a-z0-9-]{1,63}(?<!-)"
     ConstraintDescription: "Subdomain must be a valid DNS subdomain name. Allowed pattern: (?!-)[a-z0-9-]{1,63}(?<!-)"
+  OriginS3EndPoint:
+    Type: String
+    Description: "The Static website, S3 buckets Endpoint URL"
+    Default: ""
+  TheOriginRequestLambdaFunction:
+    Type: String
+    Description: "Lambda Function Version"
   OriginPath:
     Type: String
     Description: "The S3 bucket origin path, e.g. /1.0.0"
@@ -510,7 +517,7 @@ Resources:
         Origins:
           -
             Id: !Sub "${Subdomain}.${Domain}"
-            DomainName: !Sub "${Subdomain}.${Domain}.s3.amazonaws.com"
+            DomainName: !Ref "OriginS3EndPoint"
             OriginPath: !Ref "OriginPath"
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentityId}"
@@ -523,6 +530,9 @@ Resources:
           ForwardedValues:
             QueryString: false
           ViewerProtocolPolicy: "redirect-to-https"
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: !Ref TheOriginRequestLambdaFunction
 
 Outputs:
   CloudFrontDistributionDomainName:

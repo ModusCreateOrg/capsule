@@ -15,13 +15,40 @@ Parameters:
   CloudFrontOriginAccessIdentityId:
     Type: String
     Description: "CloudFront origin access identity id"
+  ProcessRedirectsLambdaFunction:
+    Type: String
+    Description: "ARN of the Lambda function attached to the bucket"
 
 Resources:
   S3Bucket:
     Type: "AWS::S3::Bucket"
+    DependsOn: ProcessRedirectsLambdaFunctionPermission
     Properties:
       BucketName: !Sub "${Subdomain}.${Domain}"
+      NotificationConfiguration:
+        LambdaConfigurations:
+        - Event: 's3:ObjectCreated:*'
+          Function: !Ref ProcessRedirectsLambdaFunction
+          Filter:
+            S3Key:
+              Rules:
+                -
+                  Name: prefix
+                  Value: "_redirect"
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
     DeletionPolicy: "Delete"
+
+  ProcessRedirectsLambdaFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref ProcessRedirectsLambdaFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref "AWS::AccountId"
+      SourceArn: !Sub "arn:aws:s3:::${Subdomain}.${Domain}"
+    
   S3BucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     DependsOn:
@@ -38,3 +65,9 @@ Resources:
                 - !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentityId}"
             Action: "s3:GetObject"
             Resource: !Sub "${S3Bucket.Arn}/*"
+Outputs:
+  WebsiteURL:
+    Value: !GetAtt  
+      - S3Bucket
+      - DomainName
+    Description: "URL for website hosted on S3" 

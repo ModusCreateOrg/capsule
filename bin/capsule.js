@@ -133,6 +133,7 @@ commander
     commander.subdom = options.subdom || undefined
   });
 
+
 commander.parse(process.argv);
 
 /*
@@ -253,18 +254,21 @@ const siteParamsFromCmdLine = async(ciprojectName) => {
  *
  */
 const mergeConfig = async (site_config, site_config_params, site_config_file) => {
-  let config_params = JSON.parse(site_config_params)
+  let config_params = site_config_params
   let file_params = {}
   let merged_params = {}
   if(site_config_file !== undefined) {
     file_params = await parseJsonConfig(site_config_file)
   }
-  if (config_params === undefined) {
+  if (typeof config_params === "string") {
+    config_params = JSON.parse(config_params)
+  } else if (config_params === undefined) {
     config_params = {}
   }
   merged_params = Object.assign({}, file_params, config_params);
   return Object.assign({}, merged_params, site_config);
 }
+
 
 /**
  * TODO: This may require to get it from github directly to avoid packing it
@@ -988,6 +992,7 @@ const extractDistId = (data, bucketName) => {
   });
 }
 
+
 /**
  * Given the name of the project where the cf templates are stored,
  * grab the scripts from the s3 bucket with that name and spin
@@ -1030,11 +1035,15 @@ const createWebStack = async (s3projectName, webProjectName, subdomain, domain) 
  *
  * @return {void}
  */
-const updateWebStack = async (webProjectName) => {
+const updateWebStack = async (s3projectName, webProjectName,subdomain, domain) => {
   await updateStack(
     webProjectName,
     await getWebTemplate(),
-    { ProjectName : webProjectName }
+    {
+      TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+      Domain: domain,
+      Subdomain: subdomain
+    }
   );
 }
 
@@ -1107,6 +1116,7 @@ const deleteCiStack = async (ciprojectName, bucketName) => {
   await deleteStack(ciprojectName);
 }
 
+
 /**
  * Handle S3 bucket commands.
  * The S3 bucket contains the CF templates
@@ -1163,7 +1173,7 @@ const webCmds = async(type) => {
   }
 
   if (type === 'update') {
-    await updateWebStack(webProjectName);
+    await updateWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
   }
 
   if (type === 'delete') {
@@ -1190,7 +1200,9 @@ const ciCmds = async(type) => {
 
   const bucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
 
-  site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
+  if (type === 'create' || type === 'update') {
+    site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
+  }
 
   if (type === 'create') {
     site_config = await mergeConfig(site_config, site_config_params, site_config_file)
@@ -1206,6 +1218,9 @@ const ciCmds = async(type) => {
     await deleteCiStack(ciprojectName, bucketName);
   }
 }
+
+
+
 
 // MAIN #######################################################################
 (async () => {
@@ -1243,4 +1258,6 @@ const ciCmds = async(type) => {
   if (commander.args.includes('ci')) {
     await ciCmds(type)
   }
+
+
 })();

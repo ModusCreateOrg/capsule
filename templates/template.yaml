@@ -35,18 +35,31 @@ Resources:
         Subdomain: !Ref "Subdomain"
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.cfoai.yaml"
 
-  # S3
-  S3CloudFormationStack:
+  # Lambda
+  LambdaCloudFormationStack:
     Type: "AWS::CloudFormation::Stack"
     DependsOn:
       - "CfoaiCloudFormationStack"
     Properties:
       Parameters:
+        ReDirectUrls: "[[]]"
+        ProjectS3Bucket: !Sub "${Subdomain}.${Domain}" 
+      TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.lambda.yaml"
+
+  # S3
+  S3CloudFormationStack:
+    Type: "AWS::CloudFormation::Stack"
+    DependsOn:
+      - "CfoaiCloudFormationStack"
+      - "LambdaCloudFormationStack"
+    Properties:
+      Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
         CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
+        ProcessRedirectsLambdaFunction: !GetAtt ["LambdaCloudFormationStack", "Outputs.ProcessRedirectsLambdaFunctionOutput"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.s3.yaml"
-      
+  
   # CloudFront
   CfCloudFormationStack:
     Type: "AWS::CloudFormation::Stack"
@@ -54,12 +67,15 @@ Resources:
       - "CfoaiCloudFormationStack"
       - "CmcCloudFormationStack"
       - "S3CloudFormationStack"
+      - "LambdaCloudFormationStack"
     Properties:
       Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
+        TheOriginRequestLambdaFunction: !GetAtt ["LambdaCloudFormationStack", "Outputs.TheOriginRequestLambdaFunctionOutput"]  
         AcmCertificateArn: !GetAtt ["CmcCloudFormationStack", "Outputs.CertificateArn"]
         CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
+        OriginS3EndPoint: !GetAtt ["S3CloudFormationStack", "Outputs.WebsiteURL"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.cloudfront.yaml"
 
   # Route 53
@@ -73,7 +89,6 @@ Resources:
         Subdomain: !Ref "Subdomain"
         CloudFrontDistributionDomainName: !GetAtt ["CfCloudFormationStack", "Outputs.CloudFrontDistributionDomainName"]
       TemplateURL: !Sub "${TemplatesDirectoryUrl}/template.route53.yaml"
-
 Outputs:
   url:
     Value: !Sub "https://${Subdomain}.${Domain}"
