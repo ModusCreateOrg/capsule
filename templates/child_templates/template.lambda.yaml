@@ -170,7 +170,6 @@ Resources:
               Service:
                 - edgelambda.amazonaws.com
                 - lambda.amazonaws.com
-                - s3.amazonaws.com
             Action:
               - sts:AssumeRole
 
