@@ -519,12 +519,6 @@ Resources:
             Id: !Sub "${Subdomain}.${Domain}"
             DomainName: !Ref "OriginS3EndPoint"
             OriginPath: !Ref "OriginPath"
-            #CustomOriginConfig:
-            #  HTTPPort: 80
-            #  HTTPSPort: 443
-            #  OriginKeepaliveTimeout: 5
-            #  OriginProtocolPolicy: "http-only"
-            #  OriginReadTimeout: 30
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentityId}"
         DefaultCacheBehavior:
