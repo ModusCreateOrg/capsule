@@ -21,11 +21,10 @@ Resources:
       Value: !Ref "ReDirectUrls" 
 
 
-  TheOriginRequestLambdaFunction:
+  TheOriginResponseLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Description: >
-        Lambda function performing request URI redirection.
+      Description: "Lambda function performing response URI redirection on 404"
       Code:
         ZipFile: !Sub |
           var AWS = require('aws-sdk');
@@ -36,41 +35,39 @@ Resources:
                   Name: 'redirects',
                   WithDecryption: false
               };
-              const { request } = event.Records[0].cf;
-              const parsedPath = path.parse(request.uri);
-              let newUri = request.uri
-              const processRedirects = ssm.getParameter(params, function(err, data) {
-                if (err) { 
-                  console.log(err, err.stack);
-                } else { 
-                  let redirects = JSON.parse(data.Parameter.Value);
-                  for(var i in redirects) { 
-                    if (parsedPath.base === redirects[i][0]) {
-                      newUri = redirects[i][1];
-                      const response = {
-                        status:  redirects[i][2],
-                        headers: {
-                          location: [{
-                            key: 'Location',
-                            value: newUri,
-                          }],
-                          'x-lae-region': [ { key: 'x-lae-region', value: process.env.AWS_REGION } ],
-                        },
-                      }; 
-                      return callback(null, response);
+              const response = event.Records[0].cf.response;
+              if(response.status === "404" || response.status === "403") {
+                const { request } = event.Records[0].cf;
+                const parsedPath = path.parse(request.uri);
+                let newUri = request.uri
+                const processRedirects = ssm.getParameter(params, function(err, data) {
+                  if (err) { 
+                    console.log(err, err.stack);
+                  } else { 
+                    let redirects = JSON.parse(data.Parameter.Value);
+                    for(var i in redirects) { 
+                      if (parsedPath.base === redirects[i][0]) {
+                        newUri = redirects[i][1];
+                        response.status = redirects[i][2];
+                        response.headers['location'] = [{
+                          key: 'Location',
+                          value: newUri,
+                        }];
+                        return callback(null, response);
+                      }
                     }
-                  }
-                  request.uri = newUri;
-                  return callback(null, request);
-                 }    
-              });  
+                   }    
+                }); 
+              } else {
+                return callback(null, response);
+              }
             };
       Handler: index.handler
       MemorySize: 128
-      Role: !Sub ${TheOriginRequestLambdaFunctionExecutionRole.Arn}
+      Role: !Sub ${TheOriginResponseLambdaFunctionExecutionRole.Arn}
       Runtime: nodejs8.10
 
-  TheOriginRequestLambdaFunctionExecutionRole:
+  TheOriginResponseLambdaFunctionExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -84,7 +81,7 @@ Resources:
             Action:
               - sts:AssumeRole
 
-  TheOriginRequestLambdaFunctionRolePolicies:
+  TheOriginResponseLambdaFunctionRolePolicies:
     Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: "root"
@@ -97,12 +94,12 @@ Resources:
             Resource:
               - "arn:aws:ssm:*:*:parameter/*"
       Roles:
-        - Ref: "TheOriginRequestLambdaFunctionExecutionRole"
+        - Ref: "TheOriginResponseLambdaFunctionExecutionRole"
 
-  TheOriginRequestLambdaFunctionVersion:
+  TheOriginResponseLambdaFunctionVersion:
     Type: AWS::Lambda::Version
     Properties:
-      FunctionName: !Ref TheOriginRequestLambdaFunction
+      FunctionName: !Ref TheOriginResponseLambdaFunction
       Description: !Sub "URL rewriting"
 
 
@@ -205,8 +202,8 @@ Resources:
       Description: !Sub "URL rewriting"
 
 Outputs:
-  TheOriginRequestLambdaFunctionOutput:
-    Value: !Ref "TheOriginRequestLambdaFunctionVersion"
+  TheOriginResponseLambdaFunctionOutput:
+    Value: !Ref "TheOriginResponseLambdaFunctionVersion"
     Description: "The Lambda function to use in CloudFront" 
   ProcessRedirectsLambdaFunctionOutput:
     Value: !Ref "ProcessRedirectsLambdaFunctionVersion"
