@@ -72,7 +72,7 @@ Resources:
       Parameters:
         Domain: !Ref "Domain"
         Subdomain: !Ref "Subdomain"
-        TheOriginRequestLambdaFunction: !GetAtt ["LambdaCloudFormationStack", "Outputs.TheOriginRequestLambdaFunctionOutput"]  
+        TheOriginResponseLambdaFunction: !GetAtt ["LambdaCloudFormationStack", "Outputs.TheOriginResponseLambdaFunctionOutput"]  
         AcmCertificateArn: !GetAtt ["CmcCloudFormationStack", "Outputs.CertificateArn"]
         CloudFrontOriginAccessIdentityId: !GetAtt ["CfoaiCloudFormationStack", "Outputs.CloudFrontOriginAccessIdentityId"]
         OriginS3EndPoint: !GetAtt ["S3CloudFormationStack", "Outputs.WebsiteURL"]
