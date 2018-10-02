@@ -183,6 +183,7 @@ const paths = {
   ci: 'ci/codebuild_capsule.cf',
   ci_project: 'ci/codebuild_project.cf',
   cf_templates: 'templates/child_templates/',
+  lambda_cf: 'template.lambda.yaml',
   web_template: 'templates/template.yaml',
   aws_url: 'https://s3.amazonaws.com/'
 }
@@ -994,6 +995,30 @@ const extractDistId = (data, bucketName) => {
 
 
 /**
+ * Suffix a version number block title in a CF template
+ * with a timestamp, to make it unique.
+ *
+ * @method updateLambdaFunctions3
+ *
+ * @param {String} lambda_path
+ *
+ * @return {void}
+ *
+ */
+const updateLambdaFunctions3 = async (lambda_path) => {
+  const lambdaFunctionDefinition = new RegExp(/ProcessRedirectsLambdaFunctionVersion\d*/g)
+  const lambdaTimeStampVersion = "ProcessRedirectsLambdaFunctionVersion" + Date.now();
+  fs.readFile(lambda_path, 'utf-8', function(err, data){
+    if (err) throw err;
+    var newVersion = data.replace(lambdaFunctionDefinition, lambdaTimeStampVersion);
+    fs.writeFile(lambda_path, newVersion, 'utf-8', function (err) {
+      if (err) throw err;
+      logIfVerbose(`Updated Lambda function is ${lambda_path}`)
+    });
+  });
+}
+
+/**
  * Given the name of the project where the cf templates are stored,
  * grab the scripts from the s3 bucket with that name and spin
  * up the web infrastructure.
@@ -1084,6 +1109,7 @@ const createCiStack = async (ciprojectName, site_config) => {
   );
 }
 
+
 /**
  * Given the name of the project, it updates the target projects stack
  * CF templates for codebuild.
@@ -1139,6 +1165,7 @@ const s3Cmds = async(type) => {
   }
 
   if (type === 'update') {
+    updateLambdaFunctions3(`${paths.cf_templates}${paths.lambda_cf}`)
     await updateS3Bucket(projectName, bucketName);
   }
 
