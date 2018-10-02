@@ -1005,15 +1005,18 @@ const extractDistId = (data, bucketName) => {
  * @return {void}
  *
  */
-const updateLambdaFunctions3 = async (lambda_path) => {
+const updateLambdaFunctions3 = (lambda_path) => {
   const lambdaFunctionDefinition = new RegExp(/ProcessRedirectsLambdaFunctionVersion\d*/g)
   const lambdaTimeStampVersion = "ProcessRedirectsLambdaFunctionVersion" + Date.now();
-  fs.readFile(lambda_path, 'utf-8', function(err, data){
-    if (err) throw err;
-    var newVersion = data.replace(lambdaFunctionDefinition, lambdaTimeStampVersion);
-    fs.writeFile(lambda_path, newVersion, 'utf-8', function (err) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(lambda_path, 'utf-8', function(err, data){
       if (err) throw err;
-      logIfVerbose(`Updated Lambda function is ${lambda_path}`)
+      var newVersion = data.replace(lambdaFunctionDefinition, lambdaTimeStampVersion);
+      fs.writeFile(lambda_path, newVersion, 'utf-8', function (err) {
+        if (err) reject(err);
+        logIfVerbose(`Updated Lambda function is ${lambda_path}`)
+        resolve(true)
+      });
     });
   });
 }
@@ -1161,11 +1164,11 @@ const s3Cmds = async(type) => {
   if (type === 'create') {
     await createS3Bucket(projectName);
     logIfVerbose(`Uploading files....`);
+    await updateLambdaFunctions3(`${paths.cf_templates}${paths.lambda_cf}`)
     await addFilesToS3Bucket(projectName, bucketName)
   }
 
   if (type === 'update') {
-    updateLambdaFunctions3(`${paths.cf_templates}${paths.lambda_cf}`)
     await updateS3Bucket(projectName, bucketName);
   }
 
@@ -1188,6 +1191,7 @@ const s3Cmds = async(type) => {
  */
 const webCmds = async(type) => {
   let s3projectName = commander.projectName
+  let bucketName = `cf-${s3projectName}-capsule-ci`
   let webProjectName = `capsule-${s3projectName}-web`
   s3projectName = `cf-${s3projectName}-capsule-ci`
 
