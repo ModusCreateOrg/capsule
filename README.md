@@ -70,7 +70,11 @@ We a need directory to store this file, so create a new directory `.aws` under t
 Next create the `config.json` file in the .aws directory, containing these keys:
 
 ```json
-{ "accessKeyId": <YOUR_ACCESS_KEY_ID>, "secretAccessKey": <YOUR_SECRET_ACCESS_KEY>, "region": "us-east-1" }
+{
+  "accessKeyId": <YOUR_ACCESS_KEY_ID>,
+  "secretAccessKey": <YOUR_SECRET_ACCESS_KEY>,
+  "region": "us-east-1"
+}
 ```
 
 After creating these files, log into your AWS account. We now need to create an Access Key. This can be done as follows:
