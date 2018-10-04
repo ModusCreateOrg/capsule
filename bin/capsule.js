@@ -992,8 +992,6 @@ const extractDistId = (data, bucketName) => {
   });
 }
 
-
-
 /**
  * Given the name of the project where the cf templates are stored,
  * grab the scripts from the s3 bucket with that name and spin
@@ -1084,7 +1082,6 @@ const createCiStack = async (ciprojectName, site_config) => {
     site_config
   );
 }
-
 
 /**
  * Given the name of the project, it updates the target projects stack
