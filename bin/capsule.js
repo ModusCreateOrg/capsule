@@ -183,7 +183,6 @@ const paths = {
   ci: 'ci/codebuild_capsule.cf',
   ci_project: 'ci/codebuild_project.cf',
   cf_templates: 'templates/child_templates/',
-  lambda_cf: 'template.lambda.yaml',
   web_template: 'templates/template.yaml',
   aws_url: 'https://s3.amazonaws.com/'
 }
@@ -994,32 +993,6 @@ const extractDistId = (data, bucketName) => {
 }
 
 
-/**
- * Suffix a version number block title in a CF template
- * with a timestamp, to make it unique.
- *
- * @method updateLambdaFunctions3
- *
- * @param {String} lambda_path
- *
- * @return {void}
- *
- */
-const updateLambdaFunctions3 = (lambda_path) => {
-  const lambdaFunctionDefinition = new RegExp(/ProcessRedirectsLambdaFunctionVersion\d*/g)
-  const lambdaTimeStampVersion = "ProcessRedirectsLambdaFunctionVersion" + Date.now();
-  return new Promise((resolve, reject) => {
-    fs.readFile(lambda_path, 'utf-8', function(err, data){
-      if (err) throw err;
-      var newVersion = data.replace(lambdaFunctionDefinition, lambdaTimeStampVersion);
-      fs.writeFile(lambda_path, newVersion, 'utf-8', function (err) {
-        if (err) reject(err);
-        logIfVerbose(`Updated Lambda function is ${lambda_path}`)
-        resolve(true)
-      });
-    });
-  });
-}
 
 /**
  * Given the name of the project where the cf templates are stored,
@@ -1164,7 +1137,6 @@ const s3Cmds = async(type) => {
   if (type === 'create') {
     await createS3Bucket(projectName);
     logIfVerbose(`Uploading files....`);
-    await updateLambdaFunctions3(`${paths.cf_templates}${paths.lambda_cf}`)
     await addFilesToS3Bucket(projectName, bucketName)
   }
 
