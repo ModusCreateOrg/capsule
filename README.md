@@ -24,6 +24,15 @@ Capsule uses the following AWS technologies:
 5. Amazon CloudFront
 6. Amazon CloudBuild
 
+## Installation
+
+Install `capsule` as a global CLI from NPM.
+
+```sh
+npm install -g capsule
+```
+
+You can now use `capsule` from your command line.
 
 ## Getting Started
 
