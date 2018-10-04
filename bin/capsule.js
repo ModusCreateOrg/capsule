@@ -1163,7 +1163,6 @@ const s3Cmds = async(type) => {
  */
 const webCmds = async(type) => {
   let s3projectName = commander.projectName
-  let bucketName = `cf-${s3projectName}-capsule-ci`
   let webProjectName = `capsule-${s3projectName}-web`
   s3projectName = `cf-${s3projectName}-capsule-ci`
 
