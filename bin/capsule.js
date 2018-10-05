@@ -10,21 +10,123 @@ const chalk = require('chalk');
 const aws = require('aws-sdk');
 const path = require('path')
 const Spinner = require('cli-spinner').Spinner;
+const { prompt } = require('inquirer');
+
 let cf;
 let s3;
 let cfr;
 
 //#############################################################################
 
+/*
+ * Globals
+ */
+const {
+  // AWS Access Key
+  AWS_ACCESS_KEY_ID,
+  // AWS secret key
+  AWS_SECRET_ACCESS_KEY,
+  // AWS profile name
+  AWS_PROFILE,
+  // AWS region
+  AWS_REGION
+} = process.env;
+
+/*
+ * References
+ * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
+ *
+ */
+const stack_states = [
+  'CREATE_COMPLETE',
+  'CREATE_FAILED',
+  'DELETE_COMPLETE',
+  'DELETE_FAILED',
+  'UPDATE_COMPLETE',
+  'UPDATE_FAILED',
+  'ROLLBACK_COMPLETE',
+  'ROLLBACK_FAILED',
+  'UPDATE_ROLLBACK_COMPLETE',
+  'UPDATE_ROLLBACK_FAILED',
+  'REVIEW_IN_PROGRESS'
+];
+
+const error_states = [
+  'CREATE_FAILED',
+  'DELETE_FAILED',
+  'UPDATE_FAILED',
+  'ROLLBACK_FAILED',
+  'UPDATE_ROLLBACK_FAILED'
+];
+
+const paths = {
+  base: `${__dirname}/../`,
+  ci_s3: 'ci/s3_cloudformation.cf',
+  ci: 'ci/codebuild_capsule.cf',
+  ci_project: 'ci/codebuild_project.cf',
+  cf_templates: 'templates/child_templates/',
+  web_template: 'templates/template.yaml',
+  base_config: 'config/capsule.json',
+  aws_url: 'https://s3.amazonaws.com/'
+}
+
+let last_time = new Date(new Date() - 1000);
+
+
+/**
+ * Takes a JSON config file, opens its, reads the contents
+ * passes it, and returns a JS object.
+ *
+ * @method getJsonFile
+ *
+ * @param {String} path
+ *
+ * @return {Object} data
+ */
+const getJsonFile = (path) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf8', (err, data) => {
+      if (err) reject(err);
+      else resolve(JSON.parse(data));
+    })
+  });
+}
+
+/**
+ * Pass in a config file in JSON format
+ * process and return an object
+ *
+ * @method parseJsonConfig
+ *
+ * @param {String} site_config_file
+ *
+ * @return {Object}
+ */
+const parseJsonConfig = async (site_config_file) => getJsonFile(site_config_file);
+
 commander
   .version('1.0.0')
   .option('-v, --verbose', 'verbose output')
+
 
 
 //TODO - move code for assigning vars into a separate function
 //to allow code re-use.
 commander
   .command('init')
+  .description('Define the project parameters')
+  .action(async function (options) {
+    commander.type = 'init'
+    let questions = await parseJsonConfig(`${paths.base}/${paths.base_config}`)
+    console.log("Executing project initialization")
+     prompt(questions).then(answers =>
+       console.log(answers)
+     );
+  });
+
+
+commander
+  .command('deploy')
   .description('Builds out the web hosting infrastructure in one go')
   .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
   .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
@@ -35,7 +137,8 @@ commander
   .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (options) {
-    console.log("Executing project initalization")
+    console.log("Executing project deployment")
+    //UPDATE: change this to process the capsule.json file
     commander.type = options._name || undefined
     commander.projectName = options.projectName || undefined
     commander.config = options.config || undefined
@@ -136,58 +239,6 @@ commander
 
 commander.parse(process.argv);
 
-/*
- * Globals
- */
-const {
-  // AWS Access Key
-  AWS_ACCESS_KEY_ID,
-  // AWS secret key
-  AWS_SECRET_ACCESS_KEY,
-  // AWS profile name
-  AWS_PROFILE,
-  // AWS region
-  AWS_REGION
-} = process.env;
-
-/*
- * References
- * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#w2ab2c15c15c17c11
- *
- */
-const stack_states = [
-  'CREATE_COMPLETE',
-  'CREATE_FAILED',
-  'DELETE_COMPLETE',
-  'DELETE_FAILED',
-  'UPDATE_COMPLETE',
-  'UPDATE_FAILED',
-  'ROLLBACK_COMPLETE',
-  'ROLLBACK_FAILED',
-  'UPDATE_ROLLBACK_COMPLETE',
-  'UPDATE_ROLLBACK_FAILED',
-  'REVIEW_IN_PROGRESS'
-];
-
-const error_states = [
-  'CREATE_FAILED',
-  'DELETE_FAILED',
-  'UPDATE_FAILED',
-  'ROLLBACK_FAILED',
-  'UPDATE_ROLLBACK_FAILED'
-];
-
-const paths = {
-  base: `${__dirname}/../`,
-  ci_s3: 'ci/s3_cloudformation.cf',
-  ci: 'ci/codebuild_capsule.cf',
-  ci_project: 'ci/codebuild_project.cf',
-  cf_templates: 'templates/child_templates/',
-  web_template: 'templates/template.yaml',
-  aws_url: 'https://s3.amazonaws.com/'
-}
-
-let last_time = new Date(new Date() - 1000);
 
 // Helpers ####################################################################
 
@@ -288,36 +339,6 @@ const getTemplateBody = (path) => {
   });
 }
 
-/**
- * Takes a JSON config file, opens its, reads the contents
- * passes it, and returns a JS object.
- *
- * @method getJsonFile
- *
- * @param {String} path
- *
- * @return {Object} data
- */
-const getJsonFile = (path) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf8', (err, data) => {
-      if (err) reject(err);
-      else resolve(JSON.parse(data));
-    })
-  });
-}
-
-/**
- * Pass in a config file in JSON format
- * process and return an object
- *
- * @method parseJsonConfig
- *
- * @param {String} site_config_file
- *
- * @return {Object}
- */
-const parseJsonConfig = async (site_config_file) => getJsonFile(site_config_file);
 
 /**
  * get the S3 file
@@ -1117,6 +1138,17 @@ const deleteCiStack = async (ciprojectName, bucketName) => {
 }
 
 
+
+const initCmds = async () => {
+  let config_params = await parseJsonConfig(`${paths.base}/${paths.base_config}`)
+  for (var i in config_params) {
+    //let question = `Please enter a value for: ${i}`
+    //let response = readResponse(question)
+  }
+  //3. Write json file to a new file
+}
+
+
 /**
  * Handle S3 bucket commands.
  * The S3 bucket contains the CF templates
@@ -1229,15 +1261,17 @@ const ciCmds = async(type) => {
 
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
-  if (!commander.projectName) {
+  if(commander.type === 'init') {
+    await initCmds()
+  } else if (!commander.projectName) {
     printErrorAndDie('Project name is required!', true);
   }
 
-  if (commander.type === 'init') {
-    let initType = 'create'
-    await s3Cmds(initType)
-    await webCmds(initType)
-    await ciCmds(initType)
+  if (commander.type === 'deploy') {
+    let deployType = 'create'
+    await s3Cmds(deployType)
+    await webCmds(deployType)
+    await ciCmds(deployType)
   }
 
   if (commander.type === 'remove') {

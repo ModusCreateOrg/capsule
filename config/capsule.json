@@ -1,6 +1,42 @@
-{
-  "WebsiteCode" : "./build",
-  "InstallCommands" : "npm install .",
-  "BuildCommands" : "",
-  "PostBuildCommands" : ""
-}
+[
+  {
+    "type": "input",
+    "name": "ProjectName",
+    "message": "Enter your project name"
+  },
+  {
+    "type": "input",
+    "name": "Domain",
+    "message": "Enter your Domain name"
+  },
+  {
+    "type": "input",
+    "name": "SubDomain",
+    "message": "Enter your Sub-domain (optional)"
+  },
+  {
+    "type": "input",
+    "name": "SourceCodeUrl",
+    "message": "Enter your source code repository"
+  },
+  {
+    "type": "input",
+    "name": "WebsiteCode",
+    "message": "Enter the folder where your build source code resides"
+  },
+  {
+    "type": "input",
+    "name": "InstallCommands",
+    "message": "Enter the install commands"
+  },
+  {
+    "type": "input",
+    "name": "BuildCommands",
+    "message": "Enter any build commands"
+  },
+  {
+    "type": "input",
+    "name": "PostBuildCommands",
+    "message": "Enter any post-build commands"
+  }
+]
