@@ -66,8 +66,9 @@ const paths = {
   ci_project: 'ci/codebuild_project.cf',
   cf_templates: 'templates/child_templates/',
   web_template: 'templates/template.yaml',
-  base_config: 'config/capsule.json',
-  aws_url: 'https://s3.amazonaws.com/'
+  base_config: 'config/capsule_init_questions.json',
+  aws_url: 'https://s3.amazonaws.com/',
+  output_config: 'capsule.json'
 }
 
 let last_time = new Date(new Date() - 1000);
@@ -104,11 +105,30 @@ const getJsonFile = (path) => {
  */
 const parseJsonConfig = async (site_config_file) => getJsonFile(site_config_file);
 
+
+/**
+ *
+ * Write config file out by taking the
+ * JSOn object and stringifying it
+ *
+ * @method writeConfigFile
+ *
+ * @param {Object} answers
+ *
+ * @return {void}
+ */
+const writeConfigFile = (answers) => {
+  fs.writeFile(paths.output_config, JSON.stringify(answers), function(err) {
+    if(err) {
+      return console.log(err);
+    }
+    console.log("The file was saved!");
+  });
+}
+
 commander
   .version('1.0.0')
   .option('-v, --verbose', 'verbose output')
-
-
 
 //TODO - move code for assigning vars into a separate function
 //to allow code re-use.
@@ -120,7 +140,7 @@ commander
     let questions = await parseJsonConfig(`${paths.base}/${paths.base_config}`)
     console.log("Executing project initialization")
      prompt(questions).then(answers =>
-       console.log(answers)
+       writeConfigFile(answers)
      );
   });
 
@@ -1261,10 +1281,10 @@ const ciCmds = async(type) => {
 
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
-  if(commander.type === 'init') {
-    await initCmds()
-  } else if (!commander.projectName) {
-    printErrorAndDie('Project name is required!', true);
+  if(commander.type !== 'init' && commander.type !== 'deploy') {
+    if (!commander.projectName) {
+      printErrorAndDie('Project name is required!', true);
+    }
   }
 
   if (commander.type === 'deploy') {
