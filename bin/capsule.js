@@ -71,6 +71,20 @@ const paths = {
   output_config: 'capsule.json'
 }
 
+const projectParameters = {
+  projectName: "",
+  s3BucketName: "",
+  webProjectName: "",
+  webBucketName: "", //used in ci command
+  ciprojectName: "",
+  domain: "",
+  subDomain: "",
+  site_config_params: {},
+  site_config_file: {},
+  site_config: {}
+}
+
+
 let last_time = new Date(new Date() - 1000);
 
 
@@ -148,26 +162,8 @@ commander
 commander
   .command('deploy')
   .description('Builds out the web hosting infrastructure in one go')
-  .option('-n, --project-name <project-name>', 'Push cf templates to the s3 bucket, and creates it if it does not exist')
-  .option('-d, --dom <dom>', 'The name of the static website domain being created from the cf templates')
-  .option('-s, --subdom <subdom>', 'The name of the static website subdomain being created from the cf templates')
-  .option('-c, --config <config-path>', 'Load the configuration from the specified path')
-  .option('-p, --aws-profile <profile>', 'The AWS profile to use')
-  .option('-u, --url <repo>', 'The source control URL to use')
-  .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
-  .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (options) {
     console.log("Executing project deployment")
-    //UPDATE: change this to process the capsule.json file
-    commander.type = options._name || undefined
-    commander.projectName = options.projectName || undefined
-    commander.config = options.config || undefined
-    commander.awsProfile = options.awsProfile || undefined
-    commander.dom = options.dom || undefined
-    commander.subdom = options.subdom || undefined
-    commander.url = options.url || undefined
-    commander.site_config = options.site_config || {}
-    commander.site_config_file = options.site_config_file || undefined
   });
 
 commander
@@ -286,59 +282,6 @@ const getRandomToken = () => Math.floor(Math.random() * 89999) + 10000;
 
 // File Helpers ###############################################################
 
-/**
- * Merge in commandline params into
- * an object that can be used in codebuild.
- * Commandline params take prescedent over
- * params in the site_config.json
- * TODO: Check if either is undefined
- * and populate with value from user config file
- * if it is present.
- *
- * @method siteParamsFromCmdLine
- *
- * @param {String} ciprojectName
- *
- * @return {Object} site_config
- *
- */
-const siteParamsFromCmdLine = async(ciprojectName) => {
-  return {
-    CodeBuildProjectCodeName: ciprojectName,
-    RepositoryURL: commander.url,
-    ProjectS3Bucket: `${commander.subdom}.${commander.dom}`
-  };
-}
-
-/**
- * Merges together the values from the site_config.json file
- * (or whatever named file the user specified) with any values
- * passed in from the command line as part of the sc flag.
- *
- * @method mergeConfig
- *
- * @param {Object} site_config
- * @param {Object} site_config_params
- * @param {Object} site_config_file
- *
- * @return {Object}
- *
- */
-const mergeConfig = async (site_config, site_config_params, site_config_file) => {
-  let config_params = site_config_params
-  let file_params = {}
-  let merged_params = {}
-  if(site_config_file !== undefined) {
-    file_params = await parseJsonConfig(site_config_file)
-  }
-  if (typeof config_params === "string") {
-    config_params = JSON.parse(config_params)
-  } else if (config_params === undefined) {
-    config_params = {}
-  }
-  merged_params = Object.assign({}, file_params, config_params);
-  return Object.assign({}, merged_params, site_config);
-}
 
 
 /**
@@ -1044,19 +987,19 @@ const extractDistId = (data, bucketName) => {
  *
  * @method createWebStack
  *
- * @param {String} s3projectName
+ * @param {String} s3BucketName
  * @param {String} webProjectName
  * @param {String} subdomain
  * @param {String} domain
  *
  * @return {void}
  */
-const createWebStack = async (s3projectName, webProjectName, subdomain, domain) => {
+const createWebStack = async (s3BucketName, webProjectName, subdomain, domain) => {
   await createStack(
     webProjectName,
     await getWebTemplate(),
     {
-      TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+      TemplatesDirectoryUrl : paths.aws_url+s3BucketName,
       Domain: domain,
       Subdomain: subdomain
     }
@@ -1076,12 +1019,12 @@ const createWebStack = async (s3projectName, webProjectName, subdomain, domain) 
  *
  * @return {void}
  */
-const updateWebStack = async (s3projectName, webProjectName,subdomain, domain) => {
+const updateWebStack = async (s3BucketName, webProjectName,subdomain, domain) => {
   await updateStack(
     webProjectName,
     await getWebTemplate(),
     {
-      TemplatesDirectoryUrl : paths.aws_url+s3projectName,
+      TemplatesDirectoryUrl : paths.aws_url+s3BucketName,
       Domain: domain,
       Subdomain: subdomain
     }
@@ -1158,17 +1101,6 @@ const deleteCiStack = async (ciprojectName, bucketName) => {
 }
 
 
-
-const initCmds = async () => {
-  let config_params = await parseJsonConfig(`${paths.base}/${paths.base_config}`)
-  for (var i in config_params) {
-    //let question = `Please enter a value for: ${i}`
-    //let response = readResponse(question)
-  }
-  //3. Write json file to a new file
-}
-
-
 /**
  * Handle S3 bucket commands.
  * The S3 bucket contains the CF templates
@@ -1181,8 +1113,8 @@ const initCmds = async () => {
  */
 const s3Cmds = async(type) => {
 
-  let projectName = commander.projectName
-  let bucketName = `cf-${projectName}-capsule-ci`
+  let projectName = projectParameters.projectName
+  let bucketName = projectParameters.s3BucketName
 
   if (type === 'create') {
     await createS3Bucket(projectName);
@@ -1212,20 +1144,21 @@ const s3Cmds = async(type) => {
  * @return {void}
  */
 const webCmds = async(type) => {
-  let s3projectName = commander.projectName
-  let webProjectName = `capsule-${s3projectName}-web`
-  s3projectName = `cf-${s3projectName}-capsule-ci`
+  let s3BucketName = projectParameters.s3BucketName
+  let webProjectName = projectParameters.webProjectName
+  let subDomain = projectParameters.subDomain
+  let domain = projectParameters.domain
 
-  if(!commander.dom) {
+  if(!projectParameters.domain) {
     printErrorAndDie('Website domain name is required!', true);
   }
 
   if (type === 'create') {
-    await createWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
+    await createWebStack(s3BucketName, webProjectName, subDomain, domain);
   }
 
   if (type === 'update') {
-    await updateWebStack(s3projectName, webProjectName, commander.subdom, commander.dom);
+    await updateWebStack(s3BucketName, webProjectName, subDomain, domain);
   }
 
   if (type === 'delete') {
@@ -1245,34 +1178,113 @@ const webCmds = async(type) => {
  * @return {void}
  */
 const ciCmds = async(type) => {
-  let ciprojectName = `capsule-${commander.projectName}-ci`
-  let site_config_params = commander.site_config
-  let site_config_file = commander.site_config_file
-  let site_config = await siteParamsFromCmdLine(ciprojectName)
-
-  const bucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
+  let ciprojectName = projectParameters.ciProjectName
+  let site_config = projectParameters.site_config
+  let webBucketName = projectParameters.webBucketName
 
   if (type === 'create' || type === 'update') {
-    site_config['CloudDistId'] = await getCloudFrontDistID(bucketName)
+    site_config['CloudDistId'] = await getCloudFrontDistID(webBucketName)
   }
 
   if (type === 'create') {
-    site_config = await mergeConfig(site_config, site_config_params, site_config_file)
     await createCiStack(ciprojectName, site_config);
   }
 
   if (type === 'update') {
-    site_config = await mergeConfig(site_config, site_config_params, site_config_file)
     await updateCiStack(ciprojectName, site_config);
   }
 
   if (type === 'delete') {
-    await deleteCiStack(ciprojectName, bucketName);
+    await deleteCiStack(ciprojectName, webBucketName);
   }
 }
 
 
 
+/**
+ * Merge in commandline params into
+ * an object that can be used in codebuild.
+ * Commandline params take prescedent over
+ * params in the site_config.json
+ * TODO: Check if either is undefined
+ * and populate with value from user config file
+ * if it is present.
+ *
+ * @method siteParamsFromCmdLine
+ *
+ * @param {String} ciprojectName
+ *
+ * @return {Object} site_config
+ *
+ */
+const siteParamsFromCmdLine = async(ciprojectName) => {
+  return {
+    CodeBuildProjectCodeName: ciprojectName,
+    RepositoryURL: projectParameters.url,
+    ProjectS3Bucket: projectParameters.webBucketName //check var name here
+  };
+}
+
+/**
+ * Merges together the values from the site_config.json file
+ * (or whatever named file the user specified) with any values
+ * passed in from the command line as part of the sc flag.
+ *
+ * @method mergeConfig
+ *
+ *
+ * @return {Object}
+ *
+ */
+const mergeConfig = async () => {
+  let config_params = projectParameters.site_config_params
+  let file_params = {}
+  let merged_params = {}
+  if(projectParameters.site_config_file !== undefined) {
+    file_params = await parseJsonConfig(projectParameters.site_config_file)
+  }
+  if (typeof config_params === "string") {
+    config_params = JSON.parse(config_params)
+  } else if (config_params === undefined) {
+    config_params = {}
+  }
+  return Object.assign({}, file_params, config_params);
+}
+
+
+
+/**
+ * config global vars
+ * IN PROGRESSS
+ *
+ */
+const processConfiguration = async () => {
+  // need to process thus such that:
+  // File processed first - when deploy called, default to capsule.json
+  // Then command line in json obj
+  // Then command line named flags - see mergeConfig function
+
+
+  projectParameters.site_config_params = commander.site_config //commandline JSON object
+  projectParameters.site_config_file = commander.site_config_file ? commander.site_config_file : "capsule.json"
+  projectParameters.site_config = await mergeConfig()
+
+  if(commander.projectName !== undefined) {
+    projectParameters.projectName = commander.projectName //or from JSON object
+  }
+  projectParameters.s3BucketName = `cf-${projectParameters.projectName}-capsule-ci`
+  projectParameters.ciprojectName = `capsule-${commander.projectName}-ci`
+  projectParameters.webProjectName = `capsule-${projectParameters.projectName}-web`
+  projectParameters.url = commander.url
+  projectParameters.domain = commander.dom
+  projectParameters.subDomain = commander.subdom
+  projectParameters.webBucketName = commander.subdom ? `${commander.subdom}.${commander.dom}` : commander.dom;
+
+  let site_params_cmd = await siteParamsFromCmdLine(projectParameters.ciprojectName)
+  projectParameters.site_config =  Object.assign({}, projectParameters.site_config, site_params_cmd);
+  console.log(projectParameters)
+
+}
 
 // MAIN #######################################################################
 (async () => {
@@ -1281,10 +1293,8 @@ const ciCmds = async(type) => {
 
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
-  if(commander.type !== 'init' && commander.type !== 'deploy') {
-    if (!commander.projectName) {
-      printErrorAndDie('Project name is required!', true);
-    }
+  if (commander.type !== 'init') {
+    await processConfiguration()
   }
 
   if (commander.type === 'deploy') {
