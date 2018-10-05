@@ -8,7 +8,8 @@ const fs = require('fs');
 const commander = require('commander');
 const chalk = require('chalk');
 const aws = require('aws-sdk');
-const path = require('path')
+const path = require('path');
+const pkginfo = require('pkginfo')(module);
 const Spinner = require('cli-spinner').Spinner;
 let cf;
 let s3;
@@ -17,7 +18,7 @@ let cfr;
 //#############################################################################
 
 commander
-  .version('1.0.0')
+  .version(module.exports.version)
   .option('-v, --verbose', 'verbose output')
 
 
