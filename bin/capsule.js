@@ -797,6 +797,8 @@ const deleteStack = async (name) => {
 // AWS S3 Helpers #############################################################
 
 /**
+ * List the files in an S3 bucket.
+ *
  * Reference:
  * https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
  *
@@ -909,6 +911,8 @@ const deleteS3Bucket = async (projectName, bucketName) => {
 }
 
 /**
+ * A method to add files to an S3 bucket
+ *
  * @method addFilesToS3Bucket
  *
  * @param {String} projectName
@@ -945,6 +949,8 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
 }
 
 /**
+ * Get the CloudFront distribution ID
+ * and return the value
  *
  * @method getCloudFrontDistID
  *
@@ -991,7 +997,6 @@ const extractDistId = (data, bucketName) => {
     reject(undefined)
   });
 }
-
 
 /**
  * Given the name of the project where the cf templates are stored,
