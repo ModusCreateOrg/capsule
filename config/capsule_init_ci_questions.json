@@ -1,0 +1,27 @@
+[
+  {
+    "type": "input",
+    "name": "RepositoryURL",
+    "message": "Enter your source code repository"
+  },
+  {
+    "type": "input",
+    "name": "WebsiteCode",
+    "message": "Enter the folder where your build source code resides"
+  },
+  {
+    "type": "input",
+    "name": "InstallCommands",
+    "message": "Enter the install commands"
+  },
+  {
+    "type": "input",
+    "name": "BuildCommands",
+    "message": "Enter any build commands"
+  },
+  {
+    "type": "input",
+    "name": "PostBuildCommands",
+    "message": "Enter any post-build commands"
+  }
+]

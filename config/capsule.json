@@ -1,6 +1,0 @@
-{
-  "WebsiteCode" : "./build",
-  "InstallCommands" : "npm install .",
-  "BuildCommands" : "",
-  "PostBuildCommands" : ""
-}
