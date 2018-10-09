@@ -144,8 +144,8 @@ commander
   .description('Define the project parameters')
   .action(async function (options) {
     commander.type = 'init'
-    let generic_questions = await parseJsonConfig(`${paths.base}/${paths.base_config}`)
-    let ci_questions = await parseJsonConfig(`${paths.base}/${paths.ci_config}`)
+    const generic_questions = await parseJsonConfig(path.resolve(paths.base, paths.base_config))
+    const ci_questions = await parseJsonConfig(path.resolve(paths.base, paths.ci_config))
     console.log("Executing project initialization")
     let combined_answers = {}
     await prompt(generic_questions).then(answers => {
@@ -314,7 +314,7 @@ const getTemplateBody = (path) => {
  *
  * @return {String}
  */
-const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
+const getCiS3Template = () => getTemplateBody(path.resolve(paths.base, paths.ci_s3));
 
 /**
  * Get the codebuild file
@@ -332,7 +332,7 @@ const getCiS3Template = () => getTemplateBody(`${paths.base}/${paths.ci_s3}`);
  *
  * @return {String}
  */
-const getCiTemplate = () => getTemplateBody(`${paths.base}/${paths.ci_project}`);
+const getCiTemplate = () => getTemplateBody(path.resolve(paths.base, paths.ci_config));
 
 /**
  * Get the template.yml file
@@ -345,7 +345,7 @@ const getCiTemplate = () => getTemplateBody(`${paths.base}/${paths.ci_project}`)
  *
  * @return {String}
  */
-const getWebTemplate = async () => getTemplateBody(`${paths.base}/${paths.web_template}`);
+const getWebTemplate = async () => getTemplateBody(path.resolve(paths.base, paths.web_template));
 
 
 // AWS Helpers ################################################################
@@ -905,7 +905,7 @@ const deleteS3Bucket = async (projectName, bucketName) => {
  * @return {void}
  */
 const addFilesToS3Bucket = async (projectName, bucketName) => {
-  const templates_path = `${paths.base}/${paths.cf_templates}`
+  const templates_path = path.resolve(paths.base, paths.cf_templates)
   fs.readdir(templates_path, (err, files) => {
     if(!files || files.length === 0) {
       logIfVerbose(`Templates folder is missing`);
