@@ -1118,8 +1118,8 @@ const deleteCiStack = async (ciprojectName, bucketName) => {
  */
 const s3Cmds = async(type) => {
 
-  let projectName = projectParameters.site_config['ProjectName']
-  let bucketName = projectParameters.site_config['S3BucketName']
+  const projectName = projectParameters.site_config['ProjectName']
+  const bucketName = projectParameters.site_config['S3BucketName']
 
   if (type === 'create') {
     await createS3Bucket(projectName);
@@ -1149,10 +1149,10 @@ const s3Cmds = async(type) => {
  * @return {void}
  */
 const webCmds = async(type) => {
-  let s3BucketName = projectParameters.site_config['S3BucketName']
-  let webProjectName = projectParameters.site_config['WebProjectName']
-  let subDomain = projectParameters.site_config['SubDomain']
-  let domain = projectParameters.site_config['Domain']
+  const s3BucketName = projectParameters.site_config['S3BucketName']
+  const webProjectName = projectParameters.site_config['WebProjectName']
+  const subDomain = projectParameters.site_config['SubDomain']
+  const domain = projectParameters.site_config['Domain']
 
   if(!domain) {
     printErrorAndDie('Website domain name is required!', true);
@@ -1183,8 +1183,8 @@ const webCmds = async(type) => {
  * @return {void}
  */
 const ciCmds = async(type) => {
-  let ciprojectName = projectParameters.site_config.ci['CodeBuildProjectCodeName']
-  let webBucketName = projectParameters.site_config['ProjectS3Bucket']
+  const ciprojectName = projectParameters.site_config.ci['CodeBuildProjectCodeName']
+  const webBucketName = projectParameters.site_config['ProjectS3Bucket']
   let site_config = projectParameters.site_config.ci
   site_config['ProjectS3Bucket'] = webBucketName
 
@@ -1286,7 +1286,7 @@ const processConfiguration = async () => {
 // MAIN #######################################################################
 (async () => {
   global.cwd = process.cwd();
-  let type = commander.type;
+  const type = commander.type;
 
   await loadAWSConfiguration(commander.config, commander.awsProfile);
 
@@ -1295,14 +1295,14 @@ const processConfiguration = async () => {
   }
 
   if (commander.type === 'deploy') {
-    let deployType = 'create'
+    const deployType = 'create'
     await s3Cmds(deployType)
     await webCmds(deployType)
     await ciCmds(deployType)
   }
 
   if (commander.type === 'remove') {
-    let deleteType = 'delete'
+    const deleteType = 'delete'
     await ciCmds(deleteType)
     await webCmds(deleteType)
     await s3Cmds(deleteType)
