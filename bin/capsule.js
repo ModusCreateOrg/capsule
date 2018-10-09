@@ -128,7 +128,7 @@ const parseJsonConfig = async (site_config_file) => getJsonFile(site_config_file
 const writeConfigFile = (answers) => {
   fs.writeFile(paths.output_config, JSON.stringify(answers), function(err) {
     if(err) {
-      return console.log(err);
+      logIfVerbose(`${err}`);
     }
   });
 }
