@@ -332,7 +332,7 @@ const getCiS3Template = () => getTemplateBody(path.resolve(paths.base, paths.ci_
  *
  * @return {String}
  */
-const getCiTemplate = () => getTemplateBody(path.resolve(paths.base, paths.ci_config));
+const getCiTemplate = () => getTemplateBody(path.resolve(paths.base, paths.ci_project));
 
 /**
  * Get the template.yml file
