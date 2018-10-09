@@ -60,7 +60,7 @@ const error_states = [
 ];
 
 const paths = {
-  base: `${__dirname}/../`,
+  base: path.resolve(__dirname, '../'),
   ci_s3: 'ci/s3_cloudformation.cf',
   ci: 'ci/codebuild_capsule.cf',
   ci_project: 'ci/codebuild_project.cf',
