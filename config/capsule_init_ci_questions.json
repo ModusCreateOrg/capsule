@@ -2,7 +2,7 @@
   {
     "type": "input",
     "name": "RepositoryURL",
-    "message": "Enter your source code repository"
+    "message": "Enter your source code repository (https url)"
   },
   {
     "type": "input",

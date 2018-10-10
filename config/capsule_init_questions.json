@@ -12,6 +12,6 @@
   {
     "type": "input",
     "name": "SubDomain",
-    "message": "Enter your Sub-domain (optional)"
+    "message": "Enter your Sub-domain (ex: www)"
   }
 ]
