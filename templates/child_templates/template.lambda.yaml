@@ -12,26 +12,16 @@ Parameters:
     Description: "Project S3 Bucket Name where redirects are stored"
 
 Resources:
-  SimpleParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: 'redirects'
-      Description: 'Array of redirects pulled from _redirects'
-      Type: String
-      Value: !Ref "ReDirectUrls" 
-
-
-  # Handle writing data to SSM param store.
+  # Handle writing redirect files to S3 bucket
   ProcessRedirectsLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       Description: >
-        Lambda function to process _redirects file and populate param store
+        Lambda function to process _redirects file and populate bucket with redirect files
       Code:
         ZipFile: !Sub |
           var AWS = require('aws-sdk');
           var s3 = new AWS.S3();
-          var ssm = new AWS.SSM();
           exports.handler = (event, context, callback) => { 
             const re = /[^\.](\S+)\b/g;
             const params = {
@@ -96,6 +86,7 @@ Resources:
       MemorySize: 128
       Role: !Sub ${ProcessRedirectsLambdaFunctionRole.Arn}
       Runtime: nodejs8.10
+      Timeout: 25
 
   ProcessRedirectsLambdaFunctionRole:
     Type: AWS::IAM::Role
@@ -118,11 +109,6 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement: 
-          - 
-            Effect: Allow 
-            Action: "ssm:*"
-            Resource:
-              - "arn:aws:ssm:*:*:parameter/*"
           -
             Effect: Allow
             Action: "s3:*"
