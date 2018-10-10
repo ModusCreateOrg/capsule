@@ -30,18 +30,16 @@ Resources:
             }
             let redirectsList;
             let arr = [];
-            let m =''
-            s3.getObject(params, function(err, data) {
-              if (err) {
-                console.log(err);
-              } else { 
+            let m =''          
+            s3.getObject(params).promise()
+              .then(data => { 
                 redirectsList = data.Body.toString();
                 let entries = redirectsList.split("\n");
+                entries = entries.filter(Boolean)
                 for (var i in entries) {
                   while ((m=re.exec(entries[i])) !== null) {
                     arr.push(m[1]);
                   }
-                  
                   let data = '<!DOCTYPE html>'
                       data += '<html>'
                       data += '<head>'
@@ -61,27 +59,29 @@ Resources:
                   
                   let putParams = {
                       Bucket : event.Records[0].s3.bucket.name,
-                      Key : "/"+arr[0],
+                      Key : arr[0],
                       Body : data
                   }
-                  
-                  s3.putObject(putParams, function(err, data) {
-                    if (err) { 
-                      console.log(err)
-                    } else {
-                      putParams.Key = "/"+arr[0]+"/index.html"
-                      s3.putObject(putParams, function(err, data) {
-                        if (err) { 
-                          console.log(err)
-                        }
-                      });  
-                    }
-                  });    
+                  let indexFile = arr[0]+"/index.html"
+                  s3.putObject(putParams).promise()
+                    .then(data => {
+                      putParams.Key = indexFile
+                      s3.putObject(putParams).promise()
+                        .then(data => {
+                          callback(null, data);
+                        })
+                        .catch(err => {
+                          console.log('failure:', err);
+                        });
+                      callback(null, data);
+                    })
+                    .catch(err => {
+                      console.log('failure:', err);
+                    });
                   arr = []
                 }  
-              } 
-            });  
-          };         
+              }) 
+          };
       Handler: index.handler
       MemorySize: 128
       Role: !Sub ${ProcessRedirectsLambdaFunctionRole.Arn}
