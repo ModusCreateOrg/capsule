@@ -63,7 +63,7 @@ Resources:
                       ContentType: "text/html",
                       Body : data
                   }
-                  let indexFile = arr[0]+"/index.html"
+                  let indexFile = arr[0]+"/"
                   s3.putObject(putParams).promise()
                     .then(data => {
                       putParams.Key = indexFile
