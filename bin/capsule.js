@@ -57,7 +57,9 @@ const error_states = [
   'DELETE_FAILED',
   'UPDATE_FAILED',
   'ROLLBACK_FAILED',
-  'UPDATE_ROLLBACK_FAILED'
+  'UPDATE_ROLLBACK_FAILED',
+  'UPDATE_ROLLBACK_IN_PROGRESS',
+  'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS'
 ];
 
 const paths = {
@@ -417,12 +419,12 @@ const getStackEventColor = (state) => {
  *
  * @return {String} output_line
  */
-const getStackEventOutputLine = (e) => {
+const printStackEventOutputLine = (e) => {
   let time = `${e.Timestamp.toLocaleString()}`;
   let status = `${chalk[getStackEventColor(e.ResourceStatus)](e.ResourceStatus)}`;
   let resource = `${e.ResourceType}`;
   let id = `${e.PhysicalResourceId}`;
-  return `${time} ${status} ${resource} ${id}`;
+  console.log(`${time} ${status} ${resource} ${id}`);
 }
 
 /**
@@ -629,15 +631,19 @@ const getNextStackEvent = async (id, next) => {
 const getStackEvents = async (id) => {
   let response = await getNextStackEvent(id);
   let events = response.StackEvents;
+
   while (typeof response.NextToken !== 'undefined') {
-    response = await getNextStackEvent(id);
+    response = await getNextStackEvent(id, response.NextToken);
     events.concat(response.StackEvents);
   }
 
   let nestedStackIds = events.reduce((list, e) => {
+    let physical_resource_id = e.PhysicalResourceId;
     if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
-        e.PhysicalResourceId != '' && e.StackId != e.PhysicalResourceId) {
-      list.push(e.StackId);
+        physical_resource_id != '' &&
+        e.StackId != physical_resource_id &&
+        !list.includes(physical_resource_id)) {
+      list.push(physical_resource_id);
     }
     return list;
   }, []);
@@ -689,10 +695,7 @@ const monitorStackProgress = async (id, token) => {
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
         logIfVerbose(`NEW Event: ${e}`);
-        spinner.text = getStackEventOutputLine(e);
-        if (e.ResourceStatusReason !== 'User Initiated') {
-          process.stdout.write('\n');
-        }
+        printStackEventOutputLine(e);
         events_seen.push(e.EventId);
       }
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
@@ -705,11 +708,10 @@ const monitorStackProgress = async (id, token) => {
       }
       last_time = e.Timestamp;
     }
-    if (in_progress) {
-      await delay(1000);
-    }
+    await delay(1000);
   }
   spinner.stop();
+  process.stdout.write('\n');
   logIfVerbose(`End monitoring stack ${id} with token ${token}`);
 }
 
@@ -1320,6 +1322,5 @@ const processConfiguration = async () => {
   if (commander.args.includes('ci')) {
     await ciCmds(type)
   }
-
 
 })();
