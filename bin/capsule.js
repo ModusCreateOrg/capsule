@@ -419,12 +419,12 @@ const getStackEventColor = (state) => {
  *
  * @return {String} output_line
  */
-const getStackEventOutputLine = (e) => {
+const printStackEventOutputLine = (e) => {
   let time = `${e.Timestamp.toLocaleString()}`;
   let status = `${chalk[getStackEventColor(e.ResourceStatus)](e.ResourceStatus)}`;
   let resource = `${e.ResourceType}`;
   let id = `${e.PhysicalResourceId}`;
-  return `${time} ${status} ${resource} ${id}`;
+  console.log(`${time} ${status} ${resource} ${id}`);
 }
 
 /**
@@ -696,10 +696,7 @@ const monitorStackProgress = async (id, token) => {
         logIfVerbose(`Event ignored: ${e.EventId}`);
       } else {
         logIfVerbose(`NEW Event: ${e}`);
-        spinner.text = getStackEventOutputLine(e);
-        if (e.ResourceStatusReason !== 'User Initiated') {
-          process.stdout.write('\n');
-        }
+        printStackEventOutputLine(e);
         events_seen.push(e.EventId);
       }
       if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
