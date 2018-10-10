@@ -636,9 +636,12 @@ const getStackEvents = async (id) => {
   }
 
   let nestedStackIds = events.reduce((list, e) => {
+    let physical_resource_id = e.PhysicalResourceId;
     if (e.ResourceType === 'AWS::CloudFormation::Stack' &&
-        e.PhysicalResourceId != '' && e.StackId != e.PhysicalResourceId) {
-      list.push(e.StackId);
+        physical_resource_id != '' &&
+        e.StackId != physical_resource_id &&
+        !list.includes(physical_resource_id)) {
+      list.push(physical_resource_id);
     }
     return list;
   }, []);
