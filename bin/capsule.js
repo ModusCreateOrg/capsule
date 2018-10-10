@@ -1225,7 +1225,7 @@ const mergeConfig = async () => {
   let config_params = projectParameters.site_config_params
   let file_params = {}
   let merged_params = {}
-  if(projectParameters.site_config_file !== undefined) {
+  if(projectParameters.site_config_file !== undefined && fs.existsSync(projectParameters.site_config_file)) {
     file_params = await parseJsonConfig(projectParameters.site_config_file)
   }
   if (typeof config_params === "string") {
