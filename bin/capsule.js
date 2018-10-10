@@ -711,11 +711,10 @@ const monitorStackProgress = async (id, token) => {
       }
       last_time = e.Timestamp;
     }
-    if (in_progress) {
-      await delay(1000);
-    }
+    await delay(1000);
   }
   spinner.stop();
+  process.stdout.write('\n');
   logIfVerbose(`End monitoring stack ${id} with token ${token}`);
 }
 
