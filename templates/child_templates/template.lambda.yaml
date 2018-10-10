@@ -60,6 +60,7 @@ Resources:
                   let putParams = {
                       Bucket : event.Records[0].s3.bucket.name,
                       Key : arr[0],
+                      ContentType: "text/html",
                       Body : data
                   }
                   let indexFile = arr[0]+"/index.html"
