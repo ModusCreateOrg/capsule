@@ -672,7 +672,6 @@ const monitorStackProgress = async (id, token) => {
   let in_progress = true;
   let events_seen = []
   let spinner = new Spinner();
-  spinner.setSpinnerDelay(6);
   spinner.setSpinnerString('|/-\\');
   logIfVerbose(`Start monitoring stack ${id}`);
   spinner.start();
