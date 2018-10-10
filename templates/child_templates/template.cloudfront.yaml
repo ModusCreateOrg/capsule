@@ -16,9 +16,6 @@ Parameters:
     Type: String
     Description: "The Static website, S3 buckets Endpoint URL"
     Default: ""
-  TheOriginResponseLambdaFunction:
-    Type: String
-    Description: "Lambda Function Version"
   OriginPath:
     Type: String
     Description: "The S3 bucket origin path, e.g. /1.0.0"
@@ -530,9 +527,6 @@ Resources:
           ForwardedValues:
             QueryString: false
           ViewerProtocolPolicy: "redirect-to-https"
-          LambdaFunctionAssociations:
-            - EventType: origin-response
-              LambdaFunctionARN: !Ref TheOriginResponseLambdaFunction
 
 Outputs:
   CloudFrontDistributionDomainName:
