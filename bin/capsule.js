@@ -57,7 +57,9 @@ const error_states = [
   'DELETE_FAILED',
   'UPDATE_FAILED',
   'ROLLBACK_FAILED',
-  'UPDATE_ROLLBACK_FAILED'
+  'UPDATE_ROLLBACK_FAILED',
+  'UPDATE_ROLLBACK_IN_PROGRESS',
+  'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS'
 ];
 
 const paths = {
@@ -1324,6 +1326,5 @@ const processConfiguration = async () => {
   if (commander.args.includes('ci')) {
     await ciCmds(type)
   }
-
 
 })();
