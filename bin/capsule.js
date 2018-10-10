@@ -629,8 +629,9 @@ const getNextStackEvent = async (id, next) => {
 const getStackEvents = async (id) => {
   let response = await getNextStackEvent(id);
   let events = response.StackEvents;
+
   while (typeof response.NextToken !== 'undefined') {
-    response = await getNextStackEvent(id);
+    response = await getNextStackEvent(id, response.NextToken);
     events.concat(response.StackEvents);
   }
 
