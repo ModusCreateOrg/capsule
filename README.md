@@ -1,5 +1,6 @@
 # Capsule
 
+
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/ModusCreateOrg/capsule/blob/OAS-15_documentation/LICENSE)
 
 Automated CLI for static web application hosting on AWS using S3 buckets.
