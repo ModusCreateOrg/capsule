@@ -39,6 +39,11 @@
     "capsule": "bin/capsule.js"
   },
   "scripts": {
+    "lint": "concurrently \"npm:lint:*\"",
+    "lint:js:config": "eslint \"./.*.js\" --report-unused-disable-directives",
+    "lint:js:bin": "eslint \"./bin/**/*.js\" --report-unused-disable-directives",
+    "lint-check-rules": "eslint --print-config ./.eslintrc.js | eslint-config-prettier-check",
+    "lint-fix": "concurrently \"npm:lint:* -- --fix\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -65,7 +70,12 @@
     "chalk": "^2.4.1",
     "cli-spinner": "^0.2.8",
     "commander": "^2.17.0",
+    "concurrently": "^4.0.1",
+    "eslint": "^5.6.1",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-prettier": "^2.7.0",
     "inquirer": "^6.2.0",
-    "pkginfo": "0.4.1"
+    "pkginfo": "0.4.1",
+    "prettier": "^1.14.3"
   }
 }

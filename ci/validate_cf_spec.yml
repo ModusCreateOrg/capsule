@@ -1,7 +1,8 @@
----
 version: 0.2
 
 phases:
   build:
     commands:
       - ./ci.sh
+      - npm run lint
+      - npm run lint-check-rules
