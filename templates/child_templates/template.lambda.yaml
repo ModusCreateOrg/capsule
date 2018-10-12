@@ -12,108 +12,16 @@ Parameters:
     Description: "Project S3 Bucket Name where redirects are stored"
 
 Resources:
-  SimpleParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: 'redirects'
-      Description: 'Array of redirects pulled from _redirects'
-      Type: String
-      Value: !Ref "ReDirectUrls" 
-
-
-  TheOriginResponseLambdaFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Description: "Lambda function performing response URI redirection on 404"
-      Code:
-        ZipFile: !Sub |
-          var AWS = require('aws-sdk');
-          var ssm = new AWS.SSM();
-          const path = require('path');
-          exports.handler = (event, context, callback) => {
-              const params = {
-                  Name: 'redirects',
-                  WithDecryption: false
-              };
-              const response = event.Records[0].cf.response;
-              if(response.status === "404" || response.status === "403") {
-                const { request } = event.Records[0].cf;
-                const parsedPath = path.parse(request.uri);
-                let newUri = request.uri
-                const processRedirects = ssm.getParameter(params, function(err, data) {
-                  if (err) { 
-                    console.log(err, err.stack);
-                  } else { 
-                    let redirects = JSON.parse(data.Parameter.Value);
-                    for(var i in redirects) { 
-                      if (parsedPath.base === redirects[i][0]) {
-                        newUri = redirects[i][1];
-                        response.status = redirects[i][2];
-                        response.headers['location'] = [{
-                          key: 'Location',
-                          value: newUri,
-                        }];
-                        return callback(null, response);
-                      }
-                    }
-                   }    
-                }); 
-              } else {
-                return callback(null, response);
-              }
-            };
-      Handler: index.handler
-      MemorySize: 128
-      Role: !Sub ${TheOriginResponseLambdaFunctionExecutionRole.Arn}
-      Runtime: nodejs8.10
-
-  TheOriginResponseLambdaFunctionExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - edgelambda.amazonaws.com
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-
-  TheOriginResponseLambdaFunctionRolePolicies:
-    Type: "AWS::IAM::Policy"
-    Properties:
-      PolicyName: "root"
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement: 
-          - 
-            Effect: Allow 
-            Action: "ssm:GetParameter"
-            Resource:
-              - "arn:aws:ssm:*:*:parameter/*"
-      Roles:
-        - Ref: "TheOriginResponseLambdaFunctionExecutionRole"
-
-  TheOriginResponseLambdaFunctionVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref TheOriginResponseLambdaFunction
-      Description: !Sub "URL rewriting"
-
-
-  # Handle writing data to SSM param store.
+  # Handle writing redirect files to S3 bucket
   ProcessRedirectsLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       Description: >
-        Lambda function to process _redirects file and populate param store
+        Lambda function to process _redirects file and populate bucket with redirect files
       Code:
         ZipFile: !Sub |
           var AWS = require('aws-sdk');
           var s3 = new AWS.S3();
-          var ssm = new AWS.SSM();
           exports.handler = (event, context, callback) => { 
             const re = /[^\.](\S+)\b/g;
             const params = {
@@ -121,40 +29,65 @@ Resources:
                Key: '_redirects'
             }
             let redirectsList;
-            let processedRedirects = []
             let arr = [];
-            let m =''
-            s3.getObject(params, function(err, data) {
-              if (err) {
-                console.log(err);
-              } else { 
+            let m =''          
+            s3.getObject(params).promise()
+              .then(data => { 
                 redirectsList = data.Body.toString();
                 let entries = redirectsList.split("\n");
+                entries = entries.filter(Boolean)
                 for (var i in entries) {
                   while ((m=re.exec(entries[i])) !== null) {
                     arr.push(m[1]);
                   }
-                  processedRedirects.push(arr)
+                  let data = '<!DOCTYPE html>'
+                      data += '<html>'
+                      data += '<head>'
+                      data += '<meta http-equiv="refresh" content="0; URL='
+                      data += "'" 
+                      data += arr[1]
+                      data += "'"
+                      data += '"/>'
+                      data += '</head>'
+                      data += '<body>'
+                      data += '<script> window.location ='
+                      data += '"'
+                      data += arr[1]
+                      data += '"'
+                      data += "</script>"
+                      data += '</body></html>'
+                  
+                  let putParams = {
+                      Bucket : event.Records[0].s3.bucket.name,
+                      Key : arr[0],
+                      ContentType: "text/html",
+                      Body : data
+                  }
+                  let indexFile = arr[0]+"/"
+                  s3.putObject(putParams).promise()
+                    .then(data => {
+                      putParams.Key = indexFile
+                      s3.putObject(putParams).promise()
+                        .then(data => {
+                          callback(null, data);
+                        })
+                        .catch(err => {
+                          console.log('failure:', err);
+                        });
+                      callback(null, data);
+                    })
+                    .catch(err => {
+                      console.log('failure:', err);
+                    });
                   arr = []
                 }  
-                let paramsPut = {
-                  Name: 'redirects',
-                  Type: 'String',
-                  Overwrite: true,
-                  Value: JSON.stringify(processedRedirects)
-                }
-                ssm.putParameter(paramsPut, function(err, data) {
-                  if (err) {
-                    console.log(err, err.stack);
-                  } 
-                })
-              } 
-            });  
-          }; 
+              }) 
+          };
       Handler: index.handler
       MemorySize: 128
       Role: !Sub ${ProcessRedirectsLambdaFunctionRole.Arn}
       Runtime: nodejs8.10
+      Timeout: 25
 
   ProcessRedirectsLambdaFunctionRole:
     Type: AWS::IAM::Role
@@ -177,11 +110,6 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement: 
-          - 
-            Effect: Allow 
-            Action: "ssm:*"
-            Resource:
-              - "arn:aws:ssm:*:*:parameter/*"
           -
             Effect: Allow
             Action: "s3:*"
@@ -202,9 +130,6 @@ Resources:
       Description: !Sub "URL rewriting"
 
 Outputs:
-  TheOriginResponseLambdaFunctionOutput:
-    Value: !Ref "TheOriginResponseLambdaFunctionVersion"
-    Description: "The Lambda function to use in CloudFront" 
   ProcessRedirectsLambdaFunctionOutput:
     Value: !Ref "ProcessRedirectsLambdaFunctionVersion"
     Description: "The Lambda function to use on the S3 bucket"
