@@ -2,7 +2,7 @@
   {
     "type": "input",
     "name": "ProjectName",
-    "message": "Enter your project name"
+    "message": "Enter your project name (Alphanumeric and underscore characters only)"
   },
   {
     "type": "input",
