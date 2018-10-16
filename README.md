@@ -34,7 +34,7 @@ npm install -g capsule
 
 You can now use `capsule` from your command line.
 
-## Getting Started
+## Quick Start - Configuring Your Environment
 
 In order to use Capsule you will need the following:
 
@@ -66,7 +66,7 @@ A safe bet is to use `us-east-1` as this is the region that Capsule has been tes
 
 First we are going to create a single file `config.json`
 
-We a need directory to store this file, so create a new directory `.aws` under the root of your user 
+We a need directory to store this file, so create a new directory `.aws` under the root of your user
 
 *Mac/Linux*
 
@@ -95,9 +95,9 @@ After creating these files, log into your AWS account. We now need to create an 
 5. Next click on your username in the table
 6. When this loads, click on the `Security Credentials` tab
 7. We can now create an Access Key by clking `Create Access Key`
-8. Finally click `Show User Security Credentials` and copy the ID and value. 
+8. Finally click `Show User Security Credentials` and copy the ID and value.
 
-These details can only be displayed once, so if forget or lose them, you will need to generate a new key. 
+These details can only be displayed once, so if forget or lose them, you will need to generate a new key.
 If you wish you can download the CSV file from this screen as a backup.
 
 Re-open the config file e.g. vim `~/.aws/config.json`
@@ -106,18 +106,18 @@ Now replace the `accessKeyId` value (<YOUR_ACCESS_KEY_ID>) with the value you co
 
 Next replace the `secretAccessKey` value (YOUR_SECRET_ACCESS_KEY) wuth the key you copied from the console.
 
-Make sure you wrap the value you paste in with `"` and `"`. 
+Make sure you wrap the value you paste in with `"` and `"`.
 
 You can change the region if you wish as well, but please check the region supports all the features required by Capsule.
 
-Save the file. You are now ready to use Capsule to build out your static site. 
+Save the file. You are now ready to use Capsule to build out your static site.
 
 
 #### AWS Config - YAML setup
 
 First we are going to create two files. These are the `config` and `credentials` file.
 
-Create a new directory `.aws` under the root of your user 
+Create a new directory `.aws` under the root of your user
 
 *Mac/Linux*
 
@@ -152,9 +152,9 @@ After creating these files, log into your AWS account. We now need to create an 
 5. Next click on your username in the table
 6. When this loads, click on the `Security Credentials` tab
 7. We can now create an Access Key by clking `Create Access Key`
-8. Finally click `Show User Security Credentials` and copy the ID and value. 
+8. Finally click `Show User Security Credentials` and copy the ID and value.
 
-These details can only be displayed once, so if forget or lose them, you will need to generate a new key. 
+These details can only be displayed once, so if forget or lose them, you will need to generate a new key.
 If you wish you can download the CSV file from this screen as a backup.
 
 Re-open the credentials file e.g. vim `~/.aws/credentials`
@@ -181,35 +181,20 @@ region=us-east-1
 output=json
 ```
 
-Save the file. 
+Save the file.
 
 Your credentials and configuration are now setup to use Capsule.
 
-### Your website configuration 
 
-Capsule supports a number of command line parameters to allow you to configure your web site.
+## Quick Start - Configure Your Project
 
-In addition to this, you can use a JSON configuration file, containing these values.
+In order to create the `config.json` file containing your project configuration
+run the command `capsule.js init`
 
-An example can be found in the `config/capsule.json` file in the capsule repository. 
+Answer the questions presented to you on the screen.
 
-When loading configuration options, the JSON config is loaded first, if specified. Following this any command line
-parameters are then loaded. Command line parameters will override any parameters specified in the JSON file.
-
-An example can be seen here:
-
-```
-./bin/capsule.js create --project-name "exampledotcom" --dom example.com --subdom app --url https://github.com/ExampleCom/exampledotcom  --config ~/.aws/config.json --site_config='{"WebsiteCode":"./build"}' --site_config_file=./config/capsule.json ci
-```
-
-In this example the value of the `--site_config` flag will overwrite the the key value pair specified in the `--site_config_file` JSON file.
-Thus if `WebsiteCode` is defined in `capsule.json` it's value will be overridden with `./build`.
-
-
-You can always check what command line parameters are available by running the `capsule -h` command.
-
-
-If you wish to run multiple bash commands inside of the build or post_build CodeBuild actions, then you will need to pass these as a single paramter.
+If you wish to run multiple bash commands inside of the `build` or `post_build`
+CodeBuild actions, then you will need to pass these as a single parameter.
 
 Use the following chart as a guide for bash commands:
 
@@ -228,7 +213,7 @@ npm build dev ; npm test
 
 ### Project Names
 
-During the setup of your site you will need to define a project name. This will be used to name the 
+During the setup of your site you will need to define a project name. This will be used to name the
 S3 bucket in AWS. Therefore your project name must confirm to the S3 bucket naming standards.
 
 You can find these here:
@@ -236,11 +221,43 @@ You can find these here:
 https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
 
 
+
+## Quick Start - Deploy Your Project
+
+Once the `capsule.json` file is generated, you are now ready to deploy your project to
+your AWS account.
+
+To do this, simply type:
+
+`capsule.js deploy`
+
+If you wish to learn more about the templates that are implemented by the
+deploy command, please refer to the [templates read me](docs/templates.md) file.
+
 ### Authorizing your certificate
 
 In order to authorize your certificate you will need to log into the AWS console.
 
-Depending on whether you are using DNS or Email authroitzation you will need to follow the relevant steps below.
+Depending on whether you are using DNS or Email authorization you will need to follow the relevant steps below.
+
+
+#### Domain configuration
+
+As part of the process of creating your static site, you will need to point an existing domain or subdomain to your S3 bucket.
+When executing the `web` command from the cli the process will halt once it reaches the certificate manager portion.
+
+At this point you should log into your AWS console and select the ` Certificate Manager` service. On this screen the domain
+you passed to the cli should be visible e.g. `example.com`.
+
+Open up the drop-down arrow for the domain and follow the insturctions provived bu Amazon to validate control of the domain. Note that Amazon will send an email to your account at:
+
+* webmaster@example.com
+* admin@example.com
+* postmaster@example.com
+* administrator@example.com
+* hostmaster@example.com
+
+Where `example.com` is the domain you passed to the cli tool.
 
 
 ### CloudFront waiting time
@@ -287,192 +304,28 @@ Triggers:
   Webhook: yes
 ```
 
-In this case, the user will need Admin permissions. 
+In this case, the user will need Admin permissions.
 
-You will need to create a webhook in GitHub.
+You will need to create a [webhook in GitHub](https://developer.github.com/webhooks/).
 
-### How to use it?
 
-The `ci` tool can be executed from the command line in order to setup the 
-CodeBuild process. Located in this repository are two CodeBUild files:
+## Advanced Options
 
-1. `codebuild_capsule.cf`  - this contains the CodeBuild CF templates for this project 
-2. `codebuild_project.cf` - which provides a template for the Capsule user to use for their own project
+Capsule comes with a number of advanced options. These allow:
 
-In addition to the `ci` tool the CodeBuild cf templates can also be executed from the aws cli. 
+1. A more granular deployment process
+2. Overridding default settings in the capsule.json with command line values
 
-From the CLI it can be used like this:
+To read me please check out the documentation [here](docs/advanced_use.md).
 
-```sh
-aws cloudformation create-stack \
-    --stack-name <your-stack-name> \
-    --template-body file://<path-to-repo>/ci/<codebuild_template>.cf \
-    --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=<project-name> \
-                 ParameterKey=RepositoryURL,ParameterValue=<https-clone-url> \
-                 ParameterKey=BuildSpecLocation,ParameterValue=<path-to-buildspec>
-```
+### Templates
 
-Example:
+To learn more about the CloudFormation templates that make up a portion of the capsule project
+please refer to the template documentation [here](docs/templates.md). 
 
-```sh
-aws cloudformation create-stack \
-    --stack-name moduscreate-labs \
-    --template-body file://<path-to-repo>/ci/codebuild_project.cf \
-    --parameters ParameterKey=CodeBuildProjectCodeName,ParameterValue=labs \
-                 ParameterKey=RepositoryURL,ParameterValue=https://github.com/ModusCreateOrg/labs.git
-```
+## Contibute to this project
 
-#### Supported parameters:
-
-- *CodeBuildProjectCodeName*: CodeBuild Project codename.
-- *RepositoryURL*: HTTPS URL for the Git repository. This should be a valid repository HTTPS URL.
-- *RepositoryType*: `CODECOMMIT`|`CODEPIPELINE`|`GITHUB`|`GITHUB_ENTERPRISE`|`BITBUCKET`|`S3`. Default: `GITHUB`.
-- *EnvironmentImage*: Image to use for running a container where the build will execute. Needs to respect the format `<repository>/<image>:<tag>`. Default: `aws/codebuild/ubuntu-base:14.04`
-- *ComputeType*: `BUILD_GENERAL1_SMALL` (Small 3 GB memory, 2 vCPU) | `BUILD_GENERAL1_MEDIUM` (Medium 7 GB memory, 4 vCPU) | `BUILD_GENERAL1_LARGE` (large 15 GB memory, 8 vCPU). Default: `BUILD_GENERAL1_SMALL`.
-- *BuildSpecLocation*: Path of the file `buildspec.yml` to use (Defaults to `<repo-root>/buildspec.yml`
-
-
-### Using the capsule cli:
-
-The capsule cli is a NodeJS cli app with the intention to simplify the generation of the hosting infrastructure and ci infrastructure. For nested stacks, it requires to generate a base s3 bucket. This can be generated in the following way:
-
-```sh
-$ ./capsule create --project-name <project-name> s3
-```
-
-For getting the complete list of options, just enter `--help`:
-
-```sh
-$ ./bin/capsule.js --help
-
-  Usage: capsule [options]
-
-  Options:
-
-    -V, --version                      Output the version number
-    init                               Builds out the web hosting infrastructure in one go
-    create                             Initializes the s3 bucket required to store nested stack templates
-    update                             Updates the templates into the s3 bucket and runs the nested stack
-    delete                             Delete the s3 bucket contents
-    -n, --project-name <project-name>  Push cf templates to the s3 bucket, and creates it if it does not exist
-    -c, --config <config-path>         Load the configuration from the specified path
-    -p, --aws-profile <profile>        The AWS profile to use
-    -u, --url <repo>                   The source control URL to use
-    -sc, --site_config <site-config>   A JSON object contianing site configuration, overrides values defined in site config file
-    -scf, --site_config_file <site-config-path>  Custom configuration file used in CodeBuild for building the static site
-    -d, --remove-cf-bucket             Remove the bucket used for storing the nested templates
-    -v, --verbose                      Verbose output
-    -h, --help                         output usage information
-
-```
-
-To kick off building out a project with a single command, you can use the `init` option. The example below demonstrates this:
-
-```
-./bin/capsule.js init --project-name "exampledotcom" --dom example.com --subdom app --url https://github.com/ExampleCom/exampledotcom  --config ~/.aws/config.json --site_config='{"WebsiteCode":"."}' --site_config_file=./config/capsule.json 
-```
-
-
-
-#### Domain configuration
-
-As part of the process of creating your static site, you will need to point an existing domain or subdomain to your S3 bucket.
-When executing the `web` command from the cli the process will halt once it reaches the certificate manager portion.
-
-At this point you should log into your AWS console and select the ` Certificate Manager` service. On this screen the domain 
-you passed to the cli should be visible e.g. `example.com`.
-
-Open up the drop-down arrow for the domain and follow the insturctions provived bu Amazon to validate control of the domain. Note that Amazon will send an email to your account at: 
-
-* webmaster@example.com
-* admin@example.com
-* postmaster@example.com
-* administrator@example.com
-* hostmaster@example.com
-
-Wjere `example.com` is the domain you passed to the cli tool.
-
-### Future steps:
-
-- The CI for the hosted project will still be using codebuild
-- The CI infrastructure for Capsule will be evolving soon to use codepipeline to execute several integration tests the cloudformation templates and the cli with different node versions.
-- Add in CloudTrail support for debugging
-
-
-## Templates
-
-Capsule is made up of multiple YAML based Cloud Formation templates.
-
-You can read more about AWS CloudFormation on the AWS official page:
-
-https://aws.amazon.com/cloudformation/
-
-A brief description of each is provided as follows.
-
-### Certificates - template.certificate.yaml
-
-This file handles the certificate manager portion
-of the CloudFormation configuration.
-
-You can read more about AWS Certificate Manager here:
-
-https://aws.amazon.com/certificate-manager/
-
-
-### CloudFront - template.cloudfront.yaml
-
-This file contains the list of parameters required by our
-CloudFormation Stack including Error codes, HTTP versions and SSL supported method.
-CloudFront acts as a CDN. More documentation can be found at the AWS page here:
-
-https://aws.amazon.com/cloudfront/
-
-### CloudFront Origin Access Identity - template.cfoai.yaml
-
-The CFOAI template contains the configuration required
-for CloudFront Origin Access Identity.
-
-You can read more about CFOAI here:
-
-https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html
-
-
-### Route 53 -  template.route53.yaml
-
-Here you can find the Route 53 configuration for the static website
-project.
-
-To learn more about Route 53 you can read the official documents here:
-
-https://aws.amazon.com/route53/
-
-
-### S3 - template.s3.yaml
-
-Amazon S3 bucket configuration can be found here.
-The S3 bucket is where the static resources will be uploaded to and hosted
-from.
-
-To learn more visit the official webpage here:
-
-https://aws.amazon.com/s3/
-
-###  CodeBuild - codebuild_project.cf
-
-Included in this project are two CodeBuild Cloud Formation templates:
-
-1. The template for Capsule itself
-2. A parameterized template for use with your own project. 
-
-CodeBuild configuration to handle:
-
-1. Creating environment to check project into
-2. Pull code from GitHub/Source control 
-3. Install code
-4. Run tests
-5. Create build
-6. Upload build to S3 bucket 
-7. Setup trigger so that new pushes to master are built/test/deployed
+To learn about our contributor guidelines, please check out the documentation [here](docs/contribute.md)
 
 ## Modus Create
 

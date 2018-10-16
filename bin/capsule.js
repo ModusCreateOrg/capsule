@@ -165,6 +165,7 @@ commander
   .command('deploy')
   .description('Builds out the web hosting infrastructure in one go')
   .action(function (options) {
+    console.log(chalk.bgRed.bold("DO NOT CANCEL THIS PROCESS UNTIL COMPLETED"))
     console.log("Executing project deployment")
     commander.type = options._name || undefined
   });
