@@ -232,13 +232,32 @@ To do this, simply type:
 `capsule.js deploy`
 
 If you wish to learn more about the templates that are implemented by the
-deploy command, please refer to the templates read me file.
+deploy command, please refer to the [templates read me](docs/templates.md) file.
 
 ### Authorizing your certificate
 
 In order to authorize your certificate you will need to log into the AWS console.
 
 Depending on whether you are using DNS or Email authorization you will need to follow the relevant steps below.
+
+
+#### Domain configuration
+
+As part of the process of creating your static site, you will need to point an existing domain or subdomain to your S3 bucket.
+When executing the `web` command from the cli the process will halt once it reaches the certificate manager portion.
+
+At this point you should log into your AWS console and select the ` Certificate Manager` service. On this screen the domain
+you passed to the cli should be visible e.g. `example.com`.
+
+Open up the drop-down arrow for the domain and follow the insturctions provived bu Amazon to validate control of the domain. Note that Amazon will send an email to your account at:
+
+* webmaster@example.com
+* admin@example.com
+* postmaster@example.com
+* administrator@example.com
+* hostmaster@example.com
+
+Where `example.com` is the domain you passed to the cli tool.
 
 
 ### CloudFront waiting time
@@ -289,30 +308,6 @@ In this case, the user will need Admin permissions.
 
 You will need to create a webhook in GitHub.
 
-
-#### Domain configuration
-
-As part of the process of creating your static site, you will need to point an existing domain or subdomain to your S3 bucket.
-When executing the `web` command from the cli the process will halt once it reaches the certificate manager portion.
-
-At this point you should log into your AWS console and select the ` Certificate Manager` service. On this screen the domain
-you passed to the cli should be visible e.g. `example.com`.
-
-Open up the drop-down arrow for the domain and follow the insturctions provived bu Amazon to validate control of the domain. Note that Amazon will send an email to your account at:
-
-* webmaster@example.com
-* admin@example.com
-* postmaster@example.com
-* administrator@example.com
-* hostmaster@example.com
-
-Where `example.com` is the domain you passed to the cli tool.
-
-### Future steps:
-
-- The CI for the hosted project will still be using codebuild
-- The CI infrastructure for Capsule will be evolving soon to use codepipeline to execute several integration tests the cloudformation templates and the cli with different node versions.
-- Add in CloudTrail support for debugging
 
 ## Advanced Options
 
