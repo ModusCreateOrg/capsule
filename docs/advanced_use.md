@@ -34,7 +34,28 @@ The capsule cli is a NodeJS cli app with the intention to simplify the generatio
 $ ./capsule create --project-name <project-name> s3
 ```
 
-For getting the complete list of options, just enter `--help`:
+Once this bucket is in place, the web infrastructure can then be created using the `web` command line option.
+
+For example:
+
+```sh
+  $ ./capsule create --project-name <project-name> web
+```
+
+Having setup the infrastructure, you can then add in the CI pipeline as follows:
+
+
+```sh
+  $ ./capsule create --project-name <project-name> ci
+```
+
+
+Not all the examples above, have assumed a `capsule.js` file is present, and that the ProjectName value has
+been overwritten by the `--project-name` parameter.
+
+In addition to the `create` command, Capsule also supports an `update` and `delete` command.
+
+For getting the complete list of options and how they are used, just enter `--help`:
 
 ```sh
 $ ./bin/capsule.js --help
