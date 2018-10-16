@@ -321,13 +321,16 @@ Capsule comes with a number of advanced options. These allow:
 1. A more granular deployment process
 2. Overridding default settings in the capsule.json with command line values
 
-To read me please check out the documentation here.
+To read me please check out the documentation [here](docs/advanced_use.md).
 
 ### Templates
 
 To learn more about the CloudFormation templates that make up a portion of the capsule project
-please refer to the template documentation here. 
+please refer to the template documentation [here](docs/templates.md). 
 
+## Contibute to this project
+
+To learn about our contributor guidelines, please check out the documentation [here](docs/contribute.md)
 
 ## Modus Create
 
