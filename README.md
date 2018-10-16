@@ -306,7 +306,7 @@ Triggers:
 
 In this case, the user will need Admin permissions.
 
-You will need to create a webhook in GitHub.
+You will need to create a [webhook in GitHub](https://developer.github.com/webhooks/).
 
 
 ## Advanced Options
