@@ -314,6 +314,19 @@ Where `example.com` is the domain you passed to the cli tool.
 - The CI infrastructure for Capsule will be evolving soon to use codepipeline to execute several integration tests the cloudformation templates and the cli with different node versions.
 - Add in CloudTrail support for debugging
 
+## Advanced Options
+
+Capsule comes with a number of advanced options. These allow:
+
+1. A more granular deployment process
+2. Overridding default settings in the capsule.json with command line values
+
+To read me please check out the documentation here.
+
+### Templates
+
+To learn more about the CloudFormation templates that make up a portion of the capsule project
+please refer to the template documentation here. 
 
 
 ## Modus Create
