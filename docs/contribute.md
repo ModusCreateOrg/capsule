@@ -1,5 +1,3 @@
-# Contribute to this project
-
 # Contributing to Project
 
 ### Code of Conduct
