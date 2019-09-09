@@ -199,9 +199,9 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-u, --url <repo>', 'The source control URL to use')
-  .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
-  .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .option('-t, --ci_project_path <ci-project-path>', 'CodeBuild project relative path')
+  .option('-j, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
+  .option('-f, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
     console.log("Executing create for: "+type)
     commander.type = options._name || undefined
@@ -225,9 +225,9 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-u, --url <repo>', 'The source control URL to use')
-  .option('-sc, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
-  .option('-scf, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .option('-t, --ci_project_path <ci-project-path>', 'CodeBuild project relative path')
+  .option('-j, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
+  .option('-f, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
     console.log("Executing update for: "+type)
     commander.type = options._name || undefined
