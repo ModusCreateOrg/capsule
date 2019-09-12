@@ -199,6 +199,7 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-u, --url <repo>', 'The source control URL to use')
+  .option('-t, --ci_project_path <ci-project-path>', 'CodeBuild project relative path')
   .option('-j, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-f, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
@@ -212,6 +213,7 @@ commander
     commander.url = options.url || undefined
     commander.site_config = options.site_config || {}
     commander.site_config_file = options.site_config_file || undefined
+    commander.ci_project_path = options.ci_project_path || undefined
   });
 
 commander
@@ -223,6 +225,7 @@ commander
   .option('-c, --config <config-path>', 'Load the configuration from the specified path')
   .option('-p, --aws-profile <profile>', 'The AWS profile to use')
   .option('-u, --url <repo>', 'The source control URL to use')
+  .option('-t, --ci_project_path <ci-project-path>', 'CodeBuild project relative path')
   .option('-j, --site_config <site-config>', 'A JSON object contianing site configuration, overrides values defined in site config file')
   .option('-f, --site_config_file <site-config-path>', 'Custom configuration file used in CodeBuild for building the static site')
   .action(function (type, options) {
@@ -236,6 +239,7 @@ commander
     commander.url = options.url || undefined
     commander.site_config = options.site_config || {}
     commander.site_config_file = options.site_config_file || undefined
+    commander.ci_project_path = options.ci_project_path || undefined
   });
 
 commander
@@ -325,10 +329,8 @@ const getCiS3Template = () => getTemplateBody(path.resolve(paths.base, paths.ci_
  * then re-use the existing functions to
  * build the stack.
  *
- * By default we use the ci_project path.
+ * By default we use the ci_project path, alternative relative path can be supplied through CLI params.
  *
- * TODO: Add in a flag to use the capsule CodeBuild file
- * or make the path a parameter that defaults to ci_project.
  *
  * @method getCiTemplate
  *
@@ -336,7 +338,7 @@ const getCiS3Template = () => getTemplateBody(path.resolve(paths.base, paths.ci_
  *
  * @return {String}
  */
-const getCiTemplate = () => getTemplateBody(path.resolve(paths.base, paths.ci_project));
+const getCiTemplate = (ciProjectPath) => getTemplateBody(ciProjectPath);
 
 /**
  * Get the template.yml file
@@ -1066,31 +1068,34 @@ const deleteWebStack = async (webProjectName) => {
  *
  * @param {String} ciprojectName
  * @param {Object} site_config
+ * @param {String} ciProjectPath
  *
  * @return {void}
  */
-const createCiStack = async (ciprojectName, site_config) => {
+const createCiStack = async (ciprojectName, site_config, ciProjectPath) => {
   await createStack(
     ciprojectName,
-    await getCiTemplate(),
+    await getCiTemplate(ciProjectPath),
     site_config
-  );
-}
-
-/**
- * Given the name of the project, it updates the target projects stack
- * CF templates for codebuild.
- *
- * @method updateCiStack
- *
- * @param {String} ciprojectName
+    );
+  }
+  
+  /**
+   * Given the name of the project, it updates the target projects stack
+   * CF templates for codebuild.
+   *
+   * @method updateCiStack
+   *
+   * @param {String} ciprojectName
+   * @param {Object} site_config
+   * @param {String} ciProjectPath
  *
  * @return {void}
  */
-const updateCiStack = async (ciprojectName, site_config) => {
+const updateCiStack = async (ciprojectName, site_config, ciProjectPath) => {
   await updateStack(
     ciprojectName,
-    await getCiTemplate(),
+    await getCiTemplate(ciProjectPath),
     site_config
   );
 }
@@ -1189,6 +1194,7 @@ const webCmds = async(type) => {
 const ciCmds = async(type) => {
   const ciprojectName = projectParameters.site_config.ci['CodeBuildProjectCodeName']
   const webBucketName = projectParameters.site_config['ProjectS3Bucket']
+  const ciProjectPath = projectParameters.ci_project_path;
   let site_config = projectParameters.site_config.ci
   site_config['ProjectS3Bucket'] = webBucketName
 
@@ -1197,11 +1203,11 @@ const ciCmds = async(type) => {
   }
 
   if (type === 'create') {
-    await createCiStack(ciprojectName, site_config);
+    await createCiStack(ciprojectName, site_config, ciProjectPath);
   }
 
   if (type === 'update') {
-    await updateCiStack(ciprojectName, site_config);
+    await updateCiStack(ciprojectName, site_config, ciProjectPath);
   }
 
   if (type === 'delete') {
@@ -1285,6 +1291,7 @@ const processConfiguration = async () => {
   }
 
   projectParameters.site_config['ProjectS3Bucket'] = projectParameters.site_config['SubDomain'] ? `${projectParameters.site_config['SubDomain']}.${projectParameters.site_config['Domain']}` : projectParameters.site_config['Domain'];
+  projectParameters.ci_project_path = commander.ci_project_path ? commander.ci_project_path : paths.ci_project;
 }
 
 // MAIN #######################################################################
