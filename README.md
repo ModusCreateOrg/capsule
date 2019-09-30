@@ -24,6 +24,12 @@ Capsule uses the following AWS technologies:
 5. Amazon CloudFront
 6. Amazon CloudBuild
 
+### Is Capsule right for me?
+
+If you are exploring how to deploy a single page web application (SPA) this may be a good option for you.
+
+If you need a more comprehensive set of development tools and processses that encompass a wider variety of AWS services, for example, AWS Lambda, you might consider using the [AWS Amplify Console](https://aws.amazon.com/amplify/console/) instead as part of a more comprehensive application development pipeline that uses AWS and DevOps concepts.
+
 ## Installation
 
 Install `capsule` as a global CLI from NPM.
