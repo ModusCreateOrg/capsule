@@ -9,6 +9,7 @@ const commander = require("commander");
 const chalk = require("chalk");
 const aws = require("aws-sdk");
 const path = require("path");
+// eslint-disable-next-line no-unused-vars
 const pkginfo = require("pkginfo")(module);
 const Spinner = require("cli-spinner").Spinner;
 const { prompt } = require("inquirer");
@@ -29,8 +30,7 @@ const {
   AWS_SECRET_ACCESS_KEY,
   // AWS profile name
   AWS_PROFILE,
-  // AWS region
-  AWS_REGION,
+  // AWS region - unused
 } = process.env;
 
 /*
@@ -142,7 +142,7 @@ commander
 commander
   .command("init")
   .description("Define the project parameters")
-  .action(async function(options) {
+  .action(async function() {
     commander.type = "init";
     const generic_questions = await parseJsonConfig(
       path.resolve(paths.base, paths.base_config)
@@ -772,8 +772,8 @@ const monitorStackProgress = async (id, token) => {
     let events;
     try {
       events = await getStackEvents(id);
-    } catch (e) {
-      logIfVerbose(`Can't get stack events: ${e}`);
+    } catch (error) {
+      logIfVerbose(`Can't get stack events: ${error}`);
     }
 
     if (events === undefined) {
@@ -781,29 +781,29 @@ const monitorStackProgress = async (id, token) => {
       continue;
     }
 
-    for (e of events) {
+    for (const event of events) {
       if (
-        e.Timestamp < last_time ||
-        events_seen.includes(e.EventId) ||
-        (token && e.ClientRequestToken !== token)
+        event.Timestamp < last_time ||
+        events_seen.includes(event.EventId) ||
+        (token && event.ClientRequestToken !== token)
       ) {
-        logIfVerbose(`Event ignored: ${e.EventId}`);
+        logIfVerbose(`Event ignored: ${event.EventId}`);
       } else {
-        logIfVerbose(`NEW Event: ${e}`);
-        printStackEventOutputLine(e);
-        events_seen.push(e.EventId);
+        logIfVerbose(`NEW Event: ${event}`);
+        printStackEventOutputLine(event);
+        events_seen.push(event.EventId);
       }
       if (
-        e.ResourceType === "AWS::CloudFormation::Stack" &&
-        e.StackId === id &&
-        e.PhysicalResourceId === id &&
-        stack_states.includes(e.ResourceStatus) &&
-        (!token || (token && e.ClientRequestToken === token)) &&
-        e.Timestamp > last_time
+        event.ResourceType === "AWS::CloudFormation::Stack" &&
+        event.StackId === id &&
+        event.PhysicalResourceId === id &&
+        stack_states.includes(event.ResourceStatus) &&
+        (!token || (token && event.ClientRequestToken === token)) &&
+        event.Timestamp > last_time
       ) {
         in_progress = false;
       }
-      last_time = e.Timestamp;
+      last_time = event.Timestamp;
     }
     await delay(1000);
   }
@@ -1028,7 +1028,7 @@ const addFilesToS3Bucket = async (projectName, bucketName) => {
             Key: file,
             Body: file_content,
           },
-          res => {
+          () => {
             logIfVerbose(
               `Successfully uploaded '${file}' to '${bucketName}' for project '${projectName}' !`
             );
@@ -1331,7 +1331,6 @@ const ciCmds = async type => {
 const mergeConfig = async () => {
   let config_params = projectParameters.site_config_params;
   let file_params = {};
-  let merged_params = {};
   if (
     projectParameters.site_config_file !== undefined &&
     fs.existsSync(projectParameters.site_config_file)

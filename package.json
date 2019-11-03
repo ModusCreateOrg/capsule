@@ -39,6 +39,7 @@
     "capsule": "bin/capsule.js"
   },
   "scripts": {
+    "start": "bin/capsule.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint 'bin/*'"
   },

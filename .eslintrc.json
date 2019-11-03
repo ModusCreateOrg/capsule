@@ -4,7 +4,8 @@
   },
   "env": {
     "browser": false,
-    "node": true
+    "node": true,
+    "es2017": true
   },
-  "extends": ["plugin:prettier/recommended"]
+  "extends": ["eslint:recommended", "plugin:prettier/recommended"]
 }
