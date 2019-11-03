@@ -39,7 +39,8 @@
     "capsule": "bin/capsule.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint 'bin/*'"
   },
   "repository": {
     "type": "git",
@@ -67,5 +68,11 @@
     "commander": "^2.17.0",
     "inquirer": "^6.2.0",
     "pkginfo": "0.4.1"
+  },
+  "devDependencies": {
+    "eslint": "6.6.0",
+    "eslint-config-prettier": "6.5.0",
+    "eslint-plugin-prettier": "3.1.1",
+    "prettier": "1.18.2"
   }
 }
