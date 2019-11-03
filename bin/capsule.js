@@ -9,6 +9,7 @@ const commander = require("commander");
 const chalk = require("chalk");
 const aws = require("aws-sdk");
 const path = require("path");
+// This is how this module is supposed to be used, ignored the eslint warning
 // eslint-disable-next-line no-unused-vars
 const pkginfo = require("pkginfo")(module);
 const Spinner = require("cli-spinner").Spinner;
