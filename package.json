@@ -32,14 +32,17 @@
     "Mike Schwartz <mike@moduscreate.com>",
     "Drew Falkman <drew.falkman@moduscreate.com>",
     "Mike LaFortune <mike.lafortune@moduscreate.com>",
-    "Grgur Grisogono <grgur@moduscreate.com>"
+    "Grgur Grisogono <grgur@moduscreate.com>",
+    "Ivan Kovic <ivan.kovic@moduscreate.com>"
   ],
   "main": "bin/capsule.js",
   "bin": {
     "capsule": "bin/capsule.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "bin/capsule.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint 'bin/*'"
   },
   "repository": {
     "type": "git",
@@ -67,5 +70,28 @@
     "commander": "^2.17.0",
     "inquirer": "^6.2.0",
     "pkginfo": "0.4.1"
+  },
+  "devDependencies": {
+    "eslint": "6.6.0",
+    "eslint-config-prettier": "6.5.0",
+    "eslint-plugin-prettier": "3.1.1",
+    "husky": "3.0.9",
+    "lint-staged": "9.4.2",
+    "prettier": "1.18.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js}": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{json}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
